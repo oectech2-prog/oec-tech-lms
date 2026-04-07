@@ -420,6 +420,47 @@ export default function Home() {
         </motion.div>
       </section>
 
+      {/* Location Map */}
+      <section data-testid="location-section" className="py-24 md:py-32 bg-[#050505]">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-16">
+            <motion.p variants={fadeUp} className="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">Find Us</motion.p>
+            <motion.h2 variants={fadeUp} custom={1} className="text-3xl sm:text-4xl font-bold text-white mb-4">Our Location</motion.h2>
+            <motion.p variants={fadeUp} custom={2} className="text-base text-[#A1A1AA] max-w-xl mx-auto">Visit OEC Tech Institute in Chunian or reach out online — we serve students globally.</motion.p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="rounded-2xl overflow-hidden border border-[#27272A]"
+          >
+            <iframe
+              data-testid="home-map-iframe"
+              src="https://www.google.com/maps?q=OEC+Tech+Institute+Chunian&output=embed"
+              width="100%"
+              height="400"
+              style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) brightness(0.95) contrast(0.9)' }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="OEC Tech Institute Location"
+            />
+          </motion.div>
+          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-6">
+            <a
+              href="https://maps.app.goo.gl/ateRRsVJD3z4GRTX8"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-testid="home-map-directions-link"
+              className="text-sm text-[#D4AF37] hover:text-[#FBBF24] transition-colors inline-flex items-center gap-1 group"
+            >
+              Get Directions <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </a>
+          </motion.div>
+        </div>
+      </section>
+
       {/* FAQ Preview */}
       <section data-testid="faq-preview" className="py-24 md:py-32 bg-[#0A0A0A]">
         <div className="max-w-3xl mx-auto px-6 md:px-12">

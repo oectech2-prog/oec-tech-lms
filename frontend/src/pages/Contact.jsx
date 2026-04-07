@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { sendContact } from '../lib/api';
 import { toast } from 'sonner';
-import { Mail, Phone, MapPin, MessageCircle, Send } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Mail, Phone, MapPin, MessageCircle, Send, ExternalLink } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
@@ -62,7 +63,16 @@ export default function Contact() {
                 <MapPin className="w-6 h-6 text-[#D4AF37] shrink-0" />
                 <div>
                   <h4 className="text-sm font-bold text-white mb-1">Location</h4>
-                  <p className="text-sm text-[#A1A1AA]">Serving students globally from Pakistan</p>
+                  <p className="text-sm text-[#A1A1AA]">OEC Tech Institute, Chunian, Pakistan</p>
+                  <a
+                    href="https://maps.app.goo.gl/ateRRsVJD3z4GRTX8"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="contact-directions-link"
+                    className="text-xs text-[#D4AF37] hover:text-[#FBBF24] transition-colors inline-flex items-center gap-1 mt-1"
+                  >
+                    Get Directions <ExternalLink className="w-3 h-3" />
+                  </a>
                 </div>
               </div>
             </div>
@@ -138,6 +148,33 @@ export default function Contact() {
               </button>
             </form>
           </div>
+        </div>
+      </section>
+
+      {/* Map Section */}
+      <section data-testid="contact-map-section" className="py-16 bg-[#0A0A0A]">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-bold text-white mb-6">Find Us on Map</h2>
+            <div className="rounded-2xl overflow-hidden border border-[#27272A]">
+              <iframe
+                data-testid="contact-map-iframe"
+                src="https://www.google.com/maps?q=OEC+Tech+Institute+Chunian&output=embed"
+                width="100%"
+                height="450"
+                style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) brightness(0.95) contrast(0.9)' }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="OEC Tech Institute Location"
+              />
+            </div>
+          </motion.div>
         </div>
       </section>
     </div>
