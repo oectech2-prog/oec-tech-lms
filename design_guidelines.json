@@ -1,0 +1,109 @@
+{
+  "theme": "dark",
+  "archetype": "Archetype 5 (Jewel & Luxury)",
+  "color_palette": {
+    "background_base": "#050505",
+    "background_elevated": "#111111",
+    "primary_accent": "#D4AF37",
+    "primary_hover": "#FBBF24",
+    "text_primary": "#FFFFFF",
+    "text_secondary": "#A1A1AA",
+    "border_subtle": "#27272A",
+    "border_accent": "rgba(212,175,55,0.3)"
+  },
+  "typography": {
+    "heading_font": "Cabinet Grotesk",
+    "body_font": "Manrope",
+    "hierarchy": {
+      "h1": "text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter text-white",
+      "h2": "text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white",
+      "h3": "text-2xl sm:text-3xl font-semibold text-white",
+      "h4": "text-xl font-semibold text-[#D4AF37]",
+      "body": "text-base text-[#A1A1AA] leading-relaxed",
+      "small_label": "text-sm uppercase tracking-[0.2em] text-[#D4AF37]"
+    }
+  },
+  "surface_styles": {
+    "header": "fixed top-0 w-full z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5",
+    "card_default": "bg-[#111111] border border-[#27272A] rounded-xl overflow-hidden transition-all duration-300",
+    "card_hover": "hover:border-[#D4AF37]/50 hover:shadow-[0_0_20px_rgba(212,175,55,0.1)] hover:-translate-y-1",
+    "glass_panel": "bg-black/40 backdrop-blur-md border border-[#D4AF37]/20 rounded-2xl"
+  },
+  "components": {
+    "primary_button": "bg-[#D4AF37] text-black font-bold px-8 py-4 rounded-full hover:bg-[#FBBF24] transition-all duration-300 shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)]",
+    "secondary_button": "bg-transparent border border-[#D4AF37] text-[#D4AF37] font-semibold px-8 py-4 rounded-full hover:bg-[#D4AF37]/10 transition-colors",
+    "course_card": {
+      "container": "group flex flex-col bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden hover:border-[#D4AF37]/50 transition-all duration-300",
+      "image_wrapper": "relative aspect-[4/3] overflow-hidden bg-[#1A1A1A]",
+      "content": "p-6 flex flex-col gap-4",
+      "price_tag": "text-[#D4AF37] font-bold text-2xl"
+    },
+    "input_field": "bg-[#050505] border border-[#27272A] focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] text-white rounded-lg p-3 w-full"
+  },
+  "layout_spacing": {
+    "section_padding": "py-24 md:py-32",
+    "container_max_width": "max-w-7xl mx-auto px-6 md:px-12",
+    "grid_bento": "grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8",
+    "grid_courses": "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+  },
+  "media": {
+    "images": {
+      "hero_background": {
+        "url": "https://static.prod-images.emergentagent.com/jobs/9d749137-e5fd-4883-acd9-df8b19d7973e/images/181dbd19bea10b5b1d7eac7fe691687684034e3c99aafdaa79c01fcf422442e7.png",
+        "description": "Abstract 3D flowing gold and black luxury texture for main hero area background"
+      },
+      "student_learning": {
+        "url": "https://images.unsplash.com/photo-1758611974775-39e307bc3da9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBzdHVkZW50JTIwbGFwdG9wJTIwbW9kZXJufGVufDB8fHx8MTc3NTU2MjY1Mnww&ixlib=rb-4.1.0&q=85",
+        "description": "Student working on laptop for About Us or Reviews section"
+      },
+      "course_web_dev": {
+        "url": "https://images.unsplash.com/photo-1767817099805-d79e31fb968c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHw0fHxjb2RlJTIwc2NyZWVuJTIwZGFyayUyMG1vZGV8ZW58MHx8fHwxNzc1NTYyNjUyfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Dark mode code screen for WordPress/Web Dev course"
+      },
+      "course_ecommerce": {
+        "url": "https://images.unsplash.com/photo-1631010233091-43e8de2f9581?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHw0fHxlY29tbWVyY2UlMjBwYWNrYWdpbmclMjBkZWxpdmVyeXxlbnwwfHx8fDE3NzU1NjI2NTJ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Packaging box on table for Shopify / Amazon FBA course"
+      },
+      "course_design": {
+        "url": "https://images.unsplash.com/photo-1761122827167-159d1d272313?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzV8MHwxfHNlYXJjaHwxfHxncmFwaGljJTIwZGVzaWduJTIwdGFibGV0JTIwZGFya3xlbnwwfHx8fDE3NzU1NjI2NjZ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Graphic designer working on tablet for Graphic Design course"
+      },
+      "course_marketing": {
+        "url": "https://images.unsplash.com/photo-1769596722738-99460fa78dd6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwxfHxzb2NpYWwlMjBtZWRpYSUyMG1hcmtldGluZyUyMHNjcmVlbnxlbnwwfHx8fDE3NzU1NjI2NjZ8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Laptop showing social media presentation for Marketing course"
+      }
+    }
+  },
+  "icons": {
+    "library": "lucide-react",
+    "style": "Clean, minimal, high-contrast, usually rendered in #D4AF37 or #FFFFFF based on hierarchy"
+  },
+  "animations": {
+    "hover": "Subtle 1px upward translation `-translate-y-1` and addition of gold ambient shadow on cards",
+    "entrance": "Framer motion staggered fade-up for lists and course grids",
+    "buttons": "Micro-interaction scale down on click `active:scale-95`"
+  },
+  "specific_pages": {
+    "home": {
+      "hero": "Full height 100vh. Dark gradient overlay (`bg-black/60 to bg-[#050505]`) on top of hero abstract image. Headline centered or left-aligned with glowing gold text highlights.",
+      "benefits": "Bento grid mode. Mix of large cards (span 8) and small cards (span 4). Dark surfaces, gold borders."
+    },
+    "student_dashboard": {
+      "layout": "Sidebar navigation (dark) + main content area. 'Control Room' grid pattern for metrics (courses in progress, hours learned). Video player must use 16:9 ratio with dark theater mode."
+    },
+    "authentication": {
+      "style": "Glassmorphism card centered on screen with deep dark background. Include Google Social Login button matching the dark theme."
+    }
+  },
+  "instructions_to_main_agent": [
+    "Use Tailwind CSS for all styling based on the provided JSON variables.",
+    "Implement Shadcn UI for dropdowns, dialogues, and form inputs (Input, Form, Checkbox), customizing them to fit the dark/gold theme.",
+    "Use Cabinet Grotesk for headings and Manrope for body text. Make sure to import these fonts.",
+    "Ensure all pages are fully responsive. Limit image heights to 80vh on mobile.",
+    "Do NOT use pure #000000; use #050505 for base and #111111 for cards.",
+    "Implement data-testid attributes on all interactive elements (buttons, links, form inputs) as per the design rules.",
+    "Create the specific student dashboard routes (/dashboard, /courses) with dummy video embed wrappers.",
+    "Implement basic mockup UI for payment methods (JazzCash, EasyPaisa, Bank Transfer) in the checkout flow.",
+    "Ensure the design remains luxurious and does not feel like a generic SaaS template."
+  ]
+}
