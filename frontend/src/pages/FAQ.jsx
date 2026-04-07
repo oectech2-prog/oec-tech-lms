@@ -6,7 +6,7 @@ const FAQ_DATA = [
     category: 'General',
     questions: [
       { q: 'Who are these courses for?', a: 'Our courses are designed for complete beginners who want to learn digital skills and start earning online. No prior experience needed. Students from Pakistan, UAE, UK, and USA are welcome.' },
-      { q: 'What makes Hussnain Digital Academy different?', a: 'We focus on practical, skills-based learning with weekly structured modules, real assignments, and final projects. Our courses are designed for real-world application, not just theory.' },
+      { q: 'What makes OEC Tech Institute different?', a: 'We focus on practical, skills-based learning with weekly structured modules, real assignments, and final projects. Our courses are designed for real-world application, not just theory.' },
       { q: 'Do I get a certificate or diploma?', a: 'Yes! Upon completing individual courses, you receive a course completion certificate. By completing full diploma tracks (multiple courses), you earn a professional diploma.' },
     ]
   },
@@ -33,7 +33,7 @@ const FAQ_DATA = [
     questions: [
       { q: 'What do I need to get started?', a: 'A laptop or desktop computer with internet access. Some courses may require specific tools (we provide guidance). No prior technical experience needed.' },
       { q: 'How do I access my courses after payment?', a: 'After payment confirmation, log into your student dashboard. All your enrolled courses will appear in "My Courses" with full access to video lessons and assignments.' },
-      { q: 'How can I contact support?', a: 'You can reach us via WhatsApp (fastest), email at info@hussnainacademy.com, or through our contact form. We typically respond within a few hours.' },
+      { q: 'How can I contact support?', a: 'You can reach us via WhatsApp (fastest), email at info@oectech.institute, or through our contact form. We typically respond within a few hours.' },
     ]
   }
 ];

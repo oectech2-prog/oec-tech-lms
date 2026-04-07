@@ -14,7 +14,7 @@ export default function About() {
       <section className="pt-12 pb-8 border-b border-[#27272A]">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <p className="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">About Us</p>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">Hussnain Digital Academy</h1>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">OEC Tech Institute</h1>
           <p className="text-base text-[#A1A1AA] max-w-2xl">
             We are on a mission to empower students across Pakistan, UAE, UK & USA with practical digital skills that lead to real income.
           </p>
@@ -28,7 +28,7 @@ export default function About() {
             <motion.div variants={fadeUp}>
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6">Who We Are</h2>
               <p className="text-[#A1A1AA] leading-relaxed mb-4">
-                Hussnain Digital Academy is a leading online learning platform focused on teaching high-income digital skills. We believe that everyone deserves the opportunity to learn, grow, and earn online regardless of their background.
+                OEC Tech Institute is a leading online learning platform focused on teaching high-income digital skills. We believe that everyone deserves the opportunity to learn, grow, and earn online regardless of their background.
               </p>
               <p className="text-[#A1A1AA] leading-relaxed mb-4">
                 Our courses are designed by industry professionals and structured in weekly formats with hands-on assignments, ensuring you don't just learn theory but actually build real-world skills.
@@ -103,7 +103,7 @@ export default function About() {
       <section className="py-24 bg-[#0A0A0A]">
         <div className="max-w-3xl mx-auto px-6 md:px-12 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Start Your Career Today</h2>
-          <p className="text-[#A1A1AA] mb-8">Join 2,500+ students already earning online with real digital skills.</p>
+          <p className="text-[#A1A1AA] mb-8">Join 2,500+ students already earning online with OEC Tech Institute.</p>
           <Link to="/courses" className="btn-gold px-8 py-4 text-sm inline-flex items-center gap-2">
             Browse Courses <ArrowRight className="w-4 h-4" />
           </Link>

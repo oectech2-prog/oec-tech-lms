@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getCourses } from '../lib/api';
-import { Clock, ArrowRight, BookOpen, Search } from 'lucide-react';
+import { Clock, ArrowRight, BookOpen, Search, Sparkles } from 'lucide-react';
 import { Input } from '../components/ui/input';
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.4 } })
+const scaleIn = {
+  hidden: { opacity: 0, scale: 0.9, y: 20 },
+  visible: (i = 0) => ({ opacity: 1, scale: 1, y: 0, transition: { delay: i * 0.08, duration: 0.5, ease: [0.22, 1, 0.36, 1] } })
 };
 
 const CATEGORIES = ['All', 'Technology', 'Design', 'Marketing', 'E-Commerce', 'Web Development'];
@@ -79,10 +79,11 @@ export default function Courses() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filtered.map((course, i) => (
-                <motion.div key={course.course_id} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i * 0.08}>
+                <motion.div key={course.course_id} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn} custom={i * 0.08}>
                   <Link to={`/courses/${course.course_id}`} data-testid={`course-card-${course.course_id}`} className="course-card block bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden group">
                     <div className="relative aspect-[4/3] overflow-hidden bg-[#1A1A1A]">
-                      <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" loading="lazy" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                       <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-xs font-medium px-3 py-1 rounded-full">
                         {course.category}
                       </div>

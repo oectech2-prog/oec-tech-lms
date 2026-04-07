@@ -32,10 +32,10 @@ export default function Header() {
         <Link to="/" className="flex items-center gap-2 group" data-testid="logo-link">
           <GraduationCap className="w-8 h-8 text-[#D4AF37] group-hover:scale-110 transition-transform" />
           <span className="text-lg font-bold text-white hidden sm:inline">
-            Hussnain <span className="text-[#D4AF37]">Digital</span> Academy
+            OEC <span className="text-[#D4AF37]">Tech</span> Institute
           </span>
           <span className="text-lg font-bold text-white sm:hidden">
-            <span className="text-[#D4AF37]">HDA</span>
+            <span className="text-[#D4AF37]">OEC</span>
           </span>
         </Link>
 

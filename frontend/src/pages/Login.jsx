@@ -21,7 +21,7 @@ export default function Login() {
     <div data-testid="login-page" className="min-h-screen bg-[#050505] flex items-center justify-center px-4">
       <div className="glass-panel rounded-2xl p-10 max-w-md w-full text-center">
         <GraduationCap className="w-14 h-14 text-[#D4AF37] mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-white mb-2">Welcome to Hussnain Digital Academy</h1>
+        <h1 className="text-2xl font-bold text-white mb-2">Welcome to OEC Tech Institute</h1>
         <p className="text-sm text-[#A1A1AA] mb-8">Sign in to access your courses, track progress, and manage assignments.</p>
 
         <button

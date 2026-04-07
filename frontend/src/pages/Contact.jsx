@@ -48,7 +48,7 @@ export default function Contact() {
                 <Mail className="w-6 h-6 text-[#D4AF37] shrink-0" />
                 <div>
                   <h4 className="text-sm font-bold text-white mb-1">Email</h4>
-                  <p className="text-sm text-[#A1A1AA]">info@hussnainacademy.com</p>
+                  <p className="text-sm text-[#A1A1AA]">info@oectech.institute</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">

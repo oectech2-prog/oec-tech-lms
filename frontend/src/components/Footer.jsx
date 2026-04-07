@@ -11,11 +11,11 @@ export default function Footer() {
             <div className="flex items-center gap-2">
               <GraduationCap className="w-7 h-7 text-[#D4AF37]" />
               <span className="text-lg font-bold text-white">
-                Hussnain <span className="text-[#D4AF37]">Digital</span> Academy
+                OEC <span className="text-[#D4AF37]">Tech</span> Institute
               </span>
             </div>
             <p className="text-[#A1A1AA] text-sm leading-relaxed">
-              Empowering students across Pakistan, UAE, UK & USA with real digital skills to earn online. Practical training, lifetime access.
+              Empowering students across Pakistan, UAE, UK & USA with real digital skills to earn online. Practical training, lifetime access at OEC Tech Institute.
             </p>
             <a
               href="https://wa.me/923001234567"
@@ -75,7 +75,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-[#A1A1AA]">
                 <Mail className="w-4 h-4 text-[#D4AF37]" />
-                info@hussnainacademy.com
+                info@oectech.institute
               </li>
               <li className="flex items-center gap-2 text-sm text-[#A1A1AA]">
                 <Phone className="w-4 h-4 text-[#D4AF37]" />
@@ -91,7 +91,7 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t border-[#27272A] flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-xs text-[#A1A1AA]">
-            &copy; {new Date().getFullYear()} Hussnain Digital Academy. All rights reserved.
+            &copy; {new Date().getFullYear()} OEC Tech Institute. All rights reserved.
           </p>
           <div className="flex gap-4 text-xs text-[#A1A1AA]">
             <span className="hover:text-[#D4AF37] cursor-pointer transition-colors">Privacy Policy</span>

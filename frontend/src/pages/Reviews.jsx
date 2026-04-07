@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getReviews } from '../lib/api';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, Sparkles } from 'lucide-react';
 
 function StarRating({ rating }) {
   return (
@@ -42,7 +42,7 @@ export default function Reviews() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08 }}
-                className="bg-[#111111] border border-[#27272A] rounded-2xl p-8 hover:border-[#D4AF37]/30 transition-colors"
+                className="bg-[#111111] border border-[#27272A] rounded-2xl p-8 hover:border-[#D4AF37]/30 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(212,175,55,0.08)]"
               >
                 <Quote className="w-8 h-8 text-[#D4AF37]/30 mb-4" />
                 <StarRating rating={review.rating} />

@@ -30,7 +30,7 @@ export default function Dashboard() {
         <div className="p-6 border-b border-[#27272A]">
           <Link to="/" className="flex items-center gap-2">
             <GraduationCap className="w-7 h-7 text-[#D4AF37]" />
-            <span className="text-sm font-bold text-white">Hussnain <span className="text-[#D4AF37]">Digital</span></span>
+            <span className="text-sm font-bold text-white">OEC <span className="text-[#D4AF37]">Tech</span></span>
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-1">

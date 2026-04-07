@@ -23,7 +23,7 @@ db = client[os.environ['DB_NAME']]
 # Object Storage Setup
 STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
 EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
-APP_NAME = "hussnain-digital-academy"
+APP_NAME = "oec-tech-institute"
 storage_key = None
 
 def init_storage():
