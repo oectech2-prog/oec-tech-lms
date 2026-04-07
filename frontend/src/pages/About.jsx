@@ -42,6 +42,7 @@ export default function About() {
             <img
               src="https://images.unsplash.com/photo-1758611974775-39e307bc3da9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBzdHVkZW50JTIwbGFwdG9wJTIwbW9kZXJufGVufDB8fHx8MTc3NTU2MjY1Mnww&ixlib=rb-4.1.0&q=85"
               alt="Student learning"
+              loading="lazy"
               className="w-full rounded-2xl border border-[#27272A]"
             />
           </motion.div>

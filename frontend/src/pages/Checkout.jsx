@@ -270,7 +270,7 @@ export default function Checkout() {
               {course && (
                 <>
                   <div className="aspect-[4/3] rounded-lg overflow-hidden mb-4 bg-[#1A1A1A]">
-                    <img src={course.image_url} alt={course.title} className="w-full h-full object-cover" />
+                    <img src={course.image_url} alt={course.title} loading="lazy" className="w-full h-full object-cover" />
                   </div>
                   <h4 className="text-sm font-bold text-white mb-1">{course.title}</h4>
                   <p className="text-xs text-[#A1A1AA] mb-4">{course.duration} - {course.level}</p>

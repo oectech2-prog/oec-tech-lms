@@ -167,6 +167,7 @@ export default function Home() {
                 <img
                   src="https://static.prod-images.emergentagent.com/jobs/9d749137-e5fd-4883-acd9-df8b19d7973e/images/ae3c6654a4654a0ca0c8dc38f24e04b047b0b5460528ae9d5babb12e845cd333.png"
                   alt="3D Tech Education"
+                  loading="eager"
                   className="w-full max-w-[500px] mx-auto drop-shadow-[0_20px_60px_rgba(212,175,55,0.15)]"
                 />
               </motion.div>
@@ -247,7 +248,7 @@ export default function Home() {
               <motion.div key={course.course_id} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn} custom={i * 0.1}>
                 <Link to={`/courses/${course.course_id}`} className="course-card block bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden group">
                   <div className="relative aspect-[4/3] overflow-hidden bg-[#1A1A1A]">
-                    <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <img src={course.image_url} alt={course.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute top-3 right-3 bg-[#D4AF37] text-black text-xs font-bold px-3 py-1 rounded-full">
                       {course.level}

@@ -79,7 +79,7 @@ export default function AdminCourses() {
             {courses.map((course) => (
               <div key={course.course_id} className="bg-[#111111] border border-[#27272A] rounded-xl p-5 flex items-center gap-5">
                 <div className="w-20 h-16 rounded-lg overflow-hidden bg-[#1A1A1A] shrink-0">
-                  <img src={course.image_url} alt="" className="w-full h-full object-cover" />
+                  <img src={course.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold text-white truncate">{course.title}</h3>

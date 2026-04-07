@@ -116,7 +116,7 @@ export default function Dashboard() {
                     <Link key={enrollment.enrollment_id} to={`/my-course/${enrollment.enrollment_id}`} data-testid={`enrolled-course-${enrollment.enrollment_id}`}
                       className="bg-[#111111] border border-[#27272A] rounded-xl overflow-hidden hover:border-[#D4AF37]/50 transition-all group">
                       <div className="aspect-[3/2] overflow-hidden bg-[#1A1A1A]">
-                        <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <img src={course.image_url} alt={course.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                       </div>
                       <div className="p-5">
                         <h3 className="text-base font-bold text-white mb-2 group-hover:text-[#D4AF37] transition-colors">{course.title}</h3>

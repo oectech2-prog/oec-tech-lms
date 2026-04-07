@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { Menu, X, GraduationCap, ChevronDown } from 'lucide-react';
@@ -24,9 +24,30 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [visible, setVisible] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      setScrolled(currentY > 20);
+      if (currentY < 80) {
+        setVisible(true);
+      } else if (currentY > lastScrollY.current + 5) {
+        setVisible(false);
+        setMobileOpen(false);
+      } else if (currentY < lastScrollY.current - 5) {
+        setVisible(true);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <header data-testid="main-header" className="fixed top-0 w-full z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
+    <header data-testid="main-header" className={`fixed top-0 w-full z-50 transition-all duration-300 ${visible ? 'header-visible' : 'header-hidden'} ${scrolled ? 'bg-[#050505]/95 backdrop-blur-xl border-b border-white/5 shadow-lg shadow-black/20' : 'bg-[#050505]/80 backdrop-blur-xl border-b border-white/5'}`}>
       <div className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 group" data-testid="logo-link">
