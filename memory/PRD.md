@@ -1,4 +1,4 @@
-# Hussnain Digital Academy - PRD
+# OEC Tech Institute - PRD
 
 ## Problem Statement
 Complete e-learning website with student dashboard, admin panel, Google auth, and payment system for selling online courses.
@@ -14,48 +14,20 @@ Complete e-learning website with student dashboard, admin panel, Google auth, an
 1. **Students** (Pakistan, UAE, UK, USA) - Learn digital skills, access courses, submit assignments
 2. **Admin** - Manage courses, students, enrollments, approve payments
 
-## Core Requirements
-- 7 courses with weekly structure (lessons, assignments, final project)
-- 3 diploma career tracks
-- Student dashboard with progress tracking
-- Admin panel for course/student/payment management
-- MOCKED payment (JazzCash, EasyPaisa, Bank Transfer - manual admin approval)
+## What's Been Implemented
 
-## What's Been Implemented (April 7, 2026)
+### Phase 1 (April 7, 2026) - MVP
+- 7 courses with weekly structure
+- 3 diploma tracks
+- Student dashboard, admin panel
+- Google OAuth, payment (MOCKED)
 
-### Public Pages
-- Home (hero, featured courses, benefits, reviews, diploma tracks, FAQ)
-- All Courses (search, filter by category)
-- Course Detail (intro video, requirements, what you'll learn, weekly outline)
-- Diploma Tracks (career paths with roadmaps)
-- Student Reviews (testimonials with ratings)
-- About Us (mission, vision, why choose us)
-- Contact Us (form + WhatsApp)
-- FAQ (categorized questions)
-
-### Student System
-- Google OAuth login/signup
-- Student Dashboard (my courses, stats, progress)
-- Course Learning View (video player, lesson tracking, assignments)
-- Assignment submission system
-- Profile page
-- Checkout flow (JazzCash/EasyPaisa/Bank Transfer selection)
-
-### Admin Panel
-- Admin Dashboard (stats overview)
-- Manage Courses (list, delete)
-- View Students (table)
-- Manage Enrollments (approve/reject payments)
-
-### Backend APIs
-- Auth: /api/auth/session, /api/auth/me, /api/auth/logout
-- Courses: /api/courses, /api/courses/:id
-- Enrollments: /api/enrollments, /api/enrollments/my-courses, progress, assignments
-- Diploma Tracks: /api/diploma-tracks
-- Reviews: /api/reviews
-- Contact: /api/contact
-- Admin: /api/admin/stats, students, enrollments, courses, messages
-- Upload: /api/upload, /api/files/:path
+### Phase 2 (April 7, 2026) - Enhancements
+- **Brand rename**: Hussnain Digital Academy -> OEC Tech Institute
+- **3D Hero Image**: Animated 3D laptop PNG with floating glass badges (earning potential, countries)
+- **Fee Receipt Upload**: Students can upload payment screenshot in checkout, sent to admin for verification
+- **Enhanced Animations**: Framer Motion animations throughout all pages, animated counters, hover effects, stagger reveals
+- **CSS Polish**: Button shimmer effects, smooth transitions, glass hover glow
 
 ## Prioritized Backlog
 ### P0 (Done)
@@ -64,10 +36,13 @@ Complete e-learning website with student dashboard, admin panel, Google auth, an
 - Admin panel ✅
 - Auth system ✅
 - Course structure ✅
+- Brand rename ✅
+- 3D hero section ✅
+- Fee receipt upload ✅
+- Enhanced animations ✅
 
 ### P1 (Next Phase)
 - Admin course creation form (UI for adding/editing courses)
-- Admin course editing with week/lesson builder
 - Real payment integration when APIs available
 - Email notifications for payment confirmations
 - Certificate generation upon course completion
@@ -76,5 +51,4 @@ Complete e-learning website with student dashboard, admin panel, Google auth, an
 - Course progress analytics/charts
 - Student-to-student messaging
 - Instructor profiles
-- Mobile app (React Native)
 - Advanced SEO with meta tags per page
