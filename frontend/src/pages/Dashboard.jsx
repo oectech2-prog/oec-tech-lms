@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { getMyCourses } from '../lib/api';
-import { GraduationCap, BookOpen, BarChart3, User, LogOut, Shield, Clock, CheckCircle2, AlertCircle, ArrowRight, Home } from 'lucide-react';
+import { GraduationCap, BookOpen, BarChart3, User, LogOut, Shield, Clock, CheckCircle2, AlertCircle, ArrowRight, Home, Award } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
 
 export default function Dashboard() {
@@ -130,6 +130,16 @@ export default function Dashboard() {
                         <span className="text-xs text-[#D4AF37] flex items-center gap-1">
                           Continue Learning <ArrowRight className="w-3 h-3" />
                         </span>
+                        {enrollment.progress === 100 && (
+                          <Link
+                            to={`/certificate/${enrollment.enrollment_id}`}
+                            onClick={(e) => e.stopPropagation()}
+                            data-testid={`certificate-${enrollment.enrollment_id}`}
+                            className="text-xs text-green-400 flex items-center gap-1 bg-green-500/10 px-3 py-1 rounded-full hover:bg-green-500/20 transition-colors"
+                          >
+                            <Award className="w-3 h-3" /> Certificate
+                          </Link>
+                        )}
                       </div>
                     </Link>
                   ))}

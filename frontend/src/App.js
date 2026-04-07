@@ -6,6 +6,8 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import AuthCallback from "./components/AuthCallback";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Preloader from "./components/Preloader";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Pages
 import Home from "./pages/Home";
@@ -21,6 +23,7 @@ import Dashboard from "./pages/Dashboard";
 import MyCourseView from "./pages/MyCourseView";
 import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
+import Certificate from "./pages/Certificate";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCourses from "./pages/admin/AdminCourses";
 import AdminStudents from "./pages/admin/AdminStudents";
@@ -40,7 +43,8 @@ function AppRouter() {
                       location.pathname.startsWith('/admin') ||
                       location.pathname.startsWith('/my-course') ||
                       location.pathname.startsWith('/profile') ||
-                      location.pathname.startsWith('/checkout');
+                      location.pathname.startsWith('/checkout') ||
+                      location.pathname.startsWith('/certificate');
 
   return (
     <>
@@ -63,6 +67,7 @@ function AppRouter() {
           <Route path="/my-course/:enrollmentId" element={<ProtectedRoute><MyCourseView /></ProtectedRoute>} />
           <Route path="/checkout/:courseId" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/certificate/:enrollmentId" element={<ProtectedRoute><Certificate /></ProtectedRoute>} />
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
@@ -72,6 +77,7 @@ function AppRouter() {
         </Routes>
       </main>
       {!isDashboard && <Footer />}
+      <ScrollToTop />
       <Toaster position="top-right" richColors />
     </>
   );
@@ -81,6 +87,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Preloader />
         <AppRouter />
       </AuthProvider>
     </BrowserRouter>

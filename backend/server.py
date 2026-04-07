@@ -11,6 +11,14 @@ from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
 import requests
+import asyncio
+
+try:
+    import resend
+    resend.api_key = os.environ.get("RESEND_API_KEY", "")
+    HAS_RESEND = bool(resend.api_key)
+except ImportError:
+    HAS_RESEND = False
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -511,6 +519,16 @@ async def update_enrollment_status(enrollment_id: str, data: PaymentStatusUpdate
         {"enrollment_id": enrollment_id},
         {"$set": {"payment_status": data.payment_status}}
     )
+
+    # Send email notification on approval
+    if data.payment_status == "completed":
+        enrollment = await db.enrollments.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+        if enrollment:
+            user = await db.users.find_one({"user_id": enrollment["user_id"]}, {"_id": 0})
+            course = await db.courses.find_one({"course_id": enrollment["course_id"]}, {"_id": 0})
+            if user and course:
+                await send_approval_email(user, course, enrollment)
+
     return {"message": "Enrollment updated"}
 
 @api_router.get("/admin/courses")
@@ -524,6 +542,92 @@ async def get_messages(authorization: str = Header(None), session_token: str = C
     await require_admin(authorization, session_token)
     messages = await db.contact_messages.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     return messages
+
+# ============ EMAIL NOTIFICATION ============
+
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+
+async def send_approval_email(user: dict, course: dict, enrollment: dict):
+    """Send payment approval email to student"""
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#050505;color:#fff;padding:40px;border-radius:12px;">
+      <div style="text-align:center;margin-bottom:30px;">
+        <h1 style="color:#D4AF37;margin:0;">OEC Tech Institute</h1>
+        <p style="color:#A1A1AA;font-size:14px;">Payment Confirmed</p>
+      </div>
+      <p style="color:#fff;font-size:16px;">Hi {user.get('name', 'Student')},</p>
+      <p style="color:#A1A1AA;font-size:14px;line-height:1.6;">
+        Your payment for <strong style="color:#D4AF37;">{course.get('title', '')}</strong> has been verified and approved.
+        You now have full lifetime access to all course materials.
+      </p>
+      <div style="background:#111;border:1px solid #27272A;border-radius:8px;padding:20px;margin:20px 0;">
+        <p style="margin:5px 0;color:#A1A1AA;font-size:13px;">Course: <strong style="color:#fff;">{course.get('title', '')}</strong></p>
+        <p style="margin:5px 0;color:#A1A1AA;font-size:13px;">Duration: <strong style="color:#fff;">{course.get('duration', '')}</strong></p>
+        <p style="margin:5px 0;color:#A1A1AA;font-size:13px;">Payment Method: <strong style="color:#fff;">{enrollment.get('payment_method', '').replace('_',' ').title()}</strong></p>
+        <p style="margin:5px 0;color:#A1A1AA;font-size:13px;">Status: <strong style="color:#22c55e;">Approved</strong></p>
+      </div>
+      <div style="text-align:center;margin:30px 0;">
+        <a href="#" style="display:inline-block;background:#D4AF37;color:#050505;text-decoration:none;padding:12px 30px;border-radius:30px;font-weight:bold;font-size:14px;">Start Learning Now</a>
+      </div>
+      <p style="color:#A1A1AA;font-size:12px;text-align:center;border-top:1px solid #27272A;padding-top:20px;margin-top:30px;">
+        OEC Tech Institute | info@oectech.institute
+      </p>
+    </div>
+    """
+    if HAS_RESEND:
+        try:
+            params = {
+                "from": SENDER_EMAIL,
+                "to": [user.get("email")],
+                "subject": f"Payment Approved - {course.get('title', '')} | OEC Tech Institute",
+                "html": html
+            }
+            await asyncio.to_thread(resend.Emails.send, params)
+            logger.info(f"Approval email sent to {user.get('email')}")
+        except Exception as e:
+            logger.error(f"Email send failed: {e}")
+    else:
+        logger.info(f"[EMAIL MOCK] Payment approval email for {user.get('email')} - Course: {course.get('title')}")
+
+# ============ CERTIFICATE GENERATION ============
+
+@api_router.get("/certificates/{enrollment_id}")
+async def get_certificate(enrollment_id: str, authorization: str = Header(None), session_token: str = Cookie(None)):
+    """Get certificate data for a completed course"""
+    user = await get_current_user(authorization, session_token)
+    enrollment = await db.enrollments.find_one({"enrollment_id": enrollment_id, "user_id": user.user_id}, {"_id": 0})
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Enrollment not found")
+    if enrollment["payment_status"] != "completed":
+        raise HTTPException(status_code=403, detail="Payment not completed")
+    if enrollment.get("progress", 0) < 100:
+        raise HTTPException(status_code=403, detail="Course not completed yet")
+
+    course = await db.courses.find_one({"course_id": enrollment["course_id"]}, {"_id": 0})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    cert_id = f"OEC-{enrollment_id[-8:].upper()}-{uuid.uuid4().hex[:4].upper()}"
+
+    # Check if certificate already exists
+    existing = await db.certificates.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+    if existing:
+        return existing
+
+    cert = {
+        "certificate_id": cert_id,
+        "enrollment_id": enrollment_id,
+        "user_id": user.user_id,
+        "student_name": user.name,
+        "course_title": course["title"],
+        "course_category": course.get("category", ""),
+        "completion_date": datetime.now(timezone.utc).isoformat(),
+        "issued_by": "OEC Tech Institute",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.certificates.insert_one(cert)
+    result = await db.certificates.find_one({"certificate_id": cert_id}, {"_id": 0})
+    return result
 
 # ============ FILE UPLOAD ============
 
