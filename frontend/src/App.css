@@ -1,34 +1,79 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Hussnain Digital Academy - Custom Styles */
+
+/* Selection color */
+::selection {
+  background: rgba(212, 175, 55, 0.3);
+  color: white;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Smooth page transitions */
+.page-transition {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease-out forwards;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+/* Card hover effects */
+.course-card {
+  transition: all 0.3s ease;
+}
+.course-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
 }
 
-.App-link {
-    color: #61dafb;
+/* Button glow effect */
+.btn-gold {
+  background: #D4AF37;
+  color: #050505;
+  font-weight: 700;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+}
+.btn-gold:hover {
+  background: #FBBF24;
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+}
+.btn-gold:active {
+  transform: scale(0.95);
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.btn-gold-outline {
+  background: transparent;
+  border: 1px solid #D4AF37;
+  color: #D4AF37;
+  font-weight: 600;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+.btn-gold-outline:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+/* Star rating */
+.star-filled {
+  color: #D4AF37;
+}
+.star-empty {
+  color: #27272A;
+}
+
+/* Week timeline */
+.week-timeline {
+  position: relative;
+}
+.week-timeline::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #D4AF37, #27272A);
+}
+
+/* Progress bar gold */
+.progress-gold {
+  background: linear-gradient(90deg, #D4AF37, #FBBF24);
 }

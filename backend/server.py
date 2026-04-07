@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Header, Query, UploadFile, File, Response, Cookie
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +7,10 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Optional
 import uuid
-from datetime import datetime, timezone
-
+from datetime import datetime, timezone, timedelta
+import requests
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,54 +20,552 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# Object Storage Setup
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
+APP_NAME = "hussnain-digital-academy"
+storage_key = None
 
-# Create a router with the /api prefix
+def init_storage():
+    global storage_key
+    if storage_key:
+        return storage_key
+    try:
+        resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+        resp.raise_for_status()
+        storage_key = resp.json()["storage_key"]
+        return storage_key
+    except Exception as e:
+        logging.error(f"Storage init failed: {e}")
+        return None
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not available")
+    resp = requests.put(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key, "Content-Type": content_type},
+        data=data, timeout=120
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str):
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not available")
+    resp = requests.get(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key}, timeout=60
+    )
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+
+# Create the main app
+app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+# ============ PYDANTIC MODELS ============
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class Lesson(BaseModel):
+    lesson_id: str = Field(default_factory=lambda: f"lesson_{uuid.uuid4().hex[:8]}")
+    title: str
+    video_type: str = "youtube"  # youtube, vimeo, upload, external
+    video_url: str = ""
+    duration: str = "10 min"
 
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
+class Assignment(BaseModel):
+    assignment_id: str = Field(default_factory=lambda: f"assign_{uuid.uuid4().hex[:8]}")
+    title: str
+    description: str
+    is_final_project: bool = False
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+class Week(BaseModel):
+    week_number: int
+    title: str
+    description: str = ""
+    lessons: List[Lesson] = []
+    assignment: Optional[Assignment] = None
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+class CourseCreate(BaseModel):
+    title: str
+    description: str
+    short_description: str
+    price: float
+    currency: str = "PKR"
+    image_url: str = ""
+    category: str = ""
+    duration: str = ""
+    level: str = "Beginner"
+    instructor: str = "Hussnain Academy"
+    intro_video_url: str = ""
+    intro_video_type: str = "youtube"
+    requirements: List[str] = []
+    what_you_will_learn: List[str] = []
+    weeks: List[Week] = []
 
-# Include the router in the main app
+class Course(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    course_id: str
+    title: str
+    description: str
+    short_description: str
+    price: float
+    currency: str = "PKR"
+    image_url: str
+    category: str
+    duration: str
+    level: str
+    instructor: str
+    intro_video_url: str = ""
+    intro_video_type: str = "youtube"
+    requirements: List[str] = []
+    what_you_will_learn: List[str] = []
+    weeks: List[Week] = []
+    is_published: bool = True
+    created_at: str = ""
+
+class EnrollmentCreate(BaseModel):
+    course_id: str
+    payment_method: str  # jazzcash, easypaisa, bank_transfer
+    payment_proof: str = ""  # optional proof text/reference
+
+class ProgressUpdate(BaseModel):
+    lesson_id: str
+    completed: bool
+
+class AssignmentSubmission(BaseModel):
+    assignment_id: str
+    content: str  # text answer or link
+
+class ReviewCreate(BaseModel):
+    course_id: Optional[str] = None
+    rating: int = Field(ge=1, le=5)
+    comment: str
+
+class ContactMessage(BaseModel):
+    name: str
+    email: str
+    subject: str = ""
+    message: str
+
+class PaymentStatusUpdate(BaseModel):
+    payment_status: str  # pending, completed, rejected
+
+class User(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    email: str
+    name: str
+    picture: Optional[str] = None
+    role: str = "student"
+    created_at: str = ""
+
+# ============ AUTH HELPER ============
+
+async def get_current_user(authorization: str = Header(None), session_token: str = Cookie(None)) -> User:
+    token = None
+    if session_token:
+        token = session_token
+    elif authorization and authorization.startswith("Bearer "):
+        token = authorization.split(" ")[1]
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    session_doc = await db.user_sessions.find_one({"session_token": token}, {"_id": 0})
+    if not session_doc:
+        raise HTTPException(status_code=401, detail="Invalid session")
+
+    expires_at = session_doc["expires_at"]
+    if isinstance(expires_at, str):
+        expires_at = datetime.fromisoformat(expires_at)
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=401, detail="Session expired")
+
+    user_doc = await db.users.find_one({"user_id": session_doc["user_id"]}, {"_id": 0})
+    if not user_doc:
+        raise HTTPException(status_code=401, detail="User not found")
+    return User(**user_doc)
+
+async def require_admin(authorization: str = Header(None), session_token: str = Cookie(None)) -> User:
+    user = await get_current_user(authorization, session_token)
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+# ============ AUTH ENDPOINTS ============
+
+@api_router.post("/auth/session")
+async def create_session(request_data: dict):
+    """Exchange session_id for session_token"""
+    session_id = request_data.get("session_id")
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id required")
+    try:
+        resp = requests.get(
+            "https://demobackend.emergentagent.com/auth/v1/env/oauth/session-data",
+            headers={"X-Session-ID": session_id},
+            timeout=10
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        user_doc = await db.users.find_one({"email": data["email"]}, {"_id": 0})
+        if user_doc:
+            user_id = user_doc["user_id"]
+            # Update name/picture if changed
+            await db.users.update_one(
+                {"user_id": user_id},
+                {"$set": {"name": data["name"], "picture": data.get("picture")}}
+            )
+        else:
+            user_id = f"user_{uuid.uuid4().hex[:12]}"
+            await db.users.insert_one({
+                "user_id": user_id,
+                "email": data["email"],
+                "name": data["name"],
+                "picture": data.get("picture"),
+                "role": "student",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+
+        session_token = data["session_token"]
+        await db.user_sessions.insert_one({
+            "user_id": user_id,
+            "session_token": session_token,
+            "expires_at": (datetime.now(timezone.utc) + timedelta(days=7)).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+
+        user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+        response = JSONResponse(content={"user": user, "session_token": session_token})
+        response.set_cookie(
+            key="session_token", value=session_token,
+            httponly=True, secure=True, samesite="none",
+            path="/", max_age=7*24*60*60
+        )
+        return response
+    except requests.exceptions.RequestException as e:
+        logger.error(f"Auth error: {e}")
+        raise HTTPException(status_code=400, detail="Authentication failed")
+
+@api_router.get("/auth/me")
+async def get_me(authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    return user
+
+@api_router.post("/auth/logout")
+async def logout(authorization: str = Header(None), session_token: str = Cookie(None)):
+    token = session_token or (authorization.split(" ")[1] if authorization and authorization.startswith("Bearer ") else None)
+    if token:
+        await db.user_sessions.delete_one({"session_token": token})
+    response = JSONResponse(content={"message": "Logged out"})
+    response.delete_cookie(key="session_token", path="/")
+    return response
+
+# ============ COURSE ENDPOINTS ============
+
+@api_router.get("/courses")
+async def get_courses():
+    courses = await db.courses.find({"is_published": True}, {"_id": 0}).to_list(1000)
+    return courses
+
+@api_router.get("/courses/{course_id}")
+async def get_course(course_id: str):
+    course = await db.courses.find_one({"course_id": course_id}, {"_id": 0})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    return course
+
+@api_router.post("/admin/courses")
+async def create_course(course_data: CourseCreate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    course_id = f"course_{uuid.uuid4().hex[:8]}"
+    doc = {
+        "course_id": course_id,
+        **course_data.model_dump(),
+        "is_published": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.courses.insert_one(doc)
+    result = await db.courses.find_one({"course_id": course_id}, {"_id": 0})
+    return result
+
+@api_router.put("/admin/courses/{course_id}")
+async def update_course(course_id: str, course_data: CourseCreate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    await db.courses.update_one({"course_id": course_id}, {"$set": course_data.model_dump()})
+    result = await db.courses.find_one({"course_id": course_id}, {"_id": 0})
+    return result
+
+@api_router.delete("/admin/courses/{course_id}")
+async def delete_course(course_id: str, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    await db.courses.delete_one({"course_id": course_id})
+    return {"message": "Course deleted"}
+
+# ============ ENROLLMENT ENDPOINTS ============
+
+@api_router.post("/enrollments")
+async def create_enrollment(data: EnrollmentCreate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    existing = await db.enrollments.find_one({"user_id": user.user_id, "course_id": data.course_id}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already enrolled in this course")
+
+    course = await db.courses.find_one({"course_id": data.course_id}, {"_id": 0})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+
+    enrollment_id = f"enroll_{uuid.uuid4().hex[:8]}"
+    enrollment = {
+        "enrollment_id": enrollment_id,
+        "user_id": user.user_id,
+        "course_id": data.course_id,
+        "payment_status": "pending",
+        "payment_method": data.payment_method,
+        "payment_proof": data.payment_proof,
+        "enrolled_at": datetime.now(timezone.utc).isoformat(),
+        "progress": 0,
+        "completed_lessons": [],
+        "submitted_assignments": []
+    }
+    await db.enrollments.insert_one(enrollment)
+    result = await db.enrollments.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+    return result
+
+@api_router.get("/enrollments/my-courses")
+async def get_my_courses(authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    enrollments = await db.enrollments.find({"user_id": user.user_id}, {"_id": 0}).to_list(1000)
+    result = []
+    for enrollment in enrollments:
+        course = await db.courses.find_one({"course_id": enrollment["course_id"]}, {"_id": 0})
+        if course:
+            result.append({"enrollment": enrollment, "course": course})
+    return result
+
+@api_router.put("/enrollments/{enrollment_id}/progress")
+async def update_progress(enrollment_id: str, data: ProgressUpdate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    enrollment = await db.enrollments.find_one({"enrollment_id": enrollment_id, "user_id": user.user_id}, {"_id": 0})
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Enrollment not found")
+    if enrollment["payment_status"] != "completed":
+        raise HTTPException(status_code=403, detail="Payment not completed")
+
+    completed = enrollment.get("completed_lessons", [])
+    if data.completed and data.lesson_id not in completed:
+        completed.append(data.lesson_id)
+    elif not data.completed and data.lesson_id in completed:
+        completed.remove(data.lesson_id)
+
+    course = await db.courses.find_one({"course_id": enrollment["course_id"]}, {"_id": 0})
+    total_lessons = sum(len(w.get("lessons", [])) for w in course.get("weeks", []))
+    progress = int((len(completed) / total_lessons) * 100) if total_lessons > 0 else 0
+
+    await db.enrollments.update_one(
+        {"enrollment_id": enrollment_id},
+        {"$set": {"completed_lessons": completed, "progress": progress}}
+    )
+    return {"progress": progress, "completed_lessons": completed}
+
+@api_router.post("/enrollments/{enrollment_id}/submit-assignment")
+async def submit_assignment(enrollment_id: str, data: AssignmentSubmission, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    enrollment = await db.enrollments.find_one({"enrollment_id": enrollment_id, "user_id": user.user_id}, {"_id": 0})
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Enrollment not found")
+    if enrollment["payment_status"] != "completed":
+        raise HTTPException(status_code=403, detail="Payment not completed")
+
+    submission = {
+        "submission_id": f"sub_{uuid.uuid4().hex[:8]}",
+        "enrollment_id": enrollment_id,
+        "assignment_id": data.assignment_id,
+        "user_id": user.user_id,
+        "content": data.content,
+        "submitted_at": datetime.now(timezone.utc).isoformat(),
+        "status": "submitted",
+        "feedback": None
+    }
+    await db.assignment_submissions.insert_one(submission)
+
+    # Update enrollment's submitted assignments
+    submitted = enrollment.get("submitted_assignments", [])
+    if data.assignment_id not in submitted:
+        submitted.append(data.assignment_id)
+        await db.enrollments.update_one(
+            {"enrollment_id": enrollment_id},
+            {"$set": {"submitted_assignments": submitted}}
+        )
+
+    return {"message": "Assignment submitted", "submission_id": submission["submission_id"]}
+
+@api_router.get("/enrollments/{enrollment_id}/submissions")
+async def get_submissions(enrollment_id: str, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    submissions = await db.assignment_submissions.find(
+        {"enrollment_id": enrollment_id, "user_id": user.user_id}, {"_id": 0}
+    ).to_list(1000)
+    return submissions
+
+# ============ DIPLOMA TRACKS ============
+
+@api_router.get("/diploma-tracks")
+async def get_diploma_tracks():
+    tracks = await db.diploma_tracks.find({}, {"_id": 0}).to_list(1000)
+    return tracks
+
+@api_router.get("/diploma-tracks/{track_id}")
+async def get_diploma_track(track_id: str):
+    track = await db.diploma_tracks.find_one({"track_id": track_id}, {"_id": 0})
+    if not track:
+        raise HTTPException(status_code=404, detail="Track not found")
+    return track
+
+# ============ REVIEWS ============
+
+@api_router.get("/reviews")
+async def get_reviews():
+    reviews = await db.reviews.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return reviews
+
+@api_router.post("/reviews")
+async def create_review(data: ReviewCreate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    review_id = f"review_{uuid.uuid4().hex[:8]}"
+    review = {
+        "review_id": review_id,
+        "user_id": user.user_id,
+        "user_name": user.name,
+        "user_picture": user.picture,
+        "course_id": data.course_id,
+        "rating": data.rating,
+        "comment": data.comment,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.reviews.insert_one(review)
+    result = await db.reviews.find_one({"review_id": review_id}, {"_id": 0})
+    return result
+
+# ============ CONTACT ============
+
+@api_router.post("/contact")
+async def contact(data: ContactMessage):
+    msg = {
+        "message_id": f"msg_{uuid.uuid4().hex[:8]}",
+        **data.model_dump(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.contact_messages.insert_one(msg)
+    return {"message": "Message sent successfully"}
+
+# ============ ADMIN ENDPOINTS ============
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    total_students = await db.users.count_documents({"role": "student"})
+    total_courses = await db.courses.count_documents({})
+    total_enrollments = await db.enrollments.count_documents({})
+    pending_payments = await db.enrollments.count_documents({"payment_status": "pending"})
+    total_reviews = await db.reviews.count_documents({})
+    total_messages = await db.contact_messages.count_documents({})
+    return {
+        "total_students": total_students,
+        "total_courses": total_courses,
+        "total_enrollments": total_enrollments,
+        "pending_payments": pending_payments,
+        "total_reviews": total_reviews,
+        "total_messages": total_messages
+    }
+
+@api_router.get("/admin/students")
+async def get_students(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    students = await db.users.find({"role": "student"}, {"_id": 0}).to_list(1000)
+    return students
+
+@api_router.get("/admin/enrollments")
+async def get_all_enrollments(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    enrollments = await db.enrollments.find({}, {"_id": 0}).to_list(1000)
+    result = []
+    for e in enrollments:
+        user = await db.users.find_one({"user_id": e["user_id"]}, {"_id": 0})
+        course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
+        result.append({"enrollment": e, "user": user, "course": course})
+    return result
+
+@api_router.put("/admin/enrollments/{enrollment_id}")
+async def update_enrollment_status(enrollment_id: str, data: PaymentStatusUpdate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    await db.enrollments.update_one(
+        {"enrollment_id": enrollment_id},
+        {"$set": {"payment_status": data.payment_status}}
+    )
+    return {"message": "Enrollment updated"}
+
+@api_router.get("/admin/courses")
+async def admin_get_courses(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    courses = await db.courses.find({}, {"_id": 0}).to_list(1000)
+    return courses
+
+@api_router.get("/admin/messages")
+async def get_messages(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    messages = await db.contact_messages.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return messages
+
+# ============ FILE UPLOAD ============
+
+@api_router.post("/upload")
+async def upload_file(file: UploadFile = File(...), authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    ext = file.filename.split(".")[-1] if "." in file.filename else "bin"
+    path = f"{APP_NAME}/uploads/{uuid.uuid4()}.{ext}"
+    data = await file.read()
+    result = put_object(path, data, file.content_type or "application/octet-stream")
+    await db.files.insert_one({
+        "file_id": str(uuid.uuid4()),
+        "storage_path": result["path"],
+        "original_filename": file.filename,
+        "content_type": file.content_type,
+        "size": result["size"],
+        "is_deleted": False,
+        "uploaded_by": user.user_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"path": result["path"], "url": f"/api/files/{result['path']}"}
+
+@api_router.get("/files/{path:path}")
+async def download_file(path: str):
+    record = await db.files.find_one({"storage_path": path, "is_deleted": False})
+    if not record:
+        raise HTTPException(status_code=404, detail="File not found")
+    data, content_type = get_object(path)
+    return Response(content=data, media_type=record.get("content_type", content_type))
+
+# ============ STARTUP / SHUTDOWN ============
+
+@app.on_event("startup")
+async def startup():
+    try:
+        init_storage()
+        logger.info("Object storage initialized")
+    except Exception as e:
+        logger.warning(f"Storage init failed (non-critical): {e}")
+
 app.include_router(api_router)
 
 app.add_middleware(
@@ -76,13 +575,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
