@@ -76,4 +76,9 @@ export const updateDiplomaEnrollmentStatus = (id, data) => api.put(`/admin/diplo
 export const adminApproveDiplomaInstallment2 = (id, data) => api.put(`/admin/diploma-enrollments/${id}/installment-2`, data);
 export const submitDiplomaInstallment2 = (enrollmentId, data) => api.post(`/diploma-enrollments/${enrollmentId}/submit-installment-2`, data);
 
+// Defaulters
+export const getDefaulters = () => api.get('/admin/defaulters');
+export const deactivateStudent = (id) => api.put(`/admin/defaulters/${id}/deactivate`);
+export const activateStudent = (id) => api.put(`/admin/defaulters/${id}/activate`);
+
 export default api;

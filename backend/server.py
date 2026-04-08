@@ -726,20 +726,34 @@ async def get_admin_stats(authorization: str = Header(None), session_token: str 
     total_enrollments = await db.enrollments.count_documents({})
     pending_payments = await db.enrollments.count_documents({"payment_status": "pending"})
     approved_payments = await db.enrollments.count_documents({"payment_status": "completed"})
-    total_reviews = await db.reviews.count_documents({})
-    total_messages = await db.contact_messages.count_documents({})
+    total_diploma_students = await db.diploma_enrollments.count_documents({})
 
-    # Monthly revenue
     now = datetime.now(timezone.utc)
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    month_enrollments = await db.enrollments.find(
-        {"payment_status": "completed", "approved_at": {"$gte": month_start.isoformat()}}, {"_id": 0}
-    ).to_list(1000)
+    month_name = now.strftime("%B %Y")
+
+    # Course enrollments revenue
+    approved_enrollments = await db.enrollments.find({"payment_status": "completed"}, {"_id": 0}).to_list(5000)
+    admission_plus_inst1_total = 0
+    inst2_total = 0
     monthly_revenue = 0
-    for e in month_enrollments:
-        course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
-        if course:
-            monthly_revenue += (course.get("price", 0) + course.get("admission_fee", 0))
+    for e in approved_enrollments:
+        admission_plus_inst1_total += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
+        if e.get("installment_2_status") == "completed":
+            inst2_total += (e.get("installment_2_amount", 0) or 0)
+        if e.get("approved_at", "") >= month_start.isoformat():
+            course = await db.courses.find_one({"course_id": e.get("course_id")}, {"_id": 0})
+            if course:
+                monthly_revenue += (course.get("price", 0) + course.get("admission_fee", 0))
+
+    # Diploma enrollments revenue
+    dip_approved = await db.diploma_enrollments.find({"payment_status": "completed"}, {"_id": 0}).to_list(5000)
+    for e in dip_approved:
+        admission_plus_inst1_total += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
+        if e.get("installment_2_status") == "completed":
+            inst2_total += (e.get("installment_2_amount", 0) or 0)
+        if e.get("approved_at", "") >= month_start.isoformat():
+            monthly_revenue += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
 
     # Students this month
     students_this_month = await db.users.count_documents({
@@ -747,16 +761,69 @@ async def get_admin_stats(authorization: str = Header(None), session_token: str 
         "created_at": {"$gte": month_start.isoformat()}
     })
 
+    # Pending approvals (course + diploma)
+    pending_diploma = await db.diploma_enrollments.count_documents({"payment_status": "pending"})
+    total_pending_approval = pending_payments + pending_diploma
+
+    # Defaulters: approved enrollments with overdue 2nd installment
+    defaulters_count = 0
+    all_approved = approved_enrollments + dip_approved
+    for e in all_approved:
+        due_date_str = e.get("installment_2_due_date", "")
+        inst2_status = e.get("installment_2_status", "pending")
+        if due_date_str and inst2_status == "pending":
+            try:
+                due_date = datetime.fromisoformat(due_date_str.replace("Z", "+00:00"))
+                if now > due_date:
+                    defaulters_count += 1
+            except (ValueError, TypeError):
+                pass
+
+    # Monthly growth data (last 6 months)
+    monthly_growth = []
+    for i in range(5, -1, -1):
+        m = now.month - i
+        y = now.year
+        while m <= 0:
+            m += 12
+            y -= 1
+        m_start = datetime(y, m, 1, tzinfo=timezone.utc).isoformat()
+        if m == 12:
+            m_end = datetime(y + 1, 1, 1, tzinfo=timezone.utc).isoformat()
+        else:
+            m_end = datetime(y, m + 1, 1, tzinfo=timezone.utc).isoformat()
+        m_students = await db.users.count_documents({
+            "role": "student",
+            "created_at": {"$gte": m_start, "$lt": m_end}
+        })
+        m_enrollments = await db.enrollments.count_documents({
+            "enrolled_at": {"$gte": m_start, "$lt": m_end}
+        })
+        m_dip = await db.diploma_enrollments.count_documents({
+            "enrolled_at": {"$gte": m_start, "$lt": m_end}
+        })
+        m_label = datetime(y, m, 1).strftime("%b %Y")
+        monthly_growth.append({
+            "month": m_label,
+            "students": m_students,
+            "enrollments": m_enrollments + m_dip,
+        })
+
     return {
         "total_students": total_students,
         "total_courses": total_courses,
-        "total_enrollments": total_enrollments,
+        "total_enrollments": total_enrollments + total_diploma_students,
+        "total_diploma_students": total_diploma_students,
         "pending_payments": pending_payments,
         "approved_payments": approved_payments,
-        "total_reviews": total_reviews,
-        "total_messages": total_messages,
+        "admission_plus_inst1": admission_plus_inst1_total,
+        "inst2_total": inst2_total,
         "monthly_revenue": monthly_revenue,
+        "month_name": month_name,
         "students_this_month": students_this_month,
+        "total_pending_approval": total_pending_approval,
+        "defaulters_count": defaulters_count,
+        "monthly_growth": monthly_growth,
     }
 
 @api_router.get("/admin/students")
@@ -864,6 +931,69 @@ async def update_enrollment_status(enrollment_id: str, data: PaymentStatusUpdate
                 await send_approval_email(user, course, enrollment)
 
     return {"message": "Enrollment updated"}
+
+@api_router.get("/admin/defaulters")
+async def get_defaulters(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    now = datetime.now(timezone.utc)
+    result = []
+    # Course defaulters
+    approved = await db.enrollments.find({"payment_status": "completed"}, {"_id": 0}).to_list(5000)
+    for e in approved:
+        due_str = e.get("installment_2_due_date", "")
+        inst2_status = e.get("installment_2_status", "pending")
+        if due_str and inst2_status == "pending":
+            try:
+                due_date = datetime.fromisoformat(due_str.replace("Z", "+00:00"))
+                if now > due_date:
+                    user = await db.users.find_one({"user_id": e["user_id"]}, {"_id": 0})
+                    course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
+                    result.append({"enrollment": e, "user": user, "course": course, "type": "course", "due_date": due_str, "amount": e.get("installment_2_amount", 0)})
+            except (ValueError, TypeError):
+                pass
+    # Diploma defaulters
+    dip_approved = await db.diploma_enrollments.find({"payment_status": "completed"}, {"_id": 0}).to_list(5000)
+    for e in dip_approved:
+        due_str = e.get("installment_2_due_date", "")
+        inst2_status = e.get("installment_2_status", "pending")
+        if due_str and inst2_status == "pending":
+            try:
+                due_date = datetime.fromisoformat(due_str.replace("Z", "+00:00"))
+                if now > due_date:
+                    user = await db.users.find_one({"user_id": e["user_id"]}, {"_id": 0})
+                    track = await db.diploma_tracks.find_one({"track_id": e["track_id"]}, {"_id": 0})
+                    result.append({"enrollment": e, "user": user, "track": track, "type": "diploma", "due_date": due_str, "amount": e.get("installment_2_amount", 0)})
+            except (ValueError, TypeError):
+                pass
+    return result
+
+@api_router.put("/admin/defaulters/{enrollment_id}/deactivate")
+async def deactivate_student(enrollment_id: str, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    # Try course enrollment
+    e = await db.enrollments.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+    if e:
+        await db.enrollments.update_one({"enrollment_id": enrollment_id}, {"$set": {"payment_status": "defaulter"}})
+        return {"message": "Student deactivated"}
+    # Try diploma enrollment
+    e = await db.diploma_enrollments.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+    if e:
+        await db.diploma_enrollments.update_one({"enrollment_id": enrollment_id}, {"$set": {"payment_status": "defaulter"}})
+        return {"message": "Student deactivated"}
+    raise HTTPException(status_code=404, detail="Enrollment not found")
+
+@api_router.put("/admin/defaulters/{enrollment_id}/activate")
+async def activate_student(enrollment_id: str, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    e = await db.enrollments.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+    if e:
+        await db.enrollments.update_one({"enrollment_id": enrollment_id}, {"$set": {"payment_status": "completed"}})
+        return {"message": "Student re-activated"}
+    e = await db.diploma_enrollments.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+    if e:
+        await db.diploma_enrollments.update_one({"enrollment_id": enrollment_id}, {"$set": {"payment_status": "completed"}})
+        return {"message": "Student re-activated"}
+    raise HTTPException(status_code=404, detail="Enrollment not found")
 
 @api_router.get("/admin/courses")
 async def admin_get_courses(authorization: str = Header(None), session_token: str = Cookie(None)):
@@ -1190,6 +1320,16 @@ async def get_admission_forms(authorization: str = Header(None), session_token: 
     for f in forms:
         course = await db.courses.find_one({"course_id": f.get("course_id")}, {"_id": 0})
         f["course_title"] = course["title"] if course else f.get("course_id", "")
+        # Enrich with enrollment installment screenshots
+        enrollment = await db.enrollments.find_one({"user_id": f.get("user_id"), "course_id": f.get("course_id")}, {"_id": 0})
+        if not enrollment:
+            enrollment = await db.diploma_enrollments.find_one({"user_id": f.get("user_id")}, {"_id": 0})
+        if enrollment:
+            f["installment_1_url"] = enrollment.get("installment_1_proof", "")
+            f["installment_2_url"] = enrollment.get("installment_2_proof", "")
+        else:
+            f["installment_1_url"] = ""
+            f["installment_2_url"] = ""
     return forms
 
 @api_router.get("/files/{path:path}")

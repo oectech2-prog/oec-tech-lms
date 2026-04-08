@@ -167,6 +167,44 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Student Status */}
+        <div className="bg-[#111111] border border-[#27272A] rounded-xl p-5 mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              {user?.picture ? (
+                <img src={user.picture} alt="" className="w-12 h-12 rounded-full border-2 border-[#D4AF37] object-cover" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] text-xl font-bold">
+                  {user?.name?.charAt(0)}
+                </div>
+              )}
+              <div>
+                <h2 className="text-base font-bold text-white">{user?.name || 'Student'}</h2>
+                <p className="text-xs text-[#A1A1AA]">{user?.email}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                activeCourses.length > 0 ? 'bg-green-500/10 text-green-400' : pendingCourses.length > 0 ? 'bg-yellow-500/10 text-yellow-400' : 'bg-[#27272A] text-[#A1A1AA]'
+              }`} data-testid="student-status">
+                {activeCourses.length > 0 ? 'Active Student' : pendingCourses.length > 0 ? 'Pending Approval' : 'Not Enrolled'}
+              </span>
+              {activeCourses.length > 0 && (() => {
+                const totalProgress = activeCourses.reduce((s, c) => s + (c.enrollment.progress || 0), 0);
+                const avgProgress = Math.round(totalProgress / activeCourses.length);
+                return (
+                  <div data-testid="overall-progress" className="flex items-center gap-2">
+                    <div className="w-24 h-2 bg-[#27272A] rounded-full overflow-hidden">
+                      <div className="h-full bg-[#D4AF37] rounded-full transition-all" style={{ width: `${avgProgress}%` }} />
+                    </div>
+                    <span className="text-xs font-bold text-[#D4AF37]">{avgProgress}%</span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
           {[

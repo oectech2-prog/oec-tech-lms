@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdmissionForms } from '../../lib/api';
-import { GraduationCap, Users, BookOpen, CreditCard, BarChart3, LogOut, Search, Eye, X, FileText, User, Phone, MapPin, Calendar, Award } from 'lucide-react';
+import { GraduationCap, Users, BookOpen, CreditCard, BarChart3, LogOut, Search, Eye, X, FileText, User, Phone, MapPin, Calendar, Award, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -13,6 +13,7 @@ const NAV = [
   { to: '/admin/enrollments', icon: CreditCard, label: 'Payments' },
   { to: '/admin/admissions', icon: FileText, label: 'Admissions' },
   { to: '/admin/diploma-students', icon: Award, label: 'Diploma' },
+  { to: '/admin/defaulters', icon: AlertTriangle, label: 'Defaulters' },
 ];
 
 export default function AdminAdmissions() {
@@ -167,13 +168,24 @@ export default function AdminAdmissions() {
                 </div>
               </div>
 
-              {/* Fee Receipt */}
-              {selected.receipt_url && (
-                <div className="bg-[#0A0A0A] rounded-xl p-4">
-                  <p className="text-xs font-bold text-[#D4AF37] mb-3">FEE RECEIPT</p>
-                  <DocImage url={selected.receipt_url} label="Receipt" />
+              {/* Fee Screenshots */}
+              <div className="bg-[#0A0A0A] rounded-xl p-4">
+                <p className="text-xs font-bold text-[#D4AF37] mb-3">FEE SCREENSHOTS</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <p className="text-[10px] text-[#A1A1AA] mb-1">Admission Fee</p>
+                    <DocImage url={selected.receipt_url} label="Adm Fee" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#A1A1AA] mb-1">1st Installment</p>
+                    <DocImage url={selected.installment_1_url} label="1st Inst" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#A1A1AA] mb-1">2nd Installment</p>
+                    <DocImage url={selected.installment_2_url} label="2nd Inst" />
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         )}
