@@ -2,10 +2,26 @@
 
 ## Architecture
 - Frontend: React + Tailwind CSS + Shadcn UI + Framer Motion + Swiper
-- Backend: FastAPI + MongoDB (Motor async driver)
+- Backend: FastAPI + MongoDB (Motor async driver) — **Modular structure**
 - Student Auth: Google OAuth (Emergent-managed)
 - Admin Auth: Password-based (bcrypt hashed)
 - Theme: Black (#050505), White, Gold (#D4AF37)
+
+## Backend Structure (Refactored April 8, 2026)
+```
+backend/
+├── server.py              # FastAPI app, CORS, router imports, startup
+├── database.py            # MongoDB connection, Object Storage, indexes
+├── models.py              # All Pydantic models
+├── auth.py                # Auth helpers, email utilities
+├── routes/
+│   ├── auth_routes.py     # /auth/*, /profile, /admin/login
+│   ├── course_routes.py   # /courses/*, /enrollments/*
+│   ├── admin_routes.py    # /admin/* (stats, students, assignments, defaulters, diplomas)
+│   └── general_routes.py  # /reviews, /contact, /certificates, /diploma-tracks, /files, /admission-form
+├── seed_data.py
+└── seed_reviews.py
+```
 
 ## What's Been Implemented
 
@@ -29,29 +45,17 @@
 - 12 stat cards, growth chart, quick actions
 - Defaulters page with deactivate/re-activate
 
-### Phase 10: Assignment System & Week Locking (April 8, 2026)
-- **Assignment Submission Options**: 
-  - Text (textarea answer)
-  - Link (URL - Google Docs, GitHub, Drive, etc.)
-  - File upload (MS Word, Excel, PDF, PPT, images - max 10MB)
-- **Week Locking System**:
-  - Week 1 always unlocked
-  - Student submits week assignment → status: "submitted"
-  - Admin approves → enrollment.approved_weeks updated → next week unlocks
-  - Admin rejects with feedback → student can resubmit
-  - Locked weeks show lock icon + "Complete previous week first"
-- **Weekly Progress**: Percentage bar (approved weeks / total weeks)
-- **MyCourseView Enhanced**:
-  - Week sidebar with lock/unlock status + assignment status indicators
-  - Assignment submission form with Text/Link/File tabs
-  - Lesson progress + weekly progress bars
-  - Assignment status (submitted/approved/rejected) per week
-- **Admin Assignments Page** (`/admin/assignments`):
-  - All submissions with student name, course, week, type
-  - Filter: All/Pending/Approved/Rejected
-  - View modal: full submission content, download file link, feedback textarea
-  - Approve/Reject with feedback
-- **Admin Nav**: 8 items (Dashboard, Courses, Students, Payments, Admissions, Diploma, Defaulters, Assignments)
+### Phase 10: Assignment System & Week Locking
+- Assignment submission (text/link/file), admin review, week-by-week unlocking
+- Weekly progress tracking
+
+### Phase 11: Code Optimization & Security (April 8, 2026)
+- **Backend refactored**: 1400+ line server.py split into 8 modular files
+- **MongoDB indexes**: Created at startup for all collections (performance)
+- **Input validation**: String length limits on user inputs
+- **File upload**: Student upload limit increased to 10MB, Content-Disposition headers
+- **Admin Assignments Enhanced**: File download/view/preview, link opening, original filename display
+- **Security**: Proper cookie settings (httponly, secure, samesite=none)
 
 ## Admin Panel Pages
 1. `/admin` - Dashboard (stats, chart, quick actions)
@@ -61,12 +65,11 @@
 5. `/admin/admissions` - Admission form review + fee screenshots
 6. `/admin/diploma-students` - Diploma enrollment management
 7. `/admin/defaulters` - Overdue 2nd installment students
-8. `/admin/assignments` - Student assignment review + approval
+8. `/admin/assignments` - Student assignment review + approval (file download/view/link)
 
 ## Backlog
 ### P1
 - Resend email integration (needs API key from user)
-### P2
-- Refactor server.py (~1400 lines - split into route modules)
 ### P3
+- Mobile responsiveness audit on admin data tables
 - Student messaging, instructor profiles, SEO
