@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminCourses, deleteCourse, createCourse, updateCourse } from '../../lib/api';
 import { toast } from 'sonner';
-import { GraduationCap, BookOpen, Users, CreditCard, Trash2, Edit, BarChart3, LogOut, Plus, X, Save, FileText } from 'lucide-react';
+import { GraduationCap, BookOpen, Users, CreditCard, Trash2, Edit, BarChart3, LogOut, Plus, X, Save, FileText, Award } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 
 const NAV = [
@@ -11,6 +11,7 @@ const NAV = [
   { to: '/admin/students', icon: Users, label: 'Students' },
   { to: '/admin/enrollments', icon: CreditCard, label: 'Payments' },
   { to: '/admin/admissions', icon: FileText, label: 'Admissions' },
+  { to: '/admin/diploma-students', icon: Award, label: 'Diploma' },
 ];
 
 const EMPTY_COURSE = {

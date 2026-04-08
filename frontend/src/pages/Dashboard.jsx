@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
-import { getMyCourses, getNotifications, submitInstallment2, studentUpload } from '../lib/api';
+import { getMyCourses, getNotifications, submitInstallment2, submitDiplomaInstallment2, studentUpload } from '../lib/api';
 import { GraduationCap, BookOpen, BarChart3, User, LogOut, Shield, Clock, CheckCircle2, AlertCircle, ArrowRight, Home, Award, Upload, X, FileImage, Bell } from 'lucide-react';
 import { Progress } from '../components/ui/progress';
 import { toast } from 'sonner';
@@ -39,11 +39,16 @@ export default function Dashboard() {
     setSubmitting(true);
     try {
       const res = await studentUpload(instFile);
-      await submitInstallment2(showInstModal.enrollment_id, {
+      const payload = {
         proof_url: res.data.url,
         payment_method: instMethod,
         reference: instRef,
-      });
+      };
+      if (showInstModal.is_diploma) {
+        await submitDiplomaInstallment2(showInstModal.enrollment_id, payload);
+      } else {
+        await submitInstallment2(showInstModal.enrollment_id, payload);
+      }
       toast.success('2nd installment submitted for review!');
       setShowInstModal(null);
       setInstFile(null); setInstPreview(null); setInstMethod(''); setInstRef('');

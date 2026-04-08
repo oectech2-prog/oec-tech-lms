@@ -69,4 +69,11 @@ export const submitInstallment2 = (enrollmentId, data) => api.post(`/enrollments
 export const adminApproveInstallment2 = (enrollmentId, data) => api.put(`/admin/enrollments/${enrollmentId}/installment-2`, data);
 export const getNotifications = () => api.get('/notifications');
 
+// Diploma Enrollments
+export const createDiplomaEnrollment = (data) => api.post('/diploma-enrollments', data);
+export const getAdminDiplomaEnrollments = () => api.get('/admin/diploma-enrollments');
+export const updateDiplomaEnrollmentStatus = (id, data) => api.put(`/admin/diploma-enrollments/${id}`, data);
+export const adminApproveDiplomaInstallment2 = (id, data) => api.put(`/admin/diploma-enrollments/${id}/installment-2`, data);
+export const submitDiplomaInstallment2 = (enrollmentId, data) => api.post(`/diploma-enrollments/${enrollmentId}/submit-installment-2`, data);
+
 export default api;

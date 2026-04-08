@@ -170,6 +170,11 @@ class PaymentStatusUpdate(BaseModel):
 class AdminLoginRequest(BaseModel):
     password: str
 
+class Installment2Submit(BaseModel):
+    proof_url: str
+    payment_method: str = ""
+    reference: str = ""
+
 class AdminStudentRemove(BaseModel):
     user_id: str
 
@@ -532,6 +537,148 @@ async def get_diploma_track(track_id: str):
         raise HTTPException(status_code=404, detail="Track not found")
     return track
 
+# ============ DIPLOMA ENROLLMENTS ============
+
+class DiplomaEnrollmentCreate(BaseModel):
+    track_id: str
+    payment_method: str
+    payment_proof: str = ""
+    admission_fee_proof: str = ""
+    installment_1_proof: str = ""
+
+@api_router.post("/diploma-enrollments")
+async def create_diploma_enrollment(data: DiplomaEnrollmentCreate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    track = await db.diploma_tracks.find_one({"track_id": data.track_id}, {"_id": 0})
+    if not track:
+        raise HTTPException(status_code=404, detail="Track not found")
+    existing = await db.diploma_enrollments.find_one({"user_id": user.user_id, "track_id": data.track_id}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already enrolled in this diploma track")
+
+    # Calculate total fees from track courses
+    course_ids = track.get("courses", [])
+    courses = await db.courses.find({"course_id": {"$in": course_ids}}, {"_id": 0}).to_list(100)
+    total_course_fee = sum(c.get("price", 0) for c in courses)
+    total_admission_fee = sum(c.get("admission_fee", 0) for c in courses)
+    installment_1 = int(total_course_fee / 2)
+    installment_2 = total_course_fee - installment_1
+
+    # Calculate halfway weeks
+    total_weeks = sum(int(p) for c in courses for p in c.get("duration", "0").split() if p.isdigit())
+    halfway_weeks = max(1, total_weeks // 2)
+
+    enrollment_id = f"dip_enroll_{uuid.uuid4().hex[:8]}"
+    enrollment = {
+        "enrollment_id": enrollment_id,
+        "user_id": user.user_id,
+        "track_id": data.track_id,
+        "track_title": track.get("title", ""),
+        "course_ids": course_ids,
+        "payment_status": "pending",
+        "payment_method": data.payment_method,
+        "payment_proof": data.payment_proof,
+        "admission_fee": total_admission_fee,
+        "admission_fee_proof": data.admission_fee_proof,
+        "installment_1_amount": installment_1,
+        "installment_1_proof": data.installment_1_proof,
+        "installment_1_status": "pending",
+        "installment_2_amount": installment_2,
+        "installment_2_proof": "",
+        "installment_2_status": "pending",
+        "installment_2_due_weeks": halfway_weeks,
+        "installment_2_due_date": "",
+        "installment_2_notified": False,
+        "enrolled_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.diploma_enrollments.insert_one(enrollment)
+    enrollment.pop("_id", None)
+    return {"message": "Diploma enrollment submitted", "enrollment_id": enrollment_id}
+
+@api_router.get("/admin/diploma-enrollments")
+async def get_admin_diploma_enrollments(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    enrollments = await db.diploma_enrollments.find({}, {"_id": 0}).sort("enrolled_at", -1).to_list(1000)
+    result = []
+    for e in enrollments:
+        user = await db.users.find_one({"user_id": e["user_id"]}, {"_id": 0})
+        track = await db.diploma_tracks.find_one({"track_id": e["track_id"]}, {"_id": 0})
+        result.append({"enrollment": e, "user": user, "track": track})
+    return result
+
+@api_router.put("/admin/diploma-enrollments/{enrollment_id}")
+async def update_diploma_enrollment_status(enrollment_id: str, data: PaymentStatusUpdate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    update_fields = {"payment_status": data.payment_status}
+    if data.payment_status == "completed":
+        update_fields["approved_at"] = datetime.now(timezone.utc).isoformat()
+        update_fields["installment_1_status"] = "completed"
+        enrollment_doc = await db.diploma_enrollments.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+        if enrollment_doc:
+            halfway_weeks = enrollment_doc.get("installment_2_due_weeks", 3)
+            due_date = datetime.now(timezone.utc) + timedelta(weeks=halfway_weeks)
+            update_fields["installment_2_due_date"] = due_date.isoformat()
+            # Also enroll student in each course of the track
+            for cid in enrollment_doc.get("course_ids", []):
+                existing = await db.enrollments.find_one({"user_id": enrollment_doc["user_id"], "course_id": cid})
+                if not existing:
+                    course = await db.courses.find_one({"course_id": cid}, {"_id": 0})
+                    c_price = course.get("price", 0) if course else 0
+                    await db.enrollments.insert_one({
+                        "enrollment_id": f"enroll_{uuid.uuid4().hex[:8]}",
+                        "user_id": enrollment_doc["user_id"],
+                        "course_id": cid,
+                        "payment_status": "completed",
+                        "payment_method": enrollment_doc.get("payment_method", ""),
+                        "payment_proof": f"[Diploma: {enrollment_doc.get('track_title', '')}]",
+                        "admission_fee": 0,
+                        "admission_fee_proof": "",
+                        "installment_1_amount": c_price,
+                        "installment_1_proof": "",
+                        "installment_1_status": "completed",
+                        "installment_2_amount": 0,
+                        "installment_2_proof": "",
+                        "installment_2_status": "completed",
+                        "installment_2_due_weeks": 0,
+                        "installment_2_due_date": "",
+                        "installment_2_notified": False,
+                        "enrolled_at": datetime.now(timezone.utc).isoformat(),
+                        "approved_at": datetime.now(timezone.utc).isoformat(),
+                        "progress": 0,
+                        "completed_lessons": [],
+                        "submitted_assignments": []
+                    })
+    await db.diploma_enrollments.update_one({"enrollment_id": enrollment_id}, {"$set": update_fields})
+    return {"message": "Diploma enrollment status updated"}
+
+@api_router.put("/admin/diploma-enrollments/{enrollment_id}/installment-2")
+async def admin_approve_diploma_installment_2(enrollment_id: str, data: PaymentStatusUpdate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    update_fields = {"installment_2_status": data.payment_status}
+    if data.payment_status == "completed":
+        update_fields["installment_2_approved_at"] = datetime.now(timezone.utc).isoformat()
+    await db.diploma_enrollments.update_one({"enrollment_id": enrollment_id}, {"$set": update_fields})
+    return {"message": "Diploma installment 2 status updated"}
+
+@api_router.post("/diploma-enrollments/{enrollment_id}/submit-installment-2")
+async def submit_diploma_installment_2(enrollment_id: str, data: Installment2Submit, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    enrollment = await db.diploma_enrollments.find_one({"enrollment_id": enrollment_id, "user_id": user.user_id}, {"_id": 0})
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Diploma enrollment not found")
+    if enrollment.get("installment_2_status") == "completed":
+        raise HTTPException(status_code=400, detail="2nd installment already paid")
+    await db.diploma_enrollments.update_one(
+        {"enrollment_id": enrollment_id},
+        {"$set": {
+            "installment_2_proof": data.proof_url,
+            "installment_2_status": "submitted",
+            "installment_2_payment_method": data.payment_method,
+            "installment_2_submitted_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    return {"message": "Diploma 2nd installment submitted for review"}
+
 # ============ REVIEWS ============
 
 @api_router.get("/reviews")
@@ -866,11 +1013,6 @@ async def student_upload_file(file: UploadFile = File(...), authorization: str =
 
 # ============ INSTALLMENT ENDPOINTS ============
 
-class Installment2Submit(BaseModel):
-    proof_url: str
-    payment_method: str = ""
-    reference: str = ""
-
 @api_router.post("/enrollments/{enrollment_id}/submit-installment-2")
 async def submit_installment_2(enrollment_id: str, data: Installment2Submit, authorization: str = Header(None), session_token: str = Cookie(None)):
     user = await get_current_user(authorization, session_token)
@@ -943,6 +1085,35 @@ async def get_notifications(authorization: str = Header(None), session_token: st
                     "course_title": course["title"] if course else "",
                     "amount": e.get("installment_2_amount", 0),
                     "status": inst2_status,
+                })
+    # Also check diploma enrollments
+    dip_enrollments = await db.diploma_enrollments.find(
+        {"user_id": user.user_id, "payment_status": "completed"},
+        {"_id": 0}
+    ).to_list(100)
+    for e in dip_enrollments:
+        inst2_status = e.get("installment_2_status", "pending")
+        due_date_str = e.get("installment_2_due_date", "")
+        if inst2_status in ("pending", "submitted") and due_date_str:
+            due_date = datetime.fromisoformat(due_date_str.replace("Z", "+00:00")) if due_date_str else None
+            if due_date and now >= due_date and inst2_status == "pending":
+                notifications.append({
+                    "type": "installment_2_due",
+                    "enrollment_id": e["enrollment_id"],
+                    "course_title": f"Diploma: {e.get('track_title', '')}",
+                    "amount": e.get("installment_2_amount", 0),
+                    "due_date": due_date_str,
+                    "status": inst2_status,
+                    "is_diploma": True,
+                })
+            elif inst2_status == "submitted":
+                notifications.append({
+                    "type": "installment_2_pending_approval",
+                    "enrollment_id": e["enrollment_id"],
+                    "course_title": f"Diploma: {e.get('track_title', '')}",
+                    "amount": e.get("installment_2_amount", 0),
+                    "status": inst2_status,
+                    "is_diploma": True,
                 })
     return notifications
 

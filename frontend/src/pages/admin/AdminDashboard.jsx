@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminStats } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
-import { GraduationCap, Users, BookOpen, CreditCard, Star, MessageSquare, ArrowRight, Shield, LogOut, Home, BarChart3, TrendingUp, Calendar, CheckCircle2, FileText } from 'lucide-react';
+import { GraduationCap, Users, BookOpen, CreditCard, Star, MessageSquare, ArrowRight, Shield, LogOut, Home, BarChart3, TrendingUp, Calendar, CheckCircle2, FileText, Award } from 'lucide-react';
 
 const NAV = [
   { to: '/admin', icon: BarChart3, label: 'Dashboard' },
@@ -10,6 +10,7 @@ const NAV = [
   { to: '/admin/students', icon: Users, label: 'Students' },
   { to: '/admin/enrollments', icon: CreditCard, label: 'Payments' },
   { to: '/admin/admissions', icon: FileText, label: 'Admissions' },
+  { to: '/admin/diploma-students', icon: Award, label: 'Diploma' },
 ];
 
 export default function AdminDashboard() {

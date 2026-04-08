@@ -31,6 +31,7 @@ import AdminStudents from "./pages/admin/AdminStudents";
 import AdminEnrollments from "./pages/admin/AdminEnrollments";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminAdmissions from "./pages/admin/AdminAdmissions";
+import AdminDiplomaStudents from "./pages/admin/AdminDiplomaStudents";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";
@@ -87,6 +88,7 @@ function AppRouter() {
           <Route path="/admin/students" element={<ProtectedRoute requireAdmin><AdminStudents /></ProtectedRoute>} />
           <Route path="/admin/enrollments" element={<ProtectedRoute requireAdmin><AdminEnrollments /></ProtectedRoute>} />
           <Route path="/admin/admissions" element={<ProtectedRoute requireAdmin><AdminAdmissions /></ProtectedRoute>} />
+          <Route path="/admin/diploma-students" element={<ProtectedRoute requireAdmin><AdminDiplomaStudents /></ProtectedRoute>} />
         </Routes>
       </main>
       {!isDashboard && <Footer />}
