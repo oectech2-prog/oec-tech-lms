@@ -52,4 +52,15 @@ export const getStudentProgress = (userId) => api.get(`/admin/students/${userId}
 // Admin Auth
 export const adminLogin = (password) => api.post('/admin/login', { password });
 
+// Student uploads
+export const studentUpload = (file) => {
+  const fd = new FormData();
+  fd.append('file', file);
+  return api.post('/student/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+};
+
+// Admission form
+export const submitAdmissionForm = (data) => api.post('/admission-form', data);
+export const getAdmissionForms = () => api.get('/admin/admission-forms');
+
 export default api;

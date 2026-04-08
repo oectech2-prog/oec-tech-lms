@@ -790,6 +790,72 @@ async def upload_file(file: UploadFile = File(...), authorization: str = Header(
     })
     return {"path": result["path"], "url": f"/api/files/{result['path']}"}
 
+@api_router.post("/student/upload")
+async def student_upload_file(file: UploadFile = File(...), authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    ext = file.filename.split(".")[-1] if "." in file.filename else "bin"
+    path = f"{APP_NAME}/student_docs/{user.user_id}/{uuid.uuid4()}.{ext}"
+    data = await file.read()
+    if len(data) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 5MB)")
+    result = put_object(path, data, file.content_type or "application/octet-stream")
+    await db.files.insert_one({
+        "file_id": str(uuid.uuid4()),
+        "storage_path": result["path"],
+        "original_filename": file.filename,
+        "content_type": file.content_type,
+        "size": result["size"],
+        "is_deleted": False,
+        "uploaded_by": user.user_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    return {"path": result["path"], "url": f"/api/files/{result['path']}"}
+
+# ============ ADMISSION FORM ============
+
+@api_router.post("/admission-form")
+async def submit_admission_form(data: dict, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    form_id = f"form_{uuid.uuid4().hex[:10]}"
+    student_id = f"OEC-{datetime.now(timezone.utc).strftime('%Y')}-{str(await db.admission_forms.count_documents({}) + 1).zfill(4)}"
+    form_doc = {
+        "form_id": form_id,
+        "student_id": student_id,
+        "user_id": user.user_id,
+        "course_id": data.get("course_id"),
+        "full_name": data.get("full_name", ""),
+        "qualification": data.get("qualification", ""),
+        "phone": data.get("phone", ""),
+        "date_of_birth": data.get("date_of_birth", ""),
+        "address": data.get("address", ""),
+        "gender": data.get("gender", ""),
+        "session_type": data.get("session_type", ""),
+        "learning_type": data.get("learning_type", ""),
+        "religion": data.get("religion", ""),
+        "city": data.get("city", ""),
+        "father_name": data.get("father_name", ""),
+        "father_phone": data.get("father_phone", ""),
+        "father_cnic": data.get("father_cnic", ""),
+        "id_card_front_url": data.get("id_card_front_url", ""),
+        "id_card_back_url": data.get("id_card_back_url", ""),
+        "last_degree_url": data.get("last_degree_url", ""),
+        "bform_url": data.get("bform_url", ""),
+        "receipt_url": data.get("receipt_url", ""),
+        "joining_date": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.admission_forms.insert_one(form_doc)
+    return {"form_id": form_id, "student_id": student_id}
+
+@api_router.get("/admin/admission-forms")
+async def get_admission_forms(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    forms = await db.admission_forms.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    for f in forms:
+        course = await db.courses.find_one({"course_id": f.get("course_id")}, {"_id": 0})
+        f["course_title"] = course["title"] if course else f.get("course_id", "")
+    return forms
+
 @api_router.get("/files/{path:path}")
 async def download_file(path: str):
     record = await db.files.find_one({"storage_path": path, "is_deleted": False})
