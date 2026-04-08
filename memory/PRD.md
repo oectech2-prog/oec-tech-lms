@@ -10,81 +10,56 @@
 
 ## What's Been Implemented
 
-### Phase 1 - MVP
-- 8 courses with weekly structure, assignments, final projects
-- 3 diploma tracks with career roadmaps
-- Student dashboard, Google OAuth
+### Phase 1-3: MVP, Brand, Pricing, Policies
+- 8 courses + 3 diploma tracks, Google OAuth, Certificate PDF
+- 3D Hero, Framer Motion, WhatsApp chat, Google Maps
+- Course/Admission fees, Policy pages
 
-### Phase 2 - Brand & UI
-- Brand: OEC Tech Institute
-- 3D Hero Image, Framer Motion animations, Swiper reviews carousel
-- Fee Receipt Upload, Certificate PDF (jsPDF)
-- Preloader, ScrollToTop, WhatsApp chat widget, Sticky header
+### Phase 4: Admin Panel
+- Password login (bcrypt), Dashboard, Student/Payment/Course CRUD
 
-### Phase 3 - Pricing & Policies
-- Course fee + Admission fee for all 8 courses
-- Enroll Now + View Details buttons on all course cards
-- Diploma Track Checkout with total investment breakdown
-- Privacy Policy, Terms of Service, Refund Policy pages
-- Google Maps on Home and Contact pages
+### Phase 5-6: Admission Form & Installments
+- 4-step checkout (Form → Documents → Payment → Confirm)
+- 2-installment system: Admission Fee + 1st Inst upfront, 2nd Inst at halfway
+- Dashboard notifications for 2nd installment
 
-### Phase 4 - Admin Panel
-- Admin Password Login (bcrypt), Dashboard stats, Student/Payment/Course management
-- Security: All admin routes protected with session cookies
+### Phase 7: Profile & Polish
+- Student profile edit (name + picture upload)
+- OEC Tech branding, mobile responsive admin nav
 
-### Phase 5 - Admission Form & Document Uploads
-- Multi-Step Checkout: 4 steps - Admission Form, Documents, Payment, Confirm
-- Document Uploads: ID Card (front/back), Last Degree, B-Form
-- Admin Admissions Page: View all forms with search + detail modal
+### Phase 8: Diploma Track Checkout
+- Same 4-step process for diploma tracks
+- Auto-enrollment in all track courses on approval
 
-### Phase 6 - Installment Payment System
-- Fee Structure: Course fee split into 2 equal installments
-- Checkout Step 3: Two upload areas (Admission Fee + 1st Installment)
-- Dashboard Notifications: 2nd installment due alerts
-- Admin Enrollments: Installment tracking + approve/reject
+### Phase 9: Advanced Admin Dashboard & Defaulters (April 8, 2026)
+- **Dashboard Stats (12 cards):**
+  - Row 1: Courses, Students, Diploma Students, Enrollments, Pending, Defaulters
+  - Row 2: Admission+1st Installment revenue, 2nd Installment revenue, Monthly Revenue (month name), New Students (month name)
+  - Row 3: Approved Students, Pending Approval
+- **Growth Chart**: 6-month bar chart (students vs enrollments)
+- **Quick Actions**: Manage Courses, Manage Diploma Tracks, Manage Students, Manage Payments
+- **Defaulters Page** (`/admin/defaulters`):
+  - Lists students with overdue 2nd installment
+  - Deactivate (removes course access) / Re-activate actions
+  - Search functionality
+- **Admissions Modal**: Shows 3 fee screenshots (Admission Fee, 1st Installment, 2nd Installment)
+- **Student Dashboard**: Status badge (Active/Pending/Not Enrolled) + overall learning progress % bar
+- **Admin Nav**: 7 items (Dashboard, Courses, Students, Payments, Admissions, Diploma, Defaulters)
+- Mobile responsive across all pages
 
-### Phase 7 - Profile & Admin Polish
-- Student Profile Edit: Name change + profile picture upload
-- Admin Fee Screenshots: Clickable view modal for all proof images
-- OEC Tech branding on all admin pages
-- Mobile responsive admin navigation on all pages
-
-### Phase 8 - Diploma Track Checkout & Admin (April 8, 2026)
-- **Diploma 4-Step Checkout**: Same process as courses at `/checkout/track/:trackId`
-  - Step 1: Admission Form (personal + parent details)
-  - Step 2: Document uploads (ID, degree, B-form)
-  - Step 3: Payment with installment breakdown + 2 screenshot uploads
-  - Step 4: Review & confirm
-- **Installment Calculation**: Total course fees across all diploma courses / 2
-  - Pay Now = Total Admission Fees + 1st Installment
-  - 2nd Installment due at halfway through total course weeks
-- **Admin Diploma Students Page** (`/admin/diploma-students`):
-  - List all diploma enrollments with student info
-  - Filter tabs: All, Pending, Approved, Rejected
-  - Approve/Reject payments, 2nd installment management
-  - Fee screenshot viewing (Adm Fee, 1st Inst, 2nd Inst)
-- **Admin Sidebar**: Now 6 items (Dashboard, Courses, Students, Payments, Admissions, Diploma)
-- **Auto-Course-Enrollment**: When admin approves diploma payment, student automatically gets enrolled in all track courses
-
-## Enrollment Flows
-
-### Course Enrollment
-1. Student fills admission form → uploads documents → pays admission + 1st installment
-2. Admin approves → course unlocks
-3. At halfway → 2nd installment notification → student pays → admin approves
-
-### Diploma Enrollment
-1. Student fills admission form → uploads documents → pays admission + 1st installment (total across all courses)
-2. Admin approves → all track courses unlock automatically
-3. At halfway → 2nd installment notification → student pays → admin approves
+## Admin Panel Pages
+1. `/admin` - Dashboard (stats, chart, quick actions)
+2. `/admin/courses` - Course CRUD
+3. `/admin/students` - Student management
+4. `/admin/enrollments` - Payment verification + installment management
+5. `/admin/admissions` - Admission form review + fee screenshots
+6. `/admin/diploma-students` - Diploma enrollment management
+7. `/admin/defaulters` - Overdue 2nd installment students
 
 ## Backlog
 ### P1
 - Resend email integration (needs API key from user)
-
 ### P2
-- Refactor server.py (~1200 lines - split into route modules)
-- Course progress analytics charts
-
+- Refactor server.py (~1350 lines - split into route modules)
 ### P3
 - Student messaging, instructor profiles, SEO
