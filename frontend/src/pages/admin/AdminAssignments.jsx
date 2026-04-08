@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminAssignments, reviewAssignment } from '../../lib/api';
 import { toast } from 'sonner';
-import { GraduationCap, Users, BookOpen, CreditCard, BarChart3, LogOut, FileText, Award, AlertTriangle, Search, CheckCircle2, XCircle, Clock, X, Eye, MessageSquare, Link2, Upload } from 'lucide-react';
+import { GraduationCap, Users, BookOpen, CreditCard, BarChart3, LogOut, FileText, Award, AlertTriangle, Search, CheckCircle2, XCircle, Clock, X, Eye, MessageSquare, Link2, Upload, Download, ExternalLink, FileIcon, FileSpreadsheet, FileImage as FileImgIcon } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -17,6 +17,34 @@ const NAV = [
   { to: '/admin/defaulters', icon: AlertTriangle, label: 'Defaulters' },
   { to: '/admin/assignments', icon: FileText, label: 'Assignments' },
 ];
+
+const getFileIcon = (filename) => {
+  if (!filename) return FileIcon;
+  const ext = filename.split('.').pop()?.toLowerCase();
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext)) return FileImgIcon;
+  if (['xls', 'xlsx', 'csv'].includes(ext)) return FileSpreadsheet;
+  return FileIcon;
+};
+
+const getFileName = (content, originalFilename) => {
+  if (originalFilename) return originalFilename;
+  const match = content?.match(/\[File:\s*(.+?)\]/);
+  return match ? match[1] : 'Uploaded file';
+};
+
+const getContentPreview = (a) => {
+  if (a.submission_type === 'file') {
+    return getFileName(a.content, a.original_filename);
+  }
+  if (a.submission_type === 'link') {
+    try {
+      return new URL(a.content).hostname;
+    } catch {
+      return a.content?.substring(0, 40) || '';
+    }
+  }
+  return a.content?.substring(0, 60) || '';
+};
 
 export default function AdminAssignments() {
   const { logout } = useAuth();
@@ -120,6 +148,7 @@ export default function AdminAssignments() {
             {filtered.map(a => {
               const statusColor = a.status === 'approved' ? 'bg-green-500/10 text-green-400' : a.status === 'rejected' ? 'bg-red-500/10 text-red-400' : 'bg-yellow-500/10 text-yellow-400';
               const StatusIcon = a.status === 'approved' ? CheckCircle2 : a.status === 'rejected' ? XCircle : Clock;
+              const preview = getContentPreview(a);
               return (
                 <div key={a.submission_id} data-testid={`assignment-${a.submission_id}`} className="bg-[#111111] border border-[#27272A] rounded-xl p-4">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
@@ -137,7 +166,8 @@ export default function AdminAssignments() {
                         </span>
                       </div>
                       <p className="text-[10px] text-[#A1A1AA]">{a.course_title} - Week {a.week_number}</p>
-                      <p className="text-[10px] text-[#71717A] mt-0.5">{formatDate(a.submitted_at)}</p>
+                      {preview && <p className="text-[10px] text-[#71717A] mt-0.5 truncate max-w-md">{preview}</p>}
+                      <p className="text-[10px] text-[#52525B] mt-0.5">{formatDate(a.submitted_at)}</p>
                     </div>
                     <div className="flex gap-2 shrink-0">
                       <button data-testid={`view-assignment-${a.submission_id}`} onClick={() => { setViewModal(a); setFeedback(''); }}
@@ -167,7 +197,7 @@ export default function AdminAssignments() {
           <div className="bg-[#111111] border border-[#27272A] rounded-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-white">Assignment Submission</h3>
-              <button onClick={() => setViewModal(null)} className="text-[#A1A1AA] hover:text-white"><X className="w-5 h-5" /></button>
+              <button data-testid="close-assignment-modal" onClick={() => setViewModal(null)} className="text-[#A1A1AA] hover:text-white"><X className="w-5 h-5" /></button>
             </div>
 
             <div className="space-y-3 mb-4">
@@ -179,21 +209,73 @@ export default function AdminAssignments() {
                 <p className="text-[10px] text-[#71717A]">Course / Week</p>
                 <p className="text-xs text-white font-semibold">{viewModal.course_title} - Week {viewModal.week_number}</p>
               </div>
+
+              {/* Submission Content */}
               <div className="bg-[#0A0A0A] rounded-lg p-3">
-                <p className="text-[10px] text-[#71717A]">Type: {viewModal.submission_type || 'text'}</p>
+                <p className="text-[10px] text-[#71717A] mb-2">
+                  Submission ({viewModal.submission_type || 'text'})
+                </p>
+
                 {viewModal.submission_type === 'file' && viewModal.file_url ? (
-                  <a href={`${API}${viewModal.file_url}`} target="_blank" rel="noreferrer" className="text-xs text-[#D4AF37] underline mt-1 block">Download File</a>
+                  <div className="space-y-2">
+                    {(() => {
+                      const fname = getFileName(viewModal.content, viewModal.original_filename);
+                      const FIcon = getFileIcon(fname);
+                      const downloadUrl = `${API}${viewModal.file_url}`;
+                      const ext = fname.split('.').pop()?.toLowerCase();
+                      const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext);
+                      return (
+                        <>
+                          <div className="flex items-center gap-3 p-3 bg-[#111111] border border-[#27272A] rounded-lg">
+                            <FIcon className="w-8 h-8 text-[#D4AF37] shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-white font-medium truncate">{fname}</p>
+                              <p className="text-[10px] text-[#71717A] uppercase">{ext} file</p>
+                            </div>
+                          </div>
+                          {isImage && (
+                            <div className="rounded-lg overflow-hidden border border-[#27272A]">
+                              <img src={downloadUrl} alt="Submission" className="w-full max-h-64 object-contain bg-[#050505]" />
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <a href={downloadUrl} target="_blank" rel="noreferrer" data-testid="download-assignment-file"
+                              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg text-xs font-semibold hover:bg-[#D4AF37]/20 transition-colors">
+                              <Download className="w-4 h-4" /> Download File
+                            </a>
+                            <a href={downloadUrl} target="_blank" rel="noreferrer" data-testid="view-assignment-file"
+                              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white/5 text-white rounded-lg text-xs font-semibold hover:bg-white/10 transition-colors">
+                              <ExternalLink className="w-4 h-4" /> Open
+                            </a>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
                 ) : viewModal.submission_type === 'link' ? (
-                  <a href={viewModal.content} target="_blank" rel="noreferrer" className="text-xs text-[#D4AF37] underline mt-1 block break-all">{viewModal.content}</a>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-3 bg-[#111111] border border-[#27272A] rounded-lg">
+                      <Link2 className="w-6 h-6 text-blue-400 shrink-0" />
+                      <p className="text-xs text-blue-400 break-all flex-1">{viewModal.content}</p>
+                    </div>
+                    <a href={viewModal.content} target="_blank" rel="noreferrer" data-testid="open-assignment-link"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-blue-500/10 text-blue-400 rounded-lg text-xs font-semibold hover:bg-blue-500/20 transition-colors">
+                      <ExternalLink className="w-4 h-4" /> Open Link
+                    </a>
+                  </div>
                 ) : (
-                  <p className="text-xs text-white mt-1 whitespace-pre-wrap">{viewModal.content}</p>
+                  <div className="p-3 bg-[#111111] border border-[#27272A] rounded-lg">
+                    <p className="text-xs text-white whitespace-pre-wrap leading-relaxed">{viewModal.content}</p>
+                  </div>
                 )}
               </div>
+
               <div className="bg-[#0A0A0A] rounded-lg p-3">
                 <p className="text-[10px] text-[#71717A]">Status</p>
                 <span className={`text-xs font-semibold ${viewModal.status === 'approved' ? 'text-green-400' : viewModal.status === 'rejected' ? 'text-red-400' : 'text-yellow-400'}`}>
                   {viewModal.status}
                 </span>
+                {viewModal.reviewed_at && <p className="text-[10px] text-[#52525B] mt-1">Reviewed: {formatDate(viewModal.reviewed_at)}</p>}
               </div>
               {viewModal.feedback && (
                 <div className="bg-[#0A0A0A] rounded-lg p-3">
