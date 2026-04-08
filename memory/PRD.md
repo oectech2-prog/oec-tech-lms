@@ -7,66 +7,68 @@ Complete e-learning website with student dashboard, admin panel, Google auth, an
 - Frontend: React + Tailwind CSS + Shadcn UI + Framer Motion + Swiper
 - Backend: FastAPI + MongoDB (Motor async driver)
 - Auth: Google OAuth (Emergent-managed)
-- Storage: Emergent Object Storage
 - Theme: Black (#050505), White, Gold (#D4AF37)
-
-## User Personas
-1. **Students** (Pakistan, UAE, UK, USA) - Learn digital skills, access courses, submit assignments
-2. **Admin** - Manage courses, students, enrollments, approve payments
 
 ## What's Been Implemented
 
-### Phase 1 (April 7, 2026) - MVP
-- 7 courses with weekly structure
-- 3 diploma tracks
+### Phase 1 - MVP
+- 8 courses with weekly structure, assignments, and final projects
+- 3 diploma tracks with career roadmaps
 - Student dashboard, admin panel
-- Google OAuth, payment (MOCKED)
+- Google OAuth, payment flow (JazzCash, EasyPaisa, Soneri Bank)
 
-### Phase 2 (April 7, 2026) - Enhancements
-- **Brand rename**: Hussnain Digital Academy -> OEC Tech Institute
-- **3D Hero Image**: Animated 3D laptop PNG with floating glass badges
-- **Fee Receipt Upload**: Students upload payment screenshot for admin verification
-- **Enhanced Animations**: Framer Motion throughout all pages
-- **CSS Polish**: Button shimmer, smooth transitions, glass hover glow
+### Phase 2 - Brand & UI
+- Brand: OEC Tech Institute
+- 3D Hero Image with floating glass badges
+- Fee Receipt Upload for admin verification
+- Framer Motion animations throughout
 
-### Phase 3 (April 7, 2026) - Latest Enhancements
-- **Sticky Header**: Scroll-aware header that hides on scroll down, shows on scroll up
-- **100+ Student Reviews**: 104 seeded reviews (80 PK, 9 AE, 8 GB, 7 US) with Swiper carousel
-- **Certificate System**: PDF generation for completed courses via jsPDF
-- **Email Framework**: Resend-based payment approval emails (MOCKED - awaiting API key)
-- **Preloader**: Branded loading screen with gold spinner
-- **ScrollToTop**: Floating button appears after 400px scroll
-- **Button Styling**: Added btn-gold and btn-gold-outline CSS utility classes
-- **Lazy Loading**: All images use loading="lazy" (hero uses "eager")
-- **Performance**: Optimized image rendering across all pages
+### Phase 3 - Features
+- Sticky header (scroll-aware show/hide)
+- 104 student reviews with Swiper carousel
+- Certificate PDF generation (jsPDF)
+- Email framework (Resend - MOCKED, awaiting API key)
+- Preloader, ScrollToTop, WhatsApp chat widget
 
-## Prioritized Backlog
+### Phase 4 - Pricing & Policies (April 8, 2026)
+- **Course Pricing**: Course fee + Admission fee for all 8 courses
+- **Enroll Now Button**: Added to all course cards on Courses page
+- **Diploma Track Checkout**: /checkout/track/{id} with total investment breakdown
+- **Privacy Policy**: /privacy-policy
+- **Terms of Service**: /terms-of-service
+- **Refund Policy**: /refund-policy with bank details and refund rules
+- **Footer**: Links to all policy pages
 
-### P0 (Done)
-- All public pages (Home, Courses, CourseDetail, DiplomaTracks, Reviews, About, Contact, FAQ)
-- Student dashboard with course progress tracking
-- Admin panel (Dashboard, Courses, Students, Enrollments)
-- Auth system (Google OAuth)
-- Course structure (weekly modules, assignments, final projects)
-- Brand rename to OEC Tech Institute
-- 3D hero section with floating badges
-- Fee receipt upload
-- Enhanced animations (Framer Motion)
-- Sticky header navigation
-- 100+ student reviews with Swiper carousel
-- Certificate generation (PDF)
-- Preloader and ScrollToTop
-- Button styling (btn-gold, btn-gold-outline)
-- Lazy loading on images
-- Performance optimizations
+## Course Pricing
+| Course | Course Fee | Admission Fee | Total |
+|--------|-----------|---------------|-------|
+| Computer Applications | 6,000 | 1,000 | 7,000 |
+| Graphic Designing | 12,000 | 1,000 | 13,000 |
+| Social Media Marketing | 12,000 | 1,000 | 13,000 |
+| WordPress Web Dev | 12,000 | 1,000 | 13,000 |
+| Shopify Dropshipping | 16,000 | 2,000 | 18,000 |
+| Amazon Virtual Assistant | 20,000 | 2,000 | 22,000 |
+| eBay Virtual Assistant | 20,000 | 2,000 | 22,000 |
+| YouTube & TikTok Automation | 12,000 | 1,000 | 13,000 |
 
-### P1 (Next)
-- Resend email integration (needs API key from user)
-- Admin course creation/editing form UI
+## Bank Details
+- JazzCash: 983012259 (OEC Tech Institute)
+- EasyPaisa: 0300-1413747 (Sadam Mubarak)
+- Soneri Bank: 20016289664 (Sadam Mubarak)
 
-### P2 (Future)
-- Real payment integration
-- Course progress analytics/charts
-- Student-to-student messaging
+## Contact
+- Email: info@oectechs.com
+- Phone: 0300-0517616
+- Location: OEC Tech Institute, Chunian, Pakistan
+
+## Backlog
+### P1
+- Resend email integration (needs API key)
+- Admin course creation/editing form
+
+### P2
+- Real payment gateway integration
+- Course progress analytics
+- Student messaging
 - Instructor profiles
-- Advanced SEO (meta tags per page)
+- Advanced SEO
