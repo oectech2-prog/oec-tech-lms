@@ -107,18 +107,23 @@ export default function Courses() {
                             <span className="text-[10px] text-[#A1A1AA] block">+ PKR {course.admission_fee?.toLocaleString()} admission</span>
                           )}
                         </div>
-                        <span className="text-sm font-semibold text-[#D4AF37] flex items-center gap-1 group-hover:gap-2 transition-all">
+                      </div>
+                      <div className="flex gap-3 mt-4">
+                        <span
+                          data-testid={`view-details-btn-${course.course_id}`}
+                          className="btn-gold-outline flex-1 text-center py-2.5 text-sm font-bold inline-flex items-center justify-center gap-1"
+                        >
                           View Details <ArrowRight className="w-4 h-4" />
                         </span>
+                        <Link
+                          to={`/checkout/${course.course_id}`}
+                          data-testid={`enroll-btn-${course.course_id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="btn-gold flex-1 text-center py-2.5 text-sm font-bold inline-flex items-center justify-center gap-1"
+                        >
+                          <ShoppingCart className="w-4 h-4" /> Enroll Now
+                        </Link>
                       </div>
-                      <Link
-                        to={`/checkout/${course.course_id}`}
-                        data-testid={`enroll-btn-${course.course_id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="btn-gold w-full text-center mt-4 py-2.5 text-sm font-bold inline-flex items-center justify-center gap-2"
-                      >
-                        <ShoppingCart className="w-4 h-4" /> Enroll Now
-                      </Link>
                     </div>
                   </Link>
                 </motion.div>
