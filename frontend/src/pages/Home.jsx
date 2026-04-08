@@ -108,12 +108,12 @@ export default function Home() {
                 Master in-demand digital skills with practical, weekly-structured courses. Join thousands of students from Pakistan, UAE, UK & USA who are now earning online.
               </motion.p>
 
-              <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-4 mb-10">
-                <Link to="/courses" data-testid="hero-enroll-btn" className="btn-gold px-8 py-4 text-sm inline-flex items-center gap-2 group">
-                  Enroll Now <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <motion.div variants={fadeUp} custom={3} className="flex flex-wrap gap-3 mb-10">
+                <Link to="/courses" data-testid="hero-enroll-btn" className="btn-gold px-6 py-3 text-sm">
+                  Enroll Now
                 </Link>
-                <Link to="/courses" data-testid="hero-view-courses-btn" className="btn-gold-outline px-8 py-4 text-sm inline-flex items-center gap-2 group">
-                  <Play className="w-4 h-4 group-hover:scale-110 transition-transform" /> View Courses
+                <Link to="/courses" data-testid="hero-view-courses-btn" className="btn-gold-outline px-6 py-3 text-sm">
+                  View Courses
                 </Link>
               </motion.div>
 
@@ -265,7 +265,25 @@ export default function Home() {
                         <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {course.duration}</span>
                         <span className="flex items-center gap-1"><BookOpen className="w-3.5 h-3.5" /> {course.weeks?.length || 0}W</span>
                       </div>
-                      <span className="text-xl font-bold text-[#D4AF37]">PKR {course.price?.toLocaleString()}</span>
+                      <div className="text-right">
+                        <span className="text-lg font-bold text-[#D4AF37]">PKR {course.price?.toLocaleString()}</span>
+                        {course.admission_fee > 0 && (
+                          <span className="text-[10px] text-[#A1A1AA] block">+ PKR {course.admission_fee?.toLocaleString()} admission</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <span className="btn-gold-outline flex-1 text-center py-2 text-xs font-bold">
+                        View Details
+                      </span>
+                      <Link
+                        to={`/checkout/${course.course_id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        data-testid={`home-enroll-btn-${course.course_id}`}
+                        className="btn-gold flex-1 text-center py-2 text-xs font-bold"
+                      >
+                        Enroll Now
+                      </Link>
                     </div>
                   </div>
                 </Link>
@@ -273,8 +291,8 @@ export default function Home() {
             ))}
           </div>
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mt-12">
-            <Link to="/courses" data-testid="view-all-courses-btn" className="btn-gold-outline px-8 py-3 text-sm inline-flex items-center gap-2 group">
-              View All Courses <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <Link to="/courses" data-testid="view-all-courses-btn" className="btn-gold-outline px-6 py-2.5 text-sm">
+              View All Courses
             </Link>
           </motion.div>
         </div>
@@ -370,8 +388,8 @@ export default function Home() {
               ))}
             </div>
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-12">
-              <Link to="/reviews" data-testid="view-all-reviews-btn" className="btn-gold-outline px-8 py-3 text-sm inline-flex items-center gap-2 group">
-                View All Reviews <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <Link to="/reviews" data-testid="view-all-reviews-btn" className="btn-gold-outline px-6 py-2.5 text-sm">
+                View All Reviews
               </Link>
             </motion.div>
           </div>
@@ -410,10 +428,10 @@ export default function Home() {
             Don't wait. Join 2,500+ students who are already earning online with real digital skills. Lifetime access, practical training, weekly assignments.
           </motion.p>
           <motion.div variants={fadeUp} custom={3} className="flex flex-wrap justify-center gap-4">
-            <Link to="/courses" data-testid="cta-enroll-btn" className="btn-gold px-8 py-4 text-sm inline-flex items-center gap-2 group animate-gold-pulse">
-              Enroll Now <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <Link to="/courses" data-testid="cta-enroll-btn" className="btn-gold px-6 py-3 text-sm">
+              Enroll Now
             </Link>
-            <a href="https://wa.me/923000517616" target="_blank" rel="noopener noreferrer" data-testid="cta-whatsapp-btn" className="btn-gold-outline px-8 py-4 text-sm inline-flex items-center gap-2">
+            <a href="https://wa.me/923000517616" target="_blank" rel="noopener noreferrer" data-testid="cta-whatsapp-btn" className="btn-gold-outline px-6 py-3 text-sm">
               Ask on WhatsApp
             </a>
           </motion.div>
@@ -455,7 +473,7 @@ export default function Home() {
               data-testid="home-map-directions-link"
               className="text-sm text-[#D4AF37] hover:text-[#FBBF24] transition-colors inline-flex items-center gap-1 group"
             >
-              Get Directions <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              Get Directions
             </a>
           </motion.div>
         </div>
@@ -502,8 +520,8 @@ export default function Home() {
             ))}
           </div>
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-8">
-            <Link to="/faq" className="text-sm text-[#D4AF37] hover:text-[#FBBF24] transition-colors inline-flex items-center gap-1 group">
-              View All FAQs <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <Link to="/faq" className="text-sm text-[#D4AF37] hover:text-[#FBBF24] transition-colors">
+              View All FAQs
             </Link>
           </motion.div>
         </div>

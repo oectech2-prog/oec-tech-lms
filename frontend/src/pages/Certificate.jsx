@@ -212,9 +212,9 @@ export default function Certificate() {
             <button
               data-testid="download-certificate-btn"
               onClick={generatePDF}
-              className="btn-gold px-8 py-4 text-sm inline-flex items-center gap-2 animate-gold-pulse"
+              className="btn-gold px-6 py-2.5 text-sm"
             >
-              <Download className="w-5 h-5" /> Download Certificate (PDF)
+              Download Certificate (PDF)
             </button>
           </div>
         </motion.div>

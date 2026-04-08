@@ -71,9 +71,9 @@ export default function CourseDetail() {
                 <Link
                   to={user ? `/checkout/${course.course_id}` : '/login'}
                   data-testid="enroll-course-btn"
-                  className="btn-gold px-8 py-3 text-sm inline-flex items-center gap-2"
+                  className="btn-gold px-6 py-2.5 text-sm"
                 >
-                  Enroll Now <ArrowRight className="w-4 h-4" />
+                  Enroll Now
                 </Link>
               </div>
             </div>
@@ -227,9 +227,9 @@ export default function CourseDetail() {
           <Link
             to={user ? `/checkout/${course.course_id}` : '/login'}
             data-testid="enroll-bottom-btn"
-            className="btn-gold px-10 py-4 text-sm inline-flex items-center gap-2"
+            className="btn-gold px-6 py-2.5 text-sm"
           >
-            Enroll for PKR {course.price?.toLocaleString()} <ArrowRight className="w-4 h-4" />
+            Enroll for PKR {course.price?.toLocaleString()}
           </Link>
         </div>
       </section>

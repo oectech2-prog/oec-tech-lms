@@ -142,9 +142,9 @@ export default function Contact() {
                 type="submit"
                 data-testid="contact-submit-btn"
                 disabled={submitting}
-                className="btn-gold px-8 py-3 text-sm inline-flex items-center gap-2 disabled:opacity-50"
+                className="btn-gold px-6 py-2.5 text-sm disabled:opacity-50"
               >
-                {submitting ? 'Sending...' : 'Send Message'} <Send className="w-4 h-4" />
+                {submitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>

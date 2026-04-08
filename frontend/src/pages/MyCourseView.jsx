@@ -257,9 +257,9 @@ export default function MyCourseView() {
                       data-testid="submit-assignment-btn"
                       onClick={() => handleSubmitAssignment(course.weeks[activeWeek].assignment.assignment_id)}
                       disabled={submitting}
-                      className="btn-gold px-6 py-2 text-sm inline-flex items-center gap-2 disabled:opacity-50"
+                      className="btn-gold px-6 py-2 text-sm disabled:opacity-50"
                     >
-                      {submitting ? 'Submitting...' : 'Submit Assignment'} <Send className="w-4 h-4" />
+                      {submitting ? 'Submitting...' : 'Submit Assignment'}
                     </button>
                   </div>
                 )}

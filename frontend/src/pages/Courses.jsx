@@ -108,20 +108,20 @@ export default function Courses() {
                           )}
                         </div>
                       </div>
-                      <div className="flex gap-3 mt-4">
+                      <div className="flex gap-2 mt-4">
                         <span
                           data-testid={`view-details-btn-${course.course_id}`}
-                          className="btn-gold-outline flex-1 text-center py-2.5 text-sm font-bold inline-flex items-center justify-center gap-1"
+                          className="btn-gold-outline flex-1 text-center py-2 text-xs font-bold"
                         >
-                          View Details <ArrowRight className="w-4 h-4" />
+                          View Details
                         </span>
                         <Link
                           to={`/checkout/${course.course_id}`}
                           data-testid={`enroll-btn-${course.course_id}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="btn-gold flex-1 text-center py-2.5 text-sm font-bold inline-flex items-center justify-center gap-1"
+                          className="btn-gold flex-1 text-center py-2 text-xs font-bold"
                         >
-                          <ShoppingCart className="w-4 h-4" /> Enroll Now
+                          Enroll Now
                         </Link>
                       </div>
                     </div>

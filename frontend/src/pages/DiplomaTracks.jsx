@@ -128,9 +128,9 @@ export default function DiplomaTracks() {
                       <Link
                         to={`/checkout/track/${track.track_id}`}
                         data-testid={`track-enroll-${track.track_id}`}
-                        className="btn-gold px-6 py-3 text-sm inline-flex items-center gap-2"
+                        className="btn-gold px-5 py-2.5 text-sm"
                       >
-                        <ShoppingCart className="w-4 h-4" /> Start This Track <ArrowRight className="w-4 h-4" />
+                        Start This Track
                       </Link>
                     </div>
                   </div>

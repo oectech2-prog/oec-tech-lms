@@ -200,8 +200,8 @@ export default function TrackCheckout() {
                     />
                   </div>
                   <button data-testid="track-proceed-confirm" onClick={() => setStep(3)} disabled={!receiptFile && !paymentRef}
-                    className="mt-4 btn-gold px-6 py-2.5 text-sm inline-flex items-center gap-2 disabled:opacity-30 disabled:cursor-not-allowed">
-                    Proceed to Confirm <ArrowRight className="w-4 h-4" />
+                    className="mt-4 btn-gold px-6 py-2.5 text-sm disabled:opacity-30 disabled:cursor-not-allowed">
+                    Proceed to Confirm
                   </button>
                 </div>
               </motion.div>
@@ -257,8 +257,7 @@ export default function TrackCheckout() {
                   whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                   data-testid="track-confirm-btn"
                   onClick={handleEnroll} disabled={enrolling || !selectedMethod}
-                  className="w-full btn-gold mt-4 py-3.5 text-sm flex items-center justify-center gap-2 disabled:opacity-50">
-                  <CreditCard className="w-4 h-4" />
+                  className="w-full btn-gold mt-4 py-3 text-sm flex items-center justify-center disabled:opacity-50">
                   {enrolling ? 'Processing...' : 'Confirm Enrollment'}
                 </motion.button>
               )}

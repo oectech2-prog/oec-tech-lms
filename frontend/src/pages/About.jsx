@@ -105,8 +105,8 @@ export default function About() {
         <div className="max-w-3xl mx-auto px-6 md:px-12 text-center">
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Start Your Career Today</h2>
           <p className="text-[#A1A1AA] mb-8">Join 2,500+ students already earning online with OEC Tech Institute.</p>
-          <Link to="/courses" className="btn-gold px-8 py-4 text-sm inline-flex items-center gap-2">
-            Browse Courses <ArrowRight className="w-4 h-4" />
+          <Link to="/courses" className="btn-gold px-6 py-2.5 text-sm">
+            Browse Courses
           </Link>
         </div>
       </section>
