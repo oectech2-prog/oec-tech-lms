@@ -286,6 +286,24 @@ async def logout(authorization: str = Header(None), session_token: str = Cookie(
     response.delete_cookie(key="session_token", path="/")
     return response
 
+class ProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    picture: Optional[str] = None
+
+@api_router.put("/profile")
+async def update_profile(data: ProfileUpdate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    update_fields = {}
+    if data.name and data.name.strip():
+        update_fields["name"] = data.name.strip()
+    if data.picture is not None:
+        update_fields["picture"] = data.picture
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="Nothing to update")
+    await db.users.update_one({"user_id": user.user_id}, {"$set": update_fields})
+    updated = await db.users.find_one({"user_id": user.user_id}, {"_id": 0})
+    return updated
+
 # ============ ADMIN PASSWORD AUTH ============
 
 ADMIN_PASSWORD_HASH = bcrypt.hashpw(b"OEC@Admin#2026!Secure", bcrypt.gensalt()).decode()

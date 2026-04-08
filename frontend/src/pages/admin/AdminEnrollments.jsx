@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminEnrollments, updateEnrollmentStatus, adminApproveInstallment2 } from '../../lib/api';
 import { toast } from 'sonner';
-import { GraduationCap, Users, BookOpen, CreditCard, CheckCircle2, XCircle, Clock, BarChart3, LogOut, Search, Eye, Filter, FileText } from 'lucide-react';
+import { GraduationCap, Users, BookOpen, CreditCard, CheckCircle2, XCircle, Clock, BarChart3, LogOut, Search, Eye, Filter, FileText, X, Image } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 
 const NAV = [
@@ -52,6 +52,8 @@ export default function AdminEnrollments() {
     }
   };
 
+  const [screenshotModal, setScreenshotModal] = useState(null);
+
   const filtered = enrollments.filter(e => {
     const status = e.enrollment?.payment_status;
     if (filter !== 'all' && status !== filter) return false;
@@ -77,7 +79,7 @@ export default function AdminEnrollments() {
         <div className="p-5 border-b border-[#27272A]">
           <Link to="/" className="flex items-center gap-2">
             <GraduationCap className="w-6 h-6 text-[#D4AF37]" />
-            <span className="text-sm font-bold text-white">Admin <span className="text-[#D4AF37]">Panel</span></span>
+            <span className="text-sm font-bold text-white">OEC <span className="text-[#D4AF37]">Tech</span></span>
           </Link>
         </div>
         <nav className="flex-1 p-3 space-y-1">
@@ -92,7 +94,18 @@ export default function AdminEnrollments() {
         </div>
       </aside>
 
-      <main className="flex-1 p-6 md:p-8 overflow-auto">
+      <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
+        <div className="md:hidden flex items-center justify-between mb-4 overflow-x-auto">
+          <div className="flex items-center gap-2 shrink-0">
+            <GraduationCap className="w-5 h-5 text-[#D4AF37]" />
+            <span className="text-sm font-bold text-white">OEC <span className="text-[#D4AF37]">Tech</span></span>
+          </div>
+          <div className="flex gap-1">
+            {NAV.map(({ to, label }) => (
+              <Link key={to} to={to} className={`p-2 rounded-lg text-[10px] whitespace-nowrap ${to === '/admin/enrollments' ? 'text-[#D4AF37] bg-white/5' : 'text-[#A1A1AA] hover:bg-white/5'}`}>{label}</Link>
+            ))}
+          </div>
+        </div>
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-white">Payments & Enrollments</h1>
           <div className="relative w-56">
@@ -155,9 +168,27 @@ export default function AdminEnrollments() {
                           2nd Inst: PKR {(enrollment?.installment_2_amount || 0).toLocaleString()} ({enrollment?.installment_2_status || 'pending'})
                         </span>
                       </div>
-                      {enrollment?.payment_proof && (
-                        <p className="text-[10px] text-[#D4AF37] mt-1 truncate">Proof: {enrollment.payment_proof}</p>
-                      )}
+                      {/* Fee Screenshots */}
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {enrollment?.admission_fee_proof && (
+                          <button data-testid={`view-adm-fee-${enrollment?.enrollment_id}`} onClick={() => setScreenshotModal({ url: enrollment.admission_fee_proof, label: 'Admission Fee Screenshot' })}
+                            className="flex items-center gap-1 px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded text-[10px] font-semibold hover:bg-[#D4AF37]/20 transition-colors">
+                            <Image className="w-3 h-3" /> Adm Fee
+                          </button>
+                        )}
+                        {enrollment?.installment_1_proof && (
+                          <button data-testid={`view-inst1-${enrollment?.enrollment_id}`} onClick={() => setScreenshotModal({ url: enrollment.installment_1_proof, label: '1st Installment Screenshot' })}
+                            className="flex items-center gap-1 px-2 py-1 bg-blue-500/10 text-blue-400 rounded text-[10px] font-semibold hover:bg-blue-500/20 transition-colors">
+                            <Image className="w-3 h-3" /> 1st Inst
+                          </button>
+                        )}
+                        {enrollment?.installment_2_proof && (
+                          <button data-testid={`view-inst2-${enrollment?.enrollment_id}`} onClick={() => setScreenshotModal({ url: enrollment.installment_2_proof, label: '2nd Installment Screenshot' })}
+                            className="flex items-center gap-1 px-2 py-1 bg-green-500/10 text-green-400 rounded text-[10px] font-semibold hover:bg-green-500/20 transition-colors">
+                            <Image className="w-3 h-3" /> 2nd Inst
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="flex gap-2 shrink-0">
                       {status === 'pending' && (
@@ -200,6 +231,18 @@ export default function AdminEnrollments() {
           </div>
         )}
       </main>
+      {/* Screenshot Modal */}
+      {screenshotModal && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center px-4" onClick={() => setScreenshotModal(null)}>
+          <div className="bg-[#111111] border border-[#27272A] rounded-2xl w-full max-w-lg p-5" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-white">{screenshotModal.label}</h3>
+              <button data-testid="close-screenshot-modal" onClick={() => setScreenshotModal(null)} className="text-[#A1A1AA] hover:text-white"><X className="w-5 h-5" /></button>
+            </div>
+            <img src={screenshotModal.url} alt={screenshotModal.label} className="w-full max-h-[70vh] object-contain rounded-lg border border-[#27272A]" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

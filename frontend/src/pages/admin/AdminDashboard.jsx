@@ -26,7 +26,7 @@ export default function AdminDashboard() {
         <div className="p-5 border-b border-[#27272A]">
           <Link to="/" className="flex items-center gap-2">
             <GraduationCap className="w-6 h-6 text-[#D4AF37]" />
-            <span className="text-sm font-bold text-white">Admin <span className="text-[#D4AF37]">Panel</span></span>
+            <span className="text-sm font-bold text-white">OEC <span className="text-[#D4AF37]">Tech</span></span>
           </Link>
         </div>
         <nav className="flex-1 p-3 space-y-1">
@@ -47,11 +47,11 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      <main className="flex-1 p-6 md:p-8 overflow-auto">
-        <div className="md:hidden flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[#D4AF37]" />
-            <span className="text-sm font-bold text-white">Admin</span>
+      <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-auto">
+        <div className="md:hidden flex items-center justify-between mb-6 overflow-x-auto">
+          <div className="flex items-center gap-2 shrink-0">
+            <GraduationCap className="w-5 h-5 text-[#D4AF37]" />
+            <span className="text-sm font-bold text-white">OEC <span className="text-[#D4AF37]">Tech</span></span>
           </div>
           <div className="flex gap-1">
             {NAV.map(({ to, label }) => (

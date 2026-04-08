@@ -13,6 +13,7 @@ const api = axios.create({
 export const exchangeSession = (sessionId) => api.post('/auth/session', { session_id: sessionId });
 export const getMe = () => api.get('/auth/me');
 export const logout = () => api.post('/auth/logout');
+export const updateProfile = (data) => api.put('/profile', data);
 
 // Courses
 export const getCourses = () => api.get('/courses');
