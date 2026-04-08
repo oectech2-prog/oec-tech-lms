@@ -81,4 +81,8 @@ export const getDefaulters = () => api.get('/admin/defaulters');
 export const deactivateStudent = (id) => api.put(`/admin/defaulters/${id}/deactivate`);
 export const activateStudent = (id) => api.put(`/admin/defaulters/${id}/activate`);
 
+// Admin Assignments
+export const getAdminAssignments = () => api.get('/admin/assignments');
+export const reviewAssignment = (id, data) => api.put(`/admin/assignments/${id}`, data);
+
 export default api;

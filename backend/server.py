@@ -151,7 +151,9 @@ class ProgressUpdate(BaseModel):
 
 class AssignmentSubmission(BaseModel):
     assignment_id: str
-    content: str  # text answer or link
+    content: str = ""  # text answer or link
+    file_url: str = ""  # uploaded file URL
+    submission_type: str = "text"  # text, link, file
 
 class ReviewCreate(BaseModel):
     course_id: Optional[str] = None
@@ -492,12 +494,26 @@ async def submit_assignment(enrollment_id: str, data: AssignmentSubmission, auth
     if enrollment["payment_status"] != "completed":
         raise HTTPException(status_code=403, detail="Payment not completed")
 
+    # Find which week this assignment belongs to
+    course = await db.courses.find_one({"course_id": enrollment["course_id"]}, {"_id": 0})
+    week_number = 0
+    if course:
+        for w in course.get("weeks", []):
+            a = w.get("assignment")
+            if a and a.get("assignment_id") == data.assignment_id:
+                week_number = w.get("week_number", 0)
+                break
+
     submission = {
         "submission_id": f"sub_{uuid.uuid4().hex[:8]}",
         "enrollment_id": enrollment_id,
         "assignment_id": data.assignment_id,
         "user_id": user.user_id,
         "content": data.content,
+        "file_url": data.file_url,
+        "submission_type": data.submission_type,
+        "week_number": week_number,
+        "course_id": enrollment["course_id"],
         "submitted_at": datetime.now(timezone.utc).isoformat(),
         "status": "submitted",
         "feedback": None
@@ -522,6 +538,49 @@ async def get_submissions(enrollment_id: str, authorization: str = Header(None),
         {"enrollment_id": enrollment_id, "user_id": user.user_id}, {"_id": 0}
     ).to_list(1000)
     return submissions
+
+# ============ ADMIN ASSIGNMENTS ============
+
+@api_router.get("/admin/assignments")
+async def get_admin_assignments(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    subs = await db.assignment_submissions.find({}, {"_id": 0}).sort("submitted_at", -1).to_list(5000)
+    result = []
+    for s in subs:
+        user = await db.users.find_one({"user_id": s["user_id"]}, {"_id": 0})
+        course = await db.courses.find_one({"course_id": s.get("course_id")}, {"_id": 0})
+        result.append({**s, "user_name": user.get("name") if user else "Unknown", "user_email": user.get("email") if user else "", "course_title": course.get("title") if course else ""})
+    return result
+
+class AssignmentReview(BaseModel):
+    status: str  # approved, rejected
+    feedback: str = ""
+
+@api_router.put("/admin/assignments/{submission_id}")
+async def review_assignment(submission_id: str, data: AssignmentReview, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    sub = await db.assignment_submissions.find_one({"submission_id": submission_id}, {"_id": 0})
+    if not sub:
+        raise HTTPException(status_code=404, detail="Submission not found")
+
+    update = {"status": data.status, "feedback": data.feedback, "reviewed_at": datetime.now(timezone.utc).isoformat()}
+    await db.assignment_submissions.update_one({"submission_id": submission_id}, {"$set": update})
+
+    # If approved, update enrollment approved_weeks so next week unlocks
+    if data.status == "approved":
+        enrollment = await db.enrollments.find_one({"enrollment_id": sub["enrollment_id"]}, {"_id": 0})
+        if enrollment:
+            approved_weeks = enrollment.get("approved_weeks", [])
+            week_num = sub.get("week_number", 0)
+            if week_num and week_num not in approved_weeks:
+                approved_weeks.append(week_num)
+                approved_weeks.sort()
+                await db.enrollments.update_one(
+                    {"enrollment_id": sub["enrollment_id"]},
+                    {"$set": {"approved_weeks": approved_weeks}}
+                )
+
+    return {"message": f"Assignment {data.status}"}
 
 # ============ DIPLOMA TRACKS ============
 

@@ -12,6 +12,7 @@ const NAV = [
   { to: '/admin/admissions', icon: FileText, label: 'Admissions' },
   { to: '/admin/diploma-students', icon: Award, label: 'Diploma' },
   { to: '/admin/defaulters', icon: AlertTriangle, label: 'Defaulters' },
+  { to: '/admin/assignments', icon: FileText, label: 'Assignments' },
 ];
 
 function GrowthChart({ data }) {
