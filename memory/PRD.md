@@ -34,42 +34,56 @@
 
 ### Phase 5 - Admission Form & Document Uploads
 - Multi-Step Checkout: 4 steps - Admission Form, Documents, Payment, Confirm
-- Admission Form: 13 fields (personal + parent/guardian details)
 - Document Uploads: ID Card (front/back), Last Degree, B-Form
 - Admin Admissions Page: View all forms with search + detail modal
 
 ### Phase 6 - Installment Payment System
-- Fee Structure: Course fee split into 2 equal installments (excl. admission fee)
-- Checkout Step 3: Shows installment breakdown, two upload areas (Adm Fee + 1st Installment)
-- 2nd Installment Due: Notification at course halfway, dashboard modal for upload
-- Admin Enrollments: Installment status tracking + approve/reject 2nd installment
+- Fee Structure: Course fee split into 2 equal installments
+- Checkout Step 3: Two upload areas (Admission Fee + 1st Installment)
+- Dashboard Notifications: 2nd installment due alerts
+- Admin Enrollments: Installment tracking + approve/reject
 
-### Phase 7 - Profile & Admin Polish (April 8, 2026)
-- **Student Profile Edit**: Name change + profile picture upload from /profile page
-  - Backend: PUT /api/profile endpoint (auth required)
-  - Frontend: Camera button overlay on avatar, inline name edit with Save button
-- **Admin Fee Screenshots**: Clickable "Adm Fee", "1st Inst", "2nd Inst" buttons in Enrollments page
-  - Opens modal with full screenshot image view
-- **Admin OEC Tech Branding**: All 5 admin pages show "OEC Tech" logo (sidebar + mobile nav)
-- **Mobile Responsive Admin**: All admin pages have mobile navigation (md:hidden horizontal nav)
-  - Responsive padding: p-4 sm:p-6 md:p-8
+### Phase 7 - Profile & Admin Polish
+- Student Profile Edit: Name change + profile picture upload
+- Admin Fee Screenshots: Clickable view modal for all proof images
+- OEC Tech branding on all admin pages
+- Mobile responsive admin navigation on all pages
 
-## Enrollment Flow
-1. Student fills admission form (personal + parent details)
-2. Student uploads documents (ID, degree, B-form)
-3. Student pays Admission Fee + 1st Installment (2 separate screenshot uploads)
-4. Admin approves -> Course unlocks, 2nd installment due date set
-5. At course halfway -> Email + Dashboard notification for 2nd installment
-6. Student uploads 2nd installment screenshot from Dashboard
-7. Admin approves 2nd installment
+### Phase 8 - Diploma Track Checkout & Admin (April 8, 2026)
+- **Diploma 4-Step Checkout**: Same process as courses at `/checkout/track/:trackId`
+  - Step 1: Admission Form (personal + parent details)
+  - Step 2: Document uploads (ID, degree, B-form)
+  - Step 3: Payment with installment breakdown + 2 screenshot uploads
+  - Step 4: Review & confirm
+- **Installment Calculation**: Total course fees across all diploma courses / 2
+  - Pay Now = Total Admission Fees + 1st Installment
+  - 2nd Installment due at halfway through total course weeks
+- **Admin Diploma Students Page** (`/admin/diploma-students`):
+  - List all diploma enrollments with student info
+  - Filter tabs: All, Pending, Approved, Rejected
+  - Approve/Reject payments, 2nd installment management
+  - Fee screenshot viewing (Adm Fee, 1st Inst, 2nd Inst)
+- **Admin Sidebar**: Now 6 items (Dashboard, Courses, Students, Payments, Admissions, Diploma)
+- **Auto-Course-Enrollment**: When admin approves diploma payment, student automatically gets enrolled in all track courses
+
+## Enrollment Flows
+
+### Course Enrollment
+1. Student fills admission form → uploads documents → pays admission + 1st installment
+2. Admin approves → course unlocks
+3. At halfway → 2nd installment notification → student pays → admin approves
+
+### Diploma Enrollment
+1. Student fills admission form → uploads documents → pays admission + 1st installment (total across all courses)
+2. Admin approves → all track courses unlock automatically
+3. At halfway → 2nd installment notification → student pays → admin approves
 
 ## Backlog
 ### P1
 - Resend email integration (needs API key from user)
 
 ### P2
-- Refactor server.py (~1050 lines - split into route modules)
-- Real payment gateway
+- Refactor server.py (~1200 lines - split into route modules)
 - Course progress analytics charts
 
 ### P3
