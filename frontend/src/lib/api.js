@@ -63,4 +63,9 @@ export const studentUpload = (file) => {
 export const submitAdmissionForm = (data) => api.post('/admission-form', data);
 export const getAdmissionForms = () => api.get('/admin/admission-forms');
 
+// Installments
+export const submitInstallment2 = (enrollmentId, data) => api.post(`/enrollments/${enrollmentId}/submit-installment-2`, data);
+export const adminApproveInstallment2 = (enrollmentId, data) => api.put(`/admin/enrollments/${enrollmentId}/installment-2`, data);
+export const getNotifications = () => api.get('/notifications');
+
 export default api;

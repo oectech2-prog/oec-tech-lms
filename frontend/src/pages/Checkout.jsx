@@ -67,21 +67,22 @@ export default function Checkout() {
   // Payment
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [paymentRef, setPaymentRef] = useState('');
-  const [receiptFile, setReceiptFile] = useState(null);
-  const [receiptPreview, setReceiptPreview] = useState(null);
-  const receiptRef = useRef(null);
+  const [admFeeFile, setAdmFeeFile] = useState(null);
+  const [admFeePreview, setAdmFeePreview] = useState(null);
+  const [instFeeFile, setInstFeeFile] = useState(null);
+  const [instFeePreview, setInstFeePreview] = useState(null);
 
   useEffect(() => {
     getCourse(courseId).then(r => { setCourse(r.data); setLoading(false); }).catch(() => setLoading(false));
   }, [courseId]);
 
-  const handleReceiptSelect = (e) => {
+  const handleFileSelect = (e, setFile, setPreview) => {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
-    setReceiptFile(file);
+    setFile(file);
     const reader = new FileReader();
-    reader.onload = (ev) => setReceiptPreview(ev.target.result);
+    reader.onload = (ev) => setPreview(ev.target.result);
     reader.readAsDataURL(file);
   };
 
@@ -95,31 +96,41 @@ export default function Checkout() {
 
   const handleEnroll = async () => {
     if (!selectedMethod) { toast.error('Select payment method'); return; }
+    if (!admFeeFile) { toast.error('Upload Admission Fee Screenshot'); return; }
+    if (!instFeeFile) { toast.error('Upload Fees Screenshot (1st Installment)'); return; }
     setEnrolling(true);
     try {
-      // 1. Upload documents
+      // 1. Upload documents + fee screenshots
       const uploadDoc = async (file) => {
         if (!file) return '';
         const res = await studentUpload(file);
         return res.data.url;
       };
-      const [idFrontUrl, idBackUrl, degreeUrl, bformUrl, receiptUrl] = await Promise.all([
-        uploadDoc(docs.id_front), uploadDoc(docs.id_back), uploadDoc(docs.degree), uploadDoc(docs.bform), uploadDoc(receiptFile),
+      const [idFrontUrl, idBackUrl, degreeUrl, bformUrl, admFeeUrl, instFeeUrl] = await Promise.all([
+        uploadDoc(docs.id_front), uploadDoc(docs.id_back), uploadDoc(docs.degree), uploadDoc(docs.bform),
+        uploadDoc(admFeeFile), uploadDoc(instFeeFile),
       ]);
 
       // 2. Submit admission form
       const formRes = await submitAdmissionForm({
         ...form, course_id: courseId,
         id_card_front_url: idFrontUrl, id_card_back_url: idBackUrl,
-        last_degree_url: degreeUrl, bform_url: bformUrl, receipt_url: receiptUrl,
+        last_degree_url: degreeUrl, bform_url: bformUrl,
+        receipt_url: admFeeUrl,
       });
       setStudentId(formRes.data.student_id);
 
-      // 3. Enroll
+      // 3. Enroll with installment proofs
       let proofText = paymentRef || '';
-      if (receiptFile) proofText += (proofText ? ' | ' : '') + `Receipt: ${receiptFile.name}`;
-      proofText += ` | Receipt URL: ${receiptUrl}`;
-      await enrollInCourse({ course_id: courseId, payment_method: selectedMethod, payment_proof: proofText });
+      if (admFeeFile) proofText += (proofText ? ' | ' : '') + `Adm Fee: ${admFeeFile.name}`;
+      if (instFeeFile) proofText += ` | 1st Inst: ${instFeeFile.name}`;
+      await enrollInCourse({
+        course_id: courseId,
+        payment_method: selectedMethod,
+        payment_proof: proofText,
+        admission_fee_proof: admFeeUrl,
+        installment_1_proof: instFeeUrl,
+      });
       setSuccess(true);
       toast.success('Enrollment submitted!');
     } catch (err) {
@@ -149,6 +160,9 @@ export default function Checkout() {
   );
 
   const total = (course?.price || 0) + (course?.admission_fee || 0);
+  const installment1 = Math.floor((course?.price || 0) / 2);
+  const installment2 = (course?.price || 0) - installment1;
+  const payNow = (course?.admission_fee || 0) + installment1;
 
   return (
     <div data-testid="checkout-page" className="min-h-screen bg-[#050505] py-8 px-4">
@@ -262,6 +276,21 @@ export default function Checkout() {
                 <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-[#D4AF37]" /> Payment Method
                 </h3>
+
+                {/* Installment Info */}
+                <div className="bg-[#0A0A0A] border border-[#D4AF37]/20 rounded-xl p-4 mb-5">
+                  <p className="text-[10px] font-bold text-[#D4AF37] mb-2">FEE STRUCTURE (INSTALLMENT PLAN)</p>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between"><span className="text-[#A1A1AA]">Admission Fee</span><span className="text-white">PKR {(course?.admission_fee || 0).toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-[#A1A1AA]">1st Installment (pay now)</span><span className="text-white">PKR {installment1.toLocaleString()}</span></div>
+                    <div className="flex justify-between"><span className="text-[#A1A1AA]">2nd Installment (due at halfway)</span><span className="text-[#71717A]">PKR {installment2.toLocaleString()}</span></div>
+                    <div className="border-t border-[#27272A] pt-2 flex justify-between font-bold">
+                      <span className="text-white">Total to Pay Now</span>
+                      <span className="text-[#D4AF37]">PKR {payNow.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="space-y-3 mb-6">
                   {PAYMENT_METHODS.map((method) => {
                     const Icon = method.icon;
@@ -278,7 +307,7 @@ export default function Checkout() {
                         {sel && (
                           <div className="mt-3 p-3 bg-black/30 rounded-lg">
                             <p className="text-xs text-[#A1A1AA] whitespace-pre-line">{method.account}</p>
-                            <p className="text-xs text-[#D4AF37] mt-2 font-semibold">Send PKR {total.toLocaleString()} to the above account.</p>
+                            <p className="text-xs text-[#D4AF37] mt-2 font-semibold">Send PKR {payNow.toLocaleString()} to the above account.</p>
                           </div>
                         )}
                       </button>
@@ -286,29 +315,51 @@ export default function Checkout() {
                   })}
                 </div>
 
-                {/* Fee Receipt Upload */}
+                {/* Admission Fee Screenshot Upload */}
                 <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
-                  <Upload className="w-5 h-5 text-[#D4AF37]" /> Upload Fee Receipt
+                  <Upload className="w-5 h-5 text-[#D4AF37]" /> Admission Fee Screenshot
                 </h3>
-                <div className="bg-[#111111] border border-[#27272A] rounded-xl p-5">
-                  {receiptPreview ? (
+                <div className="bg-[#111111] border border-[#27272A] rounded-xl p-4 mb-4">
+                  {admFeePreview ? (
                     <div className="relative">
-                      <img src={receiptPreview} alt="Receipt" className="w-full max-h-48 object-contain rounded-lg border border-[#27272A]" />
-                      <button onClick={() => { setReceiptFile(null); setReceiptPreview(null); }} className="absolute top-2 right-2 bg-red-500/80 text-white rounded-full p-1"><X className="w-3 h-3" /></button>
-                      <p className="text-[10px] text-green-400 mt-2">{receiptFile?.name} uploaded</p>
+                      <img src={admFeePreview} alt="Admission Fee" className="w-full max-h-40 object-contain rounded-lg border border-[#27272A]" />
+                      <button onClick={() => { setAdmFeeFile(null); setAdmFeePreview(null); }} className="absolute top-2 right-2 bg-red-500/80 text-white rounded-full p-1"><X className="w-3 h-3" /></button>
+                      <p className="text-[10px] text-green-400 mt-2">{admFeeFile?.name} uploaded</p>
                     </div>
                   ) : (
-                    <label data-testid="upload-receipt-area" className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-[#27272A] rounded-xl cursor-pointer hover:border-[#D4AF37]/40 transition-colors">
-                      <FileImage className="w-10 h-10 text-[#71717A] mb-2" />
-                      <p className="text-xs text-white mb-0.5">Upload fee receipt</p>
+                    <label data-testid="upload-admission-fee" className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-[#27272A] rounded-xl cursor-pointer hover:border-[#D4AF37]/40 transition-colors">
+                      <FileImage className="w-8 h-8 text-[#71717A] mb-2" />
+                      <p className="text-xs text-white mb-0.5">Upload Admission Fee Screenshot</p>
                       <p className="text-[10px] text-[#71717A]">PNG, JPG, PDF up to 5MB</p>
-                      <input ref={receiptRef} type="file" accept="image/*,.pdf" onChange={handleReceiptSelect} className="hidden" />
+                      <input type="file" accept="image/*,.pdf" onChange={(e) => handleFileSelect(e, setAdmFeeFile, setAdmFeePreview)} className="hidden" />
                     </label>
                   )}
-                  <div className="mt-3">
-                    <label className={LABEL_CLS}>Transaction ID (Optional)</label>
-                    <input data-testid="payment-reference" value={paymentRef} onChange={e => setPaymentRef(e.target.value)} placeholder="Reference number" className={INPUT_CLS} />
-                  </div>
+                </div>
+
+                {/* Fees Screenshot (1st Installment) */}
+                <h3 className="text-base font-bold text-white mb-3 flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-[#D4AF37]" /> Fees Screenshot (1st Installment)
+                </h3>
+                <div className="bg-[#111111] border border-[#27272A] rounded-xl p-4 mb-4">
+                  {instFeePreview ? (
+                    <div className="relative">
+                      <img src={instFeePreview} alt="1st Installment" className="w-full max-h-40 object-contain rounded-lg border border-[#27272A]" />
+                      <button onClick={() => { setInstFeeFile(null); setInstFeePreview(null); }} className="absolute top-2 right-2 bg-red-500/80 text-white rounded-full p-1"><X className="w-3 h-3" /></button>
+                      <p className="text-[10px] text-green-400 mt-2">{instFeeFile?.name} uploaded</p>
+                    </div>
+                  ) : (
+                    <label data-testid="upload-fees-screenshot" className="flex flex-col items-center justify-center py-6 border-2 border-dashed border-[#27272A] rounded-xl cursor-pointer hover:border-[#D4AF37]/40 transition-colors">
+                      <FileImage className="w-8 h-8 text-[#71717A] mb-2" />
+                      <p className="text-xs text-white mb-0.5">Upload Fees Screenshot (1st Installment)</p>
+                      <p className="text-[10px] text-[#71717A]">PNG, JPG, PDF up to 5MB</p>
+                      <input type="file" accept="image/*,.pdf" onChange={(e) => handleFileSelect(e, setInstFeeFile, setInstFeePreview)} className="hidden" />
+                    </label>
+                  )}
+                </div>
+
+                <div className="mt-3">
+                  <label className={LABEL_CLS}>Transaction ID (Optional)</label>
+                  <input data-testid="payment-reference" value={paymentRef} onChange={e => setPaymentRef(e.target.value)} placeholder="Reference number" className={INPUT_CLS} />
                 </div>
 
                 <div className="flex gap-3 mt-4">
@@ -338,11 +389,18 @@ export default function Checkout() {
                     <div className="flex items-center gap-1.5"><Shield className="w-3 h-3 text-[#D4AF37]" /> WhatsApp Community</div>
                   </div>
                   <div className="border-t border-[#27272A] pt-3 space-y-1.5">
-                    <div className="flex justify-between text-xs"><span className="text-[#A1A1AA]">Course Fee</span><span className="text-white">PKR {course.price?.toLocaleString()}</span></div>
                     {course.admission_fee > 0 && <div className="flex justify-between text-xs"><span className="text-[#A1A1AA]">Admission Fee</span><span className="text-white">PKR {course.admission_fee?.toLocaleString()}</span></div>}
-                    <div className="border-t border-[#27272A] pt-1.5 flex justify-between">
-                      <span className="text-xs font-bold text-white">Total</span>
-                      <span className="text-lg font-bold text-[#D4AF37]">PKR {total.toLocaleString()}</span>
+                    <div className="flex justify-between text-xs"><span className="text-[#A1A1AA]">1st Installment</span><span className="text-white">PKR {installment1.toLocaleString()}</span></div>
+                    <div className="flex justify-between text-xs"><span className="text-[#71717A]">2nd Installment (later)</span><span className="text-[#71717A]">PKR {installment2.toLocaleString()}</span></div>
+                    <div className="border-t border-[#27272A] pt-1.5">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs font-bold text-white">Pay Now</span>
+                        <span className="text-lg font-bold text-[#D4AF37]">PKR {payNow.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[10px] text-[#71717A]">Total Course Fee</span>
+                        <span className="text-[10px] text-[#71717A]">PKR {total.toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
 

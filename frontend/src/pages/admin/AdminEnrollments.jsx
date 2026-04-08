@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { getAdminEnrollments, updateEnrollmentStatus } from '../../lib/api';
+import { getAdminEnrollments, updateEnrollmentStatus, adminApproveInstallment2 } from '../../lib/api';
 import { toast } from 'sonner';
 import { GraduationCap, Users, BookOpen, CreditCard, CheckCircle2, XCircle, Clock, BarChart3, LogOut, Search, Eye, Filter, FileText } from 'lucide-react';
 import { useAuth } from '../../lib/auth';
@@ -34,6 +34,18 @@ export default function AdminEnrollments() {
     try {
       await updateEnrollmentStatus(id, { payment_status: status });
       toast.success(`Payment ${label}d!`);
+      loadEnrollments();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Update failed');
+    }
+  };
+
+  const handleInst2Status = async (id, status) => {
+    const label = status === 'completed' ? 'approve' : 'reject';
+    if (!window.confirm(`${label} 2nd installment?`)) return;
+    try {
+      await adminApproveInstallment2(id, { payment_status: status });
+      toast.success(`2nd installment ${label}d!`);
       loadEnrollments();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Update failed');
@@ -132,7 +144,16 @@ export default function AdminEnrollments() {
                       <div className="flex items-center gap-4 text-[10px] text-[#A1A1AA] mt-1">
                         <span>Method: {enrollment?.payment_method?.replace('_', ' ')}</span>
                         <span>Date: {formatDate(enrollment?.enrolled_at)}</span>
-                        <span>Amount: PKR {((course?.price || 0) + (course?.admission_fee || 0)).toLocaleString()}</span>
+                        <span>Adm: PKR {(enrollment?.admission_fee || course?.admission_fee || 0).toLocaleString()}</span>
+                      </div>
+                      {/* Installment Status */}
+                      <div className="flex items-center gap-3 mt-2 text-[10px]">
+                        <span className={enrollment?.installment_1_status === 'completed' ? 'text-green-400' : 'text-yellow-400'}>
+                          1st Inst: PKR {(enrollment?.installment_1_amount || 0).toLocaleString()} ({enrollment?.installment_1_status || 'pending'})
+                        </span>
+                        <span className={enrollment?.installment_2_status === 'completed' ? 'text-green-400' : enrollment?.installment_2_status === 'submitted' ? 'text-blue-400' : 'text-[#71717A]'}>
+                          2nd Inst: PKR {(enrollment?.installment_2_amount || 0).toLocaleString()} ({enrollment?.installment_2_status || 'pending'})
+                        </span>
                       </div>
                       {enrollment?.payment_proof && (
                         <p className="text-[10px] text-[#D4AF37] mt-1 truncate">Proof: {enrollment.payment_proof}</p>
@@ -150,7 +171,21 @@ export default function AdminEnrollments() {
                         </>
                       )}
                       {status === 'completed' && (
-                        <span className="text-[10px] text-green-400">Approved {enrollment.approved_at ? formatDate(enrollment.approved_at) : ''}</span>
+                        <div className="text-right space-y-1">
+                          <span className="text-[10px] text-green-400 block">Approved {enrollment.approved_at ? formatDate(enrollment.approved_at) : ''}</span>
+                          {enrollment?.installment_2_status === 'submitted' && (
+                            <div className="flex gap-1">
+                              <button data-testid={`approve-inst2-${enrollment?.enrollment_id}`} onClick={() => handleInst2Status(enrollment.enrollment_id, 'completed')}
+                                className="px-2 py-1 bg-green-500/10 text-green-400 rounded text-[10px] font-semibold hover:bg-green-500/20">
+                                Approve 2nd
+                              </button>
+                              <button data-testid={`reject-inst2-${enrollment?.enrollment_id}`} onClick={() => handleInst2Status(enrollment.enrollment_id, 'rejected')}
+                                className="px-2 py-1 bg-red-500/10 text-red-400 rounded text-[10px] font-semibold hover:bg-red-500/20">
+                                Reject
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       )}
                       {status === 'rejected' && (
                         <button onClick={() => handleStatus(enrollment.enrollment_id, 'completed')} className="px-3 py-1.5 bg-green-500/10 text-green-400 rounded-lg text-xs hover:bg-green-500/20 transition-colors">

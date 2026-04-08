@@ -142,6 +142,8 @@ class EnrollmentCreate(BaseModel):
     course_id: str
     payment_method: str  # jazzcash, easypaisa, bank_transfer
     payment_proof: str = ""  # optional proof text/reference
+    admission_fee_proof: str = ""  # admission fee screenshot URL
+    installment_1_proof: str = ""  # 1st installment screenshot URL
 
 class ProgressUpdate(BaseModel):
     lesson_id: str
@@ -380,6 +382,21 @@ async def create_enrollment(data: EnrollmentCreate, authorization: str = Header(
         raise HTTPException(status_code=404, detail="Course not found")
 
     enrollment_id = f"enroll_{uuid.uuid4().hex[:8]}"
+    # Calculate installments: course price divided into 2
+    course_price = course.get("price", 0)
+    admission_fee = course.get("admission_fee", 0)
+    installment_1 = int(course_price / 2)
+    installment_2 = course_price - installment_1
+
+    # Parse course duration for halfway calculation (e.g. "5 Weeks" -> 5)
+    duration_str = course.get("duration", "")
+    total_weeks = 0
+    for part in duration_str.split():
+        if part.isdigit():
+            total_weeks = int(part)
+            break
+    halfway_weeks = max(1, total_weeks // 2)
+
     enrollment = {
         "enrollment_id": enrollment_id,
         "user_id": user.user_id,
@@ -387,6 +404,17 @@ async def create_enrollment(data: EnrollmentCreate, authorization: str = Header(
         "payment_status": "pending",
         "payment_method": data.payment_method,
         "payment_proof": data.payment_proof,
+        "admission_fee": admission_fee,
+        "admission_fee_proof": data.admission_fee_proof,
+        "installment_1_amount": installment_1,
+        "installment_1_proof": data.installment_1_proof,
+        "installment_1_status": "pending",
+        "installment_2_amount": installment_2,
+        "installment_2_proof": "",
+        "installment_2_status": "pending",
+        "installment_2_due_weeks": halfway_weeks,
+        "installment_2_due_date": "",
+        "installment_2_notified": False,
         "enrolled_at": datetime.now(timezone.utc).isoformat(),
         "progress": 0,
         "completed_lessons": [],
@@ -648,6 +676,13 @@ async def update_enrollment_status(enrollment_id: str, data: PaymentStatusUpdate
     update_fields = {"payment_status": data.payment_status}
     if data.payment_status == "completed":
         update_fields["approved_at"] = datetime.now(timezone.utc).isoformat()
+        update_fields["installment_1_status"] = "completed"
+        # Calculate installment 2 due date
+        enrollment_doc = await db.enrollments.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+        if enrollment_doc:
+            halfway_weeks = enrollment_doc.get("installment_2_due_weeks", 3)
+            due_date = datetime.now(timezone.utc) + timedelta(weeks=halfway_weeks)
+            update_fields["installment_2_due_date"] = due_date.isoformat()
 
     await db.enrollments.update_one(
         {"enrollment_id": enrollment_id},
@@ -810,6 +845,118 @@ async def student_upload_file(file: UploadFile = File(...), authorization: str =
         "created_at": datetime.now(timezone.utc).isoformat()
     })
     return {"path": result["path"], "url": f"/api/files/{result['path']}"}
+
+# ============ INSTALLMENT ENDPOINTS ============
+
+class Installment2Submit(BaseModel):
+    proof_url: str
+    payment_method: str = ""
+    reference: str = ""
+
+@api_router.post("/enrollments/{enrollment_id}/submit-installment-2")
+async def submit_installment_2(enrollment_id: str, data: Installment2Submit, authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    enrollment = await db.enrollments.find_one({"enrollment_id": enrollment_id, "user_id": user.user_id}, {"_id": 0})
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Enrollment not found")
+    if enrollment.get("installment_2_status") == "completed":
+        raise HTTPException(status_code=400, detail="2nd installment already paid")
+    await db.enrollments.update_one(
+        {"enrollment_id": enrollment_id},
+        {"$set": {
+            "installment_2_proof": data.proof_url,
+            "installment_2_status": "submitted",
+            "installment_2_payment_method": data.payment_method,
+            "installment_2_reference": data.reference,
+            "installment_2_submitted_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    return {"message": "2nd installment submitted for review"}
+
+@api_router.put("/admin/enrollments/{enrollment_id}/installment-2")
+async def admin_approve_installment_2(enrollment_id: str, data: PaymentStatusUpdate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    update_fields = {"installment_2_status": data.payment_status}
+    if data.payment_status == "completed":
+        update_fields["installment_2_approved_at"] = datetime.now(timezone.utc).isoformat()
+    await db.enrollments.update_one(
+        {"enrollment_id": enrollment_id},
+        {"$set": update_fields}
+    )
+    # Send email on 2nd installment approval
+    if data.payment_status == "completed":
+        enrollment = await db.enrollments.find_one({"enrollment_id": enrollment_id}, {"_id": 0})
+        if enrollment:
+            usr = await db.users.find_one({"user_id": enrollment["user_id"]}, {"_id": 0})
+            course = await db.courses.find_one({"course_id": enrollment["course_id"]}, {"_id": 0})
+            if usr and course:
+                await send_installment_email(usr, course, enrollment, "approved")
+    return {"message": "Installment 2 status updated"}
+
+@api_router.get("/notifications")
+async def get_notifications(authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    enrollments = await db.enrollments.find(
+        {"user_id": user.user_id, "payment_status": "completed"},
+        {"_id": 0}
+    ).to_list(100)
+    notifications = []
+    now = datetime.now(timezone.utc)
+    for e in enrollments:
+        inst2_status = e.get("installment_2_status", "pending")
+        due_date_str = e.get("installment_2_due_date", "")
+        if inst2_status in ("pending", "submitted") and due_date_str:
+            due_date = datetime.fromisoformat(due_date_str.replace("Z", "+00:00")) if due_date_str else None
+            if due_date and now >= due_date and inst2_status == "pending":
+                course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
+                notifications.append({
+                    "type": "installment_2_due",
+                    "enrollment_id": e["enrollment_id"],
+                    "course_title": course["title"] if course else "",
+                    "amount": e.get("installment_2_amount", 0),
+                    "due_date": due_date_str,
+                    "status": inst2_status,
+                })
+            elif inst2_status == "submitted":
+                course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
+                notifications.append({
+                    "type": "installment_2_pending_approval",
+                    "enrollment_id": e["enrollment_id"],
+                    "course_title": course["title"] if course else "",
+                    "amount": e.get("installment_2_amount", 0),
+                    "status": inst2_status,
+                })
+    return notifications
+
+async def send_installment_email(user: dict, course: dict, enrollment: dict, status: str):
+    """Send 2nd installment notification email"""
+    if status == "due":
+        subject = f"2nd Installment Due - {course.get('title', '')} | OEC Tech Institute"
+        msg = f"Your 2nd installment of <strong style='color:#D4AF37;'>PKR {enrollment.get('installment_2_amount', 0):,}</strong> for <strong style='color:#D4AF37;'>{course.get('title', '')}</strong> is now due."
+    else:
+        subject = f"2nd Installment Approved - {course.get('title', '')} | OEC Tech Institute"
+        msg = f"Your 2nd installment for <strong style='color:#D4AF37;'>{course.get('title', '')}</strong> has been approved."
+    html = f"""
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#050505;color:#fff;padding:40px;border-radius:12px;">
+      <div style="text-align:center;margin-bottom:30px;">
+        <h1 style="color:#D4AF37;margin:0;">OEC Tech Institute</h1>
+      </div>
+      <p style="color:#fff;font-size:16px;">Hi {user.get('name', 'Student')},</p>
+      <p style="color:#A1A1AA;font-size:14px;line-height:1.6;">{msg}</p>
+      <p style="color:#A1A1AA;font-size:12px;text-align:center;border-top:1px solid #27272A;padding-top:20px;margin-top:30px;">
+        OEC Tech Institute | info@oectechs.com
+      </p>
+    </div>
+    """
+    if HAS_RESEND:
+        try:
+            params = {"from": SENDER_EMAIL, "to": [user.get("email")], "subject": subject, "html": html}
+            await asyncio.to_thread(resend.Emails.send, params)
+            logger.info(f"Installment email sent to {user.get('email')}")
+        except Exception as e:
+            logger.error(f"Installment email failed: {e}")
+    else:
+        logger.info(f"[EMAIL MOCK] {subject} for {user.get('email')}")
 
 # ============ ADMISSION FORM ============
 
