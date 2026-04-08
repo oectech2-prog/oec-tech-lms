@@ -570,7 +570,7 @@ async def send_approval_email(user: dict, course: dict, enrollment: dict):
         <a href="#" style="display:inline-block;background:#D4AF37;color:#050505;text-decoration:none;padding:12px 30px;border-radius:30px;font-weight:bold;font-size:14px;">Start Learning Now</a>
       </div>
       <p style="color:#A1A1AA;font-size:12px;text-align:center;border-top:1px solid #27272A;padding-top:20px;margin-top:30px;">
-        OEC Tech Institute | info@oectech.institute
+        OEC Tech Institute | info@oectechs.com
       </p>
     </div>
     """

@@ -49,14 +49,14 @@ export default function Contact() {
                 <Mail className="w-6 h-6 text-[#D4AF37] shrink-0" />
                 <div>
                   <h4 className="text-sm font-bold text-white mb-1">Email</h4>
-                  <p className="text-sm text-[#A1A1AA]">info@oectech.institute</p>
+                  <p className="text-sm text-[#A1A1AA]">info@oectechs.com</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <Phone className="w-6 h-6 text-[#D4AF37] shrink-0" />
                 <div>
                   <h4 className="text-sm font-bold text-white mb-1">Phone</h4>
-                  <p className="text-sm text-[#A1A1AA]">+92 300 1234567</p>
+                  <p className="text-sm text-[#A1A1AA]">0300-0517616</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -79,7 +79,7 @@ export default function Contact() {
 
             {/* WhatsApp */}
             <a
-              href="https://wa.me/923001234567"
+              href="https://wa.me/923000517616"
               target="_blank"
               rel="noopener noreferrer"
               data-testid="contact-whatsapp-btn"

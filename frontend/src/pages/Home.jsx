@@ -413,7 +413,7 @@ export default function Home() {
             <Link to="/courses" data-testid="cta-enroll-btn" className="btn-gold px-8 py-4 text-sm inline-flex items-center gap-2 group animate-gold-pulse">
               Enroll Now <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <a href="https://wa.me/923001234567" target="_blank" rel="noopener noreferrer" data-testid="cta-whatsapp-btn" className="btn-gold-outline px-8 py-4 text-sm inline-flex items-center gap-2">
+            <a href="https://wa.me/923000517616" target="_blank" rel="noopener noreferrer" data-testid="cta-whatsapp-btn" className="btn-gold-outline px-8 py-4 text-sm inline-flex items-center gap-2">
               Ask on WhatsApp
             </a>
           </motion.div>

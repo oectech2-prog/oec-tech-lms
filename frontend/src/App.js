@@ -8,6 +8,7 @@ import AuthCallback from "./components/AuthCallback";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Preloader from "./components/Preloader";
 import ScrollToTop from "./components/ScrollToTop";
+import WhatsAppChat from "./components/WhatsAppChat";
 
 // Pages
 import Home from "./pages/Home";
@@ -78,6 +79,7 @@ function AppRouter() {
       </main>
       {!isDashboard && <Footer />}
       <ScrollToTop />
+      <WhatsAppChat />
       <Toaster position="top-right" richColors />
     </>
   );

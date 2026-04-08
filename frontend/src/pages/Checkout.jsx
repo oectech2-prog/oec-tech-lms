@@ -6,9 +6,9 @@ import { toast } from 'sonner';
 import { ArrowLeft, CheckCircle2, CreditCard, Building2, Smartphone, Upload, FileImage, X, ArrowRight, Shield, Clock } from 'lucide-react';
 
 const PAYMENT_METHODS = [
-  { id: 'jazzcash', name: 'JazzCash', icon: Smartphone, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30', account: 'JazzCash Account: 0300-1234567' },
-  { id: 'easypaisa', name: 'EasyPaisa', icon: Smartphone, color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/30', account: 'EasyPaisa Account: 0345-1234567' },
-  { id: 'bank_transfer', name: 'Bank Transfer', icon: Building2, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30', account: 'HBL Account: 1234-5678-9012\nAccount Title: OEC Tech Institute\nBranch: Main Branch, Lahore' },
+  { id: 'jazzcash', name: 'JazzCash', icon: Smartphone, color: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30', account: 'JazzCash Account: 983012259\nAccount Title: OEC Tech Institute' },
+  { id: 'easypaisa', name: 'EasyPaisa', icon: Smartphone, color: 'text-green-400', bg: 'bg-green-500/10', border: 'border-green-500/30', account: 'EasyPaisa Account: 0300-1413747\nAccount Title: Sadam Mubarak' },
+  { id: 'bank_transfer', name: 'Bank Transfer', icon: Building2, color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30', account: 'Soneri Bank: 20016289664\nAccount Title: Sadam Mubarak' },
 ];
 
 export default function Checkout() {

@@ -18,7 +18,7 @@ export default function Footer() {
               Empowering students across Pakistan, UAE, UK & USA with real digital skills to earn online. Practical training, lifetime access at OEC Tech Institute.
             </p>
             <a
-              href="https://wa.me/923001234567"
+              href="https://wa.me/923000517616"
               target="_blank"
               rel="noopener noreferrer"
               data-testid="footer-whatsapp"
@@ -75,11 +75,11 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center gap-2 text-sm text-[#A1A1AA]">
                 <Mail className="w-4 h-4 text-[#D4AF37]" />
-                info@oectech.institute
+                info@oectechs.com
               </li>
               <li className="flex items-center gap-2 text-sm text-[#A1A1AA]">
                 <Phone className="w-4 h-4 text-[#D4AF37]" />
-                +92 300 1234567
+                0300-0517616
               </li>
               <li className="flex items-center gap-2 text-sm text-[#A1A1AA]">
                 <MapPin className="w-4 h-4 text-[#D4AF37]" />
