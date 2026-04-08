@@ -94,8 +94,9 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} OEC Tech Institute. All rights reserved.
           </p>
           <div className="flex gap-4 text-xs text-[#A1A1AA]">
-            <span className="hover:text-[#D4AF37] cursor-pointer transition-colors">Privacy Policy</span>
-            <span className="hover:text-[#D4AF37] cursor-pointer transition-colors">Terms of Service</span>
+            <Link to="/privacy-policy" data-testid="footer-privacy-link" className="hover:text-[#D4AF37] transition-colors">Privacy Policy</Link>
+            <Link to="/terms-of-service" data-testid="footer-terms-link" className="hover:text-[#D4AF37] transition-colors">Terms of Service</Link>
+            <Link to="/refund-policy" data-testid="footer-refund-link" className="hover:text-[#D4AF37] transition-colors">Refund Policy</Link>
           </div>
         </div>
       </div>

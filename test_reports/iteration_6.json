@@ -1,0 +1,63 @@
+{
+  "summary": "Completed testing of OEC Tech Institute iteration 6 features: course pricing with admission fees, Enroll Now buttons, diploma track totals, Start This Track checkout links, and policy pages (Privacy, Terms, Refund). All features working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "passed_tests": [
+    "Backend: GET /api/courses returns 200 with all 8 courses",
+    "Backend: All courses have admission_fee field",
+    "Backend: Course prices match requirements (Computer Apps=6000+1000, Graphic=12000+1000, SMM=12000+1000, WordPress=12000+1000, Shopify=16000+2000, Amazon VA=20000+2000, eBay=20000+2000, YT TikTok=12000+1000)",
+    "Backend: GET /api/courses/{course_id} returns admission_fee",
+    "Backend: GET /api/diploma-tracks returns 200 with 3 tracks",
+    "Backend: Diploma tracks have courses array with valid course IDs",
+    "Backend: GET /api/diploma-tracks/{track_id} returns track details",
+    "Frontend: Courses page shows 8 course cards",
+    "Frontend: Each course card has 'Enroll Now' button (data-testid='enroll-btn-{course_id}')",
+    "Frontend: Course cards show price with admission fee text (e.g., 'PKR 6,000' + '+ PKR 1,000 admission')",
+    "Frontend: Course detail page shows price with admission fee breakdown",
+    "Frontend: Course detail page has 'Enroll Now' button (data-testid='enroll-course-btn')",
+    "Frontend: Diploma Tracks page shows total investment price (data-testid='track-total-{track_id}')",
+    "Frontend: Digital Marketing Diploma total: PKR 26,000",
+    "Frontend: E-Commerce Diploma total: PKR 62,000",
+    "Frontend: Web Design Diploma total: PKR 33,000",
+    "Frontend: 'Start This Track' buttons link to /checkout/track/{track_id}",
+    "Frontend: Track checkout is protected route (redirects to login)",
+    "Frontend: Privacy Policy page loads at /privacy-policy (data-testid='privacy-policy-page')",
+    "Frontend: Terms of Service page loads at /terms-of-service (data-testid='terms-of-service-page')",
+    "Frontend: Refund Policy page loads at /refund-policy (data-testid='refund-policy-page')",
+    "Frontend: Refund Policy shows JazzCash account (983012259)",
+    "Frontend: Refund Policy shows EasyPaisa account (0300-1413747)",
+    "Frontend: Refund Policy shows Soneri Bank account (20016289664)",
+    "Frontend: Footer has Privacy Policy link (data-testid='footer-privacy-link')",
+    "Frontend: Footer has Terms of Service link (data-testid='footer-terms-link')",
+    "Frontend: Footer has Refund Policy link (data-testid='footer-refund-link')"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_courses_pricing.py",
+    "/app/test_reports/pytest/pytest_results_iter6.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_courses_pricing.py"
+  ],
+  "success_rate": {
+    "backend": "100% (9/9 tests passed)",
+    "frontend": "100% (all features verified)"
+  },
+  "test_credentials": "No auth needed for public pages. Checkout pages require Google OAuth authentication.",
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All iteration 6 features verified: 1) Course cards have Enroll Now buttons and show admission fees. 2) Course prices updated in MongoDB with admission_fee field. 3) Diploma tracks show total investment (course fees + admission fees combined). 4) Start This Track links to /checkout/track/{track_id} (protected route). 5) Three policy pages added: Privacy Policy, Terms of Service, Refund Policy with correct bank details. 6) Footer has links to all policy pages.",
+  "mocked_apis": {
+    "has_mocked_apis": true,
+    "mocked_apis_list": ["Resend email notifications (logs to console)"]
+  }
+}

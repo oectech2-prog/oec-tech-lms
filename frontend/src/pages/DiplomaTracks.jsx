@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getDiplomaTracks, getCourses } from '../lib/api';
-import { Award, ArrowRight, CheckCircle2, BookOpen } from 'lucide-react';
+import { Award, ArrowRight, CheckCircle2, BookOpen, ShoppingCart } from 'lucide-react';
 
 export default function DiplomaTracks() {
   const [tracks, setTracks] = useState([]);
@@ -14,7 +14,14 @@ export default function DiplomaTracks() {
   }, []);
 
   const getCourseName = (courseId) => courses.find(c => c.course_id === courseId)?.title || courseId;
-  const getCoursePrice = (courseId) => courses.find(c => c.course_id === courseId)?.price || 0;
+  const getCourseObj = (courseId) => courses.find(c => c.course_id === courseId);
+
+  const getTrackTotal = (track) => {
+    return (track.courses || []).reduce((sum, cId) => {
+      const c = getCourseObj(cId);
+      return sum + (c?.price || 0) + (c?.admission_fee || 0);
+    }, 0);
+  };
 
   return (
     <div data-testid="diploma-tracks-page" className="page-transition min-h-screen bg-[#050505]">
@@ -30,79 +37,107 @@ export default function DiplomaTracks() {
 
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-6 md:px-12 space-y-16">
-          {tracks.map((track, idx) => (
-            <motion.div
-              key={track.track_id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.15 }}
-              className="bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden"
-            >
-              {/* Track Header */}
-              <div className="p-8 md:p-10 border-b border-[#27272A]">
-                <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 bg-[#D4AF37]/10 rounded-2xl flex items-center justify-center shrink-0">
-                    <Award className="w-7 h-7 text-[#D4AF37]" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">{track.title}</h2>
-                    <p className="text-sm text-[#A1A1AA] leading-relaxed">{track.description}</p>
+          {tracks.map((track, idx) => {
+            const totalPrice = getTrackTotal(track);
+            return (
+              <motion.div
+                key={track.track_id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.15 }}
+                className="bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden"
+              >
+                {/* Track Header */}
+                <div className="p-8 md:p-10 border-b border-[#27272A]">
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 bg-[#D4AF37]/10 rounded-2xl flex items-center justify-center shrink-0">
+                      <Award className="w-7 h-7 text-[#D4AF37]" />
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-2xl font-bold text-white mb-2">{track.title}</h2>
+                      <p className="text-sm text-[#A1A1AA] leading-relaxed">{track.description}</p>
+                    </div>
+                    <div className="hidden md:block text-right shrink-0">
+                      <p className="text-xs text-[#A1A1AA] mb-1">Total Investment</p>
+                      <p className="text-2xl font-bold text-[#D4AF37]" data-testid={`track-total-${track.track_id}`}>PKR {totalPrice.toLocaleString()}</p>
+                      <p className="text-[10px] text-[#A1A1AA]">{track.courses?.length || 0} courses included</p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2">
-                {/* Roadmap */}
-                <div className="p-8 md:p-10 border-b md:border-b-0 md:border-r border-[#27272A]">
-                  <h3 className="text-lg font-bold text-white mb-6">Roadmap</h3>
-                  <div className="space-y-4">
-                    {track.roadmap?.map((step) => (
-                      <div key={step.step} className="flex gap-4">
-                        <div className="w-8 h-8 bg-[#D4AF37]/10 rounded-full flex items-center justify-center shrink-0 text-[#D4AF37] text-sm font-bold">
-                          {step.step}
+                <div className="grid grid-cols-1 md:grid-cols-2">
+                  {/* Roadmap + Courses */}
+                  <div className="p-8 md:p-10 border-b md:border-b-0 md:border-r border-[#27272A]">
+                    <h3 className="text-lg font-bold text-white mb-6">Roadmap</h3>
+                    <div className="space-y-4">
+                      {track.roadmap?.map((step) => (
+                        <div key={step.step} className="flex gap-4">
+                          <div className="w-8 h-8 bg-[#D4AF37]/10 rounded-full flex items-center justify-center shrink-0 text-[#D4AF37] text-sm font-bold">
+                            {step.step}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-bold text-white">{step.title}</h4>
+                            <p className="text-xs text-[#A1A1AA]">{step.description}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-white">{step.title}</h4>
-                          <p className="text-xs text-[#A1A1AA]">{step.description}</p>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+
+                    {/* Courses in Track */}
+                    <div className="mt-8 space-y-3">
+                      <h4 className="text-sm font-semibold text-[#A1A1AA] uppercase tracking-wider">Included Courses</h4>
+                      {track.courses?.map((cId) => {
+                        const c = getCourseObj(cId);
+                        return (
+                          <Link key={cId} to={`/courses/${cId}`} className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/5 transition-colors group">
+                            <BookOpen className="w-4 h-4 text-[#D4AF37]" />
+                            <span className="text-sm text-[#A1A1AA] group-hover:text-white flex-1">{getCourseName(cId)}</span>
+                            <div className="text-right">
+                              <span className="text-xs text-[#D4AF37] block">PKR {(c?.price || 0).toLocaleString()}</span>
+                              {c?.admission_fee > 0 && (
+                                <span className="text-[10px] text-[#A1A1AA]">+ {c.admission_fee.toLocaleString()} adm.</span>
+                              )}
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  {/* Courses in Track */}
-                  <div className="mt-8 space-y-3">
-                    <h4 className="text-sm font-semibold text-[#A1A1AA] uppercase tracking-wider">Included Courses</h4>
-                    {track.courses?.map((cId) => (
-                      <Link key={cId} to={`/courses/${cId}`} className="flex items-center gap-3 p-3 bg-[#0A0A0A] rounded-lg hover:bg-white/5 transition-colors group">
-                        <BookOpen className="w-4 h-4 text-[#D4AF37]" />
-                        <span className="text-sm text-[#A1A1AA] group-hover:text-white flex-1">{getCourseName(cId)}</span>
-                        <span className="text-xs text-[#D4AF37]">PKR {getCoursePrice(cId).toLocaleString()}</span>
+                  {/* Outcomes + CTA */}
+                  <div className="p-8 md:p-10">
+                    <h3 className="text-lg font-bold text-white mb-6">Career Outcomes</h3>
+                    <ul className="space-y-4">
+                      {track.outcomes?.map((outcome, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
+                          <span className="text-sm text-[#A1A1AA]">{outcome}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Price summary on mobile */}
+                    <div className="md:hidden mt-6 p-4 bg-[#0A0A0A] rounded-xl border border-[#27272A]">
+                      <p className="text-xs text-[#A1A1AA] mb-1">Total Investment</p>
+                      <p className="text-2xl font-bold text-[#D4AF37]">PKR {totalPrice.toLocaleString()}</p>
+                      <p className="text-[10px] text-[#A1A1AA]">{track.courses?.length || 0} courses included</p>
+                    </div>
+
+                    <div className="mt-8">
+                      <Link
+                        to={`/checkout/track/${track.track_id}`}
+                        data-testid={`track-enroll-${track.track_id}`}
+                        className="btn-gold px-6 py-3 text-sm inline-flex items-center gap-2"
+                      >
+                        <ShoppingCart className="w-4 h-4" /> Start This Track <ArrowRight className="w-4 h-4" />
                       </Link>
-                    ))}
+                    </div>
                   </div>
                 </div>
-
-                {/* Outcomes */}
-                <div className="p-8 md:p-10">
-                  <h3 className="text-lg font-bold text-white mb-6">Career Outcomes</h3>
-                  <ul className="space-y-4">
-                    {track.outcomes?.map((outcome, i) => (
-                      <li key={i} className="flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5" />
-                        <span className="text-sm text-[#A1A1AA]">{outcome}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-8">
-                    <Link to="/courses" className="btn-gold px-6 py-3 text-sm inline-flex items-center gap-2">
-                      Start This Track <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       </section>
     </div>

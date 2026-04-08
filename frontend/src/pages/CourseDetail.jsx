@@ -61,8 +61,13 @@ export default function CourseDetail() {
                 ))}
               </div>
 
-              <div className="flex items-center gap-4">
-                <span className="text-3xl font-bold text-[#D4AF37]">PKR {course.price?.toLocaleString()}</span>
+              <div className="flex items-center gap-4 flex-wrap">
+                <div>
+                  <span className="text-3xl font-bold text-[#D4AF37]">PKR {course.price?.toLocaleString()}</span>
+                  {course.admission_fee > 0 && (
+                    <span className="text-xs text-[#A1A1AA] block mt-1">+ PKR {course.admission_fee?.toLocaleString()} admission fee</span>
+                  )}
+                </div>
                 <Link
                   to={user ? `/checkout/${course.course_id}` : '/login'}
                   data-testid="enroll-course-btn"

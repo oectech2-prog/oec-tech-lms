@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getCourses } from '../lib/api';
-import { Clock, ArrowRight, BookOpen, Search, Sparkles } from 'lucide-react';
+import { Clock, ArrowRight, BookOpen, Search, ShoppingCart } from 'lucide-react';
 import { Input } from '../components/ui/input';
 
 const scaleIn = {
@@ -101,11 +101,24 @@ export default function Courses() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between pt-4 border-t border-[#27272A]">
-                        <span className="text-2xl font-bold text-[#D4AF37]">PKR {course.price?.toLocaleString()}</span>
+                        <div>
+                          <span className="text-xl font-bold text-[#D4AF37]">PKR {course.price?.toLocaleString()}</span>
+                          {course.admission_fee > 0 && (
+                            <span className="text-[10px] text-[#A1A1AA] block">+ PKR {course.admission_fee?.toLocaleString()} admission</span>
+                          )}
+                        </div>
                         <span className="text-sm font-semibold text-[#D4AF37] flex items-center gap-1 group-hover:gap-2 transition-all">
                           View Details <ArrowRight className="w-4 h-4" />
                         </span>
                       </div>
+                      <Link
+                        to={`/checkout/${course.course_id}`}
+                        data-testid={`enroll-btn-${course.course_id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="btn-gold w-full text-center mt-4 py-2.5 text-sm font-bold inline-flex items-center justify-center gap-2"
+                      >
+                        <ShoppingCart className="w-4 h-4" /> Enroll Now
+                      </Link>
                     </div>
                   </Link>
                 </motion.div>

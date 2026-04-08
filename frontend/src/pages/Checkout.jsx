@@ -177,7 +177,7 @@ export default function Checkout() {
                         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
                           <div className="mt-3 p-3 bg-black/30 rounded-lg">
                             <p className="text-xs text-[#A1A1AA] whitespace-pre-line">{method.account}</p>
-                            <p className="text-xs text-[#D4AF37] mt-2 font-semibold">Send PKR {course?.price?.toLocaleString()} to the above account.</p>
+                            <p className="text-xs text-[#D4AF37] mt-2 font-semibold">Send PKR {((course?.price || 0) + (course?.admission_fee || 0)).toLocaleString()} to the above account.</p>
                           </div>
                         </motion.div>
                       )}
@@ -292,16 +292,22 @@ export default function Checkout() {
 
                   <div className="border-t border-[#27272A] pt-4 space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-[#A1A1AA]">Course Price</span>
+                      <span className="text-[#A1A1AA]">Course Fee</span>
                       <span className="text-white">PKR {course.price?.toLocaleString()}</span>
                     </div>
+                    {course.admission_fee > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-[#A1A1AA]">Admission Fee</span>
+                        <span className="text-white">PKR {course.admission_fee?.toLocaleString()}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-sm">
                       <span className="text-[#A1A1AA]">Access</span>
                       <span className="text-green-400">Lifetime</span>
                     </div>
                     <div className="border-t border-[#27272A] pt-2 flex justify-between">
                       <span className="text-sm font-bold text-white">Total</span>
-                      <span className="text-xl font-bold text-[#D4AF37]">PKR {course.price?.toLocaleString()}</span>
+                      <span className="text-xl font-bold text-[#D4AF37]">PKR {((course.price || 0) + (course.admission_fee || 0)).toLocaleString()}</span>
                     </div>
                   </div>
 
