@@ -46,5 +46,11 @@ export const createCourse = (data) => api.post('/admin/courses', data);
 export const updateCourse = (id, data) => api.put(`/admin/courses/${id}`, data);
 export const deleteCourse = (id) => api.delete(`/admin/courses/${id}`);
 export const getAdminMessages = () => api.get('/admin/messages');
+export const removeStudent = (userId) => api.delete(`/admin/students/${userId}`);
+export const getStudentProgress = (userId) => api.get(`/admin/students/${userId}/progress`);
+
+// Admin OTP Auth
+export const requestAdminOTP = (phone) => api.post('/admin/request-otp', { phone });
+export const verifyAdminOTP = (phone, otp) => api.post('/admin/verify-otp', { phone, otp });
 
 export default api;

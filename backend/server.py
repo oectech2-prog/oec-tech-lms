@@ -5,6 +5,8 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import random
+import hashlib
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
@@ -164,6 +166,16 @@ class ContactMessage(BaseModel):
 class PaymentStatusUpdate(BaseModel):
     payment_status: str  # pending, completed, rejected
 
+class AdminOTPRequest(BaseModel):
+    phone: str
+
+class AdminOTPVerify(BaseModel):
+    phone: str
+    otp: str
+
+class AdminStudentRemove(BaseModel):
+    user_id: str
+
 class User(BaseModel):
     model_config = ConfigDict(extra="ignore")
     user_id: str
@@ -275,6 +287,89 @@ async def logout(authorization: str = Header(None), session_token: str = Cookie(
         await db.user_sessions.delete_one({"session_token": token})
     response = JSONResponse(content={"message": "Logged out"})
     response.delete_cookie(key="session_token", path="/")
+    return response
+
+# ============ ADMIN OTP AUTH ============
+
+ADMIN_PHONE = "03000517616"
+
+def hash_otp(otp: str) -> str:
+    return hashlib.sha256(otp.encode()).hexdigest()
+
+@api_router.post("/admin/request-otp")
+async def request_admin_otp(data: AdminOTPRequest):
+    phone = data.phone.replace("-", "").replace(" ", "")
+    if phone != ADMIN_PHONE.replace("-", ""):
+        raise HTTPException(status_code=403, detail="Unauthorized phone number")
+
+    otp = str(random.randint(100000, 999999))
+    expires = datetime.now(timezone.utc) + timedelta(minutes=5)
+
+    await db.admin_otps.delete_many({"phone": phone})
+    await db.admin_otps.insert_one({
+        "phone": phone,
+        "otp_hash": hash_otp(otp),
+        "expires_at": expires.isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    # Send OTP via WhatsApp
+    wa_link = f"https://wa.me/92{phone[1:]}?text=Your%20OEC%20Admin%20OTP%20is%3A%20{otp}%20(valid%205%20min)"
+    logger.info(f"[ADMIN OTP] Phone: {phone} | OTP: {otp} | WhatsApp: {wa_link}")
+
+    return {"message": "OTP sent to your WhatsApp", "otp_sent": True}
+
+@api_router.post("/admin/verify-otp")
+async def verify_admin_otp(data: AdminOTPVerify):
+    phone = data.phone.replace("-", "").replace(" ", "")
+    if phone != ADMIN_PHONE.replace("-", ""):
+        raise HTTPException(status_code=403, detail="Unauthorized phone number")
+
+    otp_doc = await db.admin_otps.find_one({"phone": phone}, {"_id": 0})
+    if not otp_doc:
+        raise HTTPException(status_code=400, detail="No OTP requested. Request a new one.")
+
+    expires = datetime.fromisoformat(otp_doc["expires_at"])
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    if expires < datetime.now(timezone.utc):
+        await db.admin_otps.delete_many({"phone": phone})
+        raise HTTPException(status_code=400, detail="OTP expired. Request a new one.")
+
+    if otp_doc["otp_hash"] != hash_otp(data.otp):
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+
+    await db.admin_otps.delete_many({"phone": phone})
+
+    # Get or create admin user
+    admin = await db.users.find_one({"phone": phone, "role": "admin"}, {"_id": 0})
+    if not admin:
+        admin_id = f"admin_{uuid.uuid4().hex[:8]}"
+        admin = {
+            "user_id": admin_id,
+            "email": "admin@oectechs.com",
+            "name": "Admin",
+            "phone": phone,
+            "role": "admin",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(admin)
+        admin = await db.users.find_one({"user_id": admin_id}, {"_id": 0})
+
+    session_token_val = f"admin_{uuid.uuid4().hex}"
+    await db.user_sessions.insert_one({
+        "user_id": admin["user_id"],
+        "session_token": session_token_val,
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=1)).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    response = JSONResponse(content={"user": admin, "session_token": session_token_val})
+    response.set_cookie(
+        key="session_token", value=session_token_val,
+        httponly=True, secure=True, samesite="none",
+        path="/", max_age=24*60*60
+    )
     return response
 
 # ============ COURSE ENDPOINTS ============
@@ -484,27 +579,109 @@ async def get_admin_stats(authorization: str = Header(None), session_token: str 
     total_courses = await db.courses.count_documents({})
     total_enrollments = await db.enrollments.count_documents({})
     pending_payments = await db.enrollments.count_documents({"payment_status": "pending"})
+    approved_payments = await db.enrollments.count_documents({"payment_status": "completed"})
     total_reviews = await db.reviews.count_documents({})
     total_messages = await db.contact_messages.count_documents({})
+
+    # Monthly revenue
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    month_enrollments = await db.enrollments.find(
+        {"payment_status": "completed", "approved_at": {"$gte": month_start.isoformat()}}, {"_id": 0}
+    ).to_list(1000)
+    monthly_revenue = 0
+    for e in month_enrollments:
+        course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
+        if course:
+            monthly_revenue += (course.get("price", 0) + course.get("admission_fee", 0))
+
+    # Students this month
+    students_this_month = await db.users.count_documents({
+        "role": "student",
+        "created_at": {"$gte": month_start.isoformat()}
+    })
+
     return {
         "total_students": total_students,
         "total_courses": total_courses,
         "total_enrollments": total_enrollments,
         "pending_payments": pending_payments,
+        "approved_payments": approved_payments,
         "total_reviews": total_reviews,
-        "total_messages": total_messages
+        "total_messages": total_messages,
+        "monthly_revenue": monthly_revenue,
+        "students_this_month": students_this_month,
     }
 
 @api_router.get("/admin/students")
 async def get_students(authorization: str = Header(None), session_token: str = Cookie(None)):
     await require_admin(authorization, session_token)
     students = await db.users.find({"role": "student"}, {"_id": 0}).to_list(1000)
-    return students
+    result = []
+    for s in students:
+        enrollments = await db.enrollments.find({"user_id": s["user_id"]}, {"_id": 0}).to_list(100)
+        approved = [e for e in enrollments if e.get("payment_status") == "completed"]
+        total_lessons = 0
+        completed_lessons = 0
+        for e in approved:
+            course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
+            if course:
+                total_lessons += sum(len(w.get("lessons", [])) for w in course.get("weeks", []))
+                completed_lessons += len(e.get("completed_lessons", []))
+        # Joining date = first approval date
+        joining_date = None
+        for e in enrollments:
+            if e.get("approved_at"):
+                if not joining_date or e["approved_at"] < joining_date:
+                    joining_date = e["approved_at"]
+        s["enrollments_count"] = len(enrollments)
+        s["approved_courses"] = len(approved)
+        s["total_lessons"] = total_lessons
+        s["completed_lessons"] = completed_lessons
+        s["joining_date"] = joining_date
+        result.append(s)
+    return result
+
+@api_router.get("/admin/students/{user_id}/progress")
+async def get_student_progress(user_id: str, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    student = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    enrollments = await db.enrollments.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    courses_progress = []
+    for e in enrollments:
+        course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
+        if course:
+            total_lessons = sum(len(w.get("lessons", [])) for w in course.get("weeks", []))
+            courses_progress.append({
+                "enrollment": e,
+                "course_title": course["title"],
+                "total_lessons": total_lessons,
+                "completed_lessons": len(e.get("completed_lessons", [])),
+                "progress": e.get("progress", 0),
+                "submitted_assignments": e.get("submitted_assignments", []),
+            })
+    return {"student": student, "courses": courses_progress}
+
+@api_router.delete("/admin/students/{user_id}")
+async def remove_student(user_id: str, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    user = await db.users.find_one({"user_id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Student not found")
+    if user.get("role") == "admin":
+        raise HTTPException(status_code=400, detail="Cannot remove admin")
+    await db.users.delete_one({"user_id": user_id})
+    await db.enrollments.delete_many({"user_id": user_id})
+    await db.user_sessions.delete_many({"user_id": user_id})
+    await db.assignment_submissions.delete_many({"user_id": user_id})
+    return {"message": "Student removed"}
 
 @api_router.get("/admin/enrollments")
 async def get_all_enrollments(authorization: str = Header(None), session_token: str = Cookie(None)):
     await require_admin(authorization, session_token)
-    enrollments = await db.enrollments.find({}, {"_id": 0}).to_list(1000)
+    enrollments = await db.enrollments.find({}, {"_id": 0}).sort("enrolled_at", -1).to_list(1000)
     result = []
     for e in enrollments:
         user = await db.users.find_one({"user_id": e["user_id"]}, {"_id": 0})
@@ -515,9 +692,13 @@ async def get_all_enrollments(authorization: str = Header(None), session_token: 
 @api_router.put("/admin/enrollments/{enrollment_id}")
 async def update_enrollment_status(enrollment_id: str, data: PaymentStatusUpdate, authorization: str = Header(None), session_token: str = Cookie(None)):
     await require_admin(authorization, session_token)
+    update_fields = {"payment_status": data.payment_status}
+    if data.payment_status == "completed":
+        update_fields["approved_at"] = datetime.now(timezone.utc).isoformat()
+
     await db.enrollments.update_one(
         {"enrollment_id": enrollment_id},
-        {"$set": {"payment_status": data.payment_status}}
+        {"$set": update_fields}
     )
 
     # Send email notification on approval
@@ -535,6 +716,10 @@ async def update_enrollment_status(enrollment_id: str, data: PaymentStatusUpdate
 async def admin_get_courses(authorization: str = Header(None), session_token: str = Cookie(None)):
     await require_admin(authorization, session_token)
     courses = await db.courses.find({}, {"_id": 0}).to_list(1000)
+    # Add enrollment count per course
+    for c in courses:
+        c["enrollment_count"] = await db.enrollments.count_documents({"course_id": c["course_id"]})
+        c["approved_count"] = await db.enrollments.count_documents({"course_id": c["course_id"], "payment_status": "completed"})
     return courses
 
 @api_router.get("/admin/messages")

@@ -26,9 +26,13 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
   useEffect(() => {
     if (!isChecked || loading) return;
     if (!user) {
-      navigate('/login', { replace: true });
+      if (requireAdmin) {
+        navigate('/admin/login', { replace: true });
+      } else {
+        navigate('/login', { replace: true });
+      }
     } else if (requireAdmin && user.role !== 'admin') {
-      navigate('/dashboard', { replace: true });
+      navigate('/admin/login', { replace: true });
     }
   }, [isChecked, loading, user, requireAdmin, navigate]);
 
