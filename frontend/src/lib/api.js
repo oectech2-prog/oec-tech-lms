@@ -49,8 +49,7 @@ export const getAdminMessages = () => api.get('/admin/messages');
 export const removeStudent = (userId) => api.delete(`/admin/students/${userId}`);
 export const getStudentProgress = (userId) => api.get(`/admin/students/${userId}/progress`);
 
-// Admin OTP Auth
-export const requestAdminOTP = (phone) => api.post('/admin/request-otp', { phone });
-export const verifyAdminOTP = (phone, otp) => api.post('/admin/verify-otp', { phone, otp });
+// Admin Auth
+export const adminLogin = (password) => api.post('/admin/login', { password });
 
 export default api;

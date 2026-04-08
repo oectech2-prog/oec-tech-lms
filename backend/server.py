@@ -5,8 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
-import random
-import hashlib
+import bcrypt
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
@@ -166,12 +165,8 @@ class ContactMessage(BaseModel):
 class PaymentStatusUpdate(BaseModel):
     payment_status: str  # pending, completed, rejected
 
-class AdminOTPRequest(BaseModel):
-    phone: str
-
-class AdminOTPVerify(BaseModel):
-    phone: str
-    otp: str
+class AdminLoginRequest(BaseModel):
+    password: str
 
 class AdminStudentRemove(BaseModel):
     user_id: str
@@ -289,72 +284,30 @@ async def logout(authorization: str = Header(None), session_token: str = Cookie(
     response.delete_cookie(key="session_token", path="/")
     return response
 
-# ============ ADMIN OTP AUTH ============
+# ============ ADMIN PASSWORD AUTH ============
 
-ADMIN_PHONE = "03000517616"
+ADMIN_PASSWORD_HASH = bcrypt.hashpw(b"OEC@Admin#2026!Secure", bcrypt.gensalt()).decode()
 
-def hash_otp(otp: str) -> str:
-    return hashlib.sha256(otp.encode()).hexdigest()
+@api_router.post("/admin/login")
+async def admin_login(data: AdminLoginRequest):
+    if not bcrypt.checkpw(data.password.encode(), ADMIN_PASSWORD_HASH.encode()):
+        raise HTTPException(status_code=401, detail="Invalid password")
 
-@api_router.post("/admin/request-otp")
-async def request_admin_otp(data: AdminOTPRequest):
-    phone = data.phone.replace("-", "").replace(" ", "")
-    if phone != ADMIN_PHONE.replace("-", ""):
-        raise HTTPException(status_code=403, detail="Unauthorized phone number")
-
-    otp = str(random.randint(100000, 999999))
-    expires = datetime.now(timezone.utc) + timedelta(minutes=5)
-
-    await db.admin_otps.delete_many({"phone": phone})
-    await db.admin_otps.insert_one({
-        "phone": phone,
-        "otp_hash": hash_otp(otp),
-        "expires_at": expires.isoformat(),
-        "created_at": datetime.now(timezone.utc).isoformat()
-    })
-
-    # Send OTP via WhatsApp
-    wa_link = f"https://wa.me/92{phone[1:]}?text=Your%20OEC%20Admin%20OTP%20is%3A%20{otp}%20(valid%205%20min)"
-    logger.info(f"[ADMIN OTP] Phone: {phone} | OTP: {otp} | WhatsApp: {wa_link}")
-
-    return {"message": "OTP sent to your WhatsApp", "otp_sent": True}
-
-@api_router.post("/admin/verify-otp")
-async def verify_admin_otp(data: AdminOTPVerify):
-    phone = data.phone.replace("-", "").replace(" ", "")
-    if phone != ADMIN_PHONE.replace("-", ""):
-        raise HTTPException(status_code=403, detail="Unauthorized phone number")
-
-    otp_doc = await db.admin_otps.find_one({"phone": phone}, {"_id": 0})
-    if not otp_doc:
-        raise HTTPException(status_code=400, detail="No OTP requested. Request a new one.")
-
-    expires = datetime.fromisoformat(otp_doc["expires_at"])
-    if expires.tzinfo is None:
-        expires = expires.replace(tzinfo=timezone.utc)
-    if expires < datetime.now(timezone.utc):
-        await db.admin_otps.delete_many({"phone": phone})
-        raise HTTPException(status_code=400, detail="OTP expired. Request a new one.")
-
-    if otp_doc["otp_hash"] != hash_otp(data.otp):
-        raise HTTPException(status_code=400, detail="Invalid OTP")
-
-    await db.admin_otps.delete_many({"phone": phone})
-
-    # Get or create admin user
-    admin = await db.users.find_one({"phone": phone, "role": "admin"}, {"_id": 0})
+    admin = await db.users.find_one({"role": "admin"}, {"_id": 0})
     if not admin:
         admin_id = f"admin_{uuid.uuid4().hex[:8]}"
         admin = {
             "user_id": admin_id,
             "email": "admin@oectechs.com",
             "name": "Admin",
-            "phone": phone,
             "role": "admin",
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         await db.users.insert_one(admin)
         admin = await db.users.find_one({"user_id": admin_id}, {"_id": 0})
+
+    # Cleanup old admin sessions
+    await db.user_sessions.delete_many({"user_id": admin["user_id"]})
 
     session_token_val = f"admin_{uuid.uuid4().hex}"
     await db.user_sessions.insert_one({
