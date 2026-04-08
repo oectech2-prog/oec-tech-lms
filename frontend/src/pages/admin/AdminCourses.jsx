@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminCourses, deleteCourse } from '../../lib/api';
 import { toast } from 'sonner';
@@ -10,13 +10,13 @@ export default function AdminCourses() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadCourses();
+  const loadCourses = useCallback(() => {
+    getAdminCourses().then(r => { setCourses(r.data); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
-  const loadCourses = () => {
-    getAdminCourses().then(r => { setCourses(r.data); setLoading(false); }).catch(() => setLoading(false));
-  };
+  useEffect(() => {
+    loadCourses();
+  }, [loadCourses]);
 
   const handleDelete = async (courseId) => {
     if (!window.confirm('Are you sure you want to delete this course?')) return;

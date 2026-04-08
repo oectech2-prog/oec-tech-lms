@@ -81,7 +81,7 @@ export default function Home() {
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(6)].map((_, i) => (
             <motion.div
-              key={i}
+              key={`particle-${i}`}
               className="absolute w-1 h-1 bg-[#D4AF37]/30 rounded-full"
               style={{ left: `${15 + i * 15}%`, top: `${20 + (i % 3) * 25}%` }}
               animate={{ y: [-20, 20, -20], opacity: [0.2, 0.6, 0.2] }}
@@ -471,7 +471,7 @@ export default function Home() {
           <div className="space-y-4">
             {faqs.map((faq, i) => (
               <motion.div
-                key={i}
+                key={`faq-${faq.q.slice(0, 20)}`}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

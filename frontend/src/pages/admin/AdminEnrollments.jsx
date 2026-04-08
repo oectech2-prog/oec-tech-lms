@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminEnrollments, updateEnrollmentStatus } from '../../lib/api';
 import { toast } from 'sonner';
@@ -11,13 +11,13 @@ export default function AdminEnrollments() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
 
-  useEffect(() => {
-    loadEnrollments();
+  const loadEnrollments = useCallback(() => {
+    getAdminEnrollments().then(r => { setEnrollments(r.data); setLoading(false); }).catch(() => setLoading(false));
   }, []);
 
-  const loadEnrollments = () => {
-    getAdminEnrollments().then(r => { setEnrollments(r.data); setLoading(false); }).catch(() => setLoading(false));
-  };
+  useEffect(() => {
+    loadEnrollments();
+  }, [loadEnrollments]);
 
   const handleStatusUpdate = async (enrollmentId, status) => {
     try {
@@ -145,7 +145,11 @@ export default function AdminEnrollments() {
                       <span className={`flex items-center gap-1 px-4 py-2 rounded-full text-xs font-semibold ${
                         enrollment.payment_status === 'completed' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'
                       }`}>
-                        {enrollment.payment_status === 'completed' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                        {enrollment.payment_status === 'completed' ? (
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                        ) : (
+                          <XCircle className="w-3.5 h-3.5" />
+                        )}
                         {enrollment.payment_status}
                       </span>
                     )}

@@ -29,7 +29,7 @@ export default function MyCourseView() {
       const subRes = await getSubmissions(enrollmentId);
       setSubmissions(subRes.data);
     } catch (err) {
-      console.error(err);
+      toast.error('Failed to load course data');
     }
     setLoading(false);
   }, [enrollmentId]);
@@ -158,7 +158,13 @@ export default function MyCourseView() {
                           isActive ? 'bg-[#D4AF37]/10 text-[#D4AF37]' : isLocked ? 'text-[#A1A1AA]/50 cursor-not-allowed' : 'text-[#A1A1AA] hover:bg-white/5 hover:text-white'
                         }`}
                       >
-                        {isLocked ? <Lock className="w-3.5 h-3.5 shrink-0" /> : isCompleted ? <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" /> : <Circle className="w-3.5 h-3.5 shrink-0" />}
+                        {isLocked ? (
+                          <Lock className="w-3.5 h-3.5 shrink-0" />
+                        ) : isCompleted ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                        ) : (
+                          <Circle className="w-3.5 h-3.5 shrink-0" />
+                        )}
                         <span className="flex-1 truncate">{lesson.title}</span>
                         <span className="text-[10px] text-[#A1A1AA] shrink-0">{lesson.duration}</span>
                       </button>

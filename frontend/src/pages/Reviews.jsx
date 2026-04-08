@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { getReviews } from '../lib/api';
 import { Star, Quote, Filter } from 'lucide-react';
@@ -64,14 +64,15 @@ export default function Reviews() {
     getReviews().then(r => setReviews(r.data));
   }, []);
 
-  const filtered = filter === 'all' ? reviews : reviews.filter(r => r.user_country === filter);
-  const countByCountry = {
+  const filtered = useMemo(() => filter === 'all' ? reviews : reviews.filter(r => r.user_country === filter), [reviews, filter]);
+  const countByCountry = useMemo(() => ({
     all: reviews.length,
     PK: reviews.filter(r => r.user_country === 'PK').length,
     AE: reviews.filter(r => r.user_country === 'AE').length,
     GB: reviews.filter(r => r.user_country === 'GB').length,
     US: reviews.filter(r => r.user_country === 'US').length,
-  };
+  }), [reviews]);
+  const topReviews = useMemo(() => reviews.filter(r => r.rating === 5).slice(0, 12), [reviews]);
 
   return (
     <div data-testid="reviews-page" className="page-transition min-h-screen bg-[#050505]">
@@ -127,7 +128,7 @@ export default function Reviews() {
             freeMode
             className="pb-12"
           >
-            {reviews.filter(r => r.rating === 5).slice(0, 12).map((review) => (
+            {topReviews.map((review) => (
               <SwiperSlide key={review.review_id} className="h-auto">
                 <ReviewCard review={review} />
               </SwiperSlide>
