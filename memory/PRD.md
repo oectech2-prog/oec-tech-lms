@@ -1,75 +1,67 @@
-# OEC Tech Institute - PRD
+# OEC Tech Institute - Product Requirements Document
+
+## Original Problem Statement
+Build a complete modern and professional e-learning website for "OEC Tech Institute". Platform sells online courses, provides student dashboard with structured learning, and an advanced admin panel. Features include secure login, multi-step admission forms with document uploads, certificate generation, payment approval emails, WhatsApp integrations, video testimonials, expense tracking, and course outline management.
 
 ## Architecture
-- Frontend: React + Tailwind CSS + Shadcn UI + Framer Motion + Swiper
-- Backend: FastAPI + MongoDB (Motor async driver) — **Modular structure**
-- Student Auth: Google OAuth (Emergent-managed)
-- Admin Auth: Password-based (bcrypt hashed)
-- Theme: Black (#050505), White, Gold (#D4AF37)
+- **Frontend**: React (CRA) + Tailwind CSS + Shadcn/UI
+- **Backend**: FastAPI (Python) with modular routers
+- **Database**: MongoDB
+- **Auth**: Google OAuth (Emergent-managed) for students, password-based for admin
 
-## Backend Structure (Refactored April 8, 2026)
+## Code Structure
 ```
-backend/
-├── server.py              # FastAPI app, CORS, router imports, startup
-├── database.py            # MongoDB connection, Object Storage, indexes
-├── models.py              # All Pydantic models
-├── auth.py                # Auth helpers, email utilities
-├── routes/
-│   ├── auth_routes.py     # /auth/*, /profile, /admin/login
-│   ├── course_routes.py   # /courses/*, /enrollments/*
-│   ├── admin_routes.py    # /admin/* (stats, students, assignments, defaulters, diplomas)
-│   └── general_routes.py  # /reviews, /contact, /certificates, /diploma-tracks, /files, /admission-form
-├── seed_data.py
-└── seed_reviews.py
+/app/backend/
+  server.py          # Main app, imports routers
+  routes/            # Modular endpoints (auth, course, admin, general, video, expense)
+  models.py          # Pydantic models
+  database.py        # MongoDB connection
+  auth.py            # Auth logic (Google OAuth + Admin password)
+  seed_data.py       # Course seed data
+/app/frontend/src/
+  pages/             # 20+ pages (Home, Courses, Dashboard, etc.)
+  pages/admin/       # 11 admin pages
+  components/        # Shared components (Header, Footer, etc.)
+  lib/api.js         # API client
+  lib/auth.js        # Auth context
 ```
 
-## What's Been Implemented
+## Completed Features (as of April 14, 2026)
+- [x] Homepage with hero, features, courses, testimonials
+- [x] Course catalog with detail pages
+- [x] Google OAuth student authentication
+- [x] Multi-step enrollment with payment proof upload
+- [x] 2-installment payment system with tracking
+- [x] Student dashboard with week-by-week course progress
+- [x] Assignment submission system (text + file upload)
+- [x] Certificate generation
+- [x] Diploma tracks enrollment
+- [x] Admin Dashboard with stats, growth chart, quick actions
+- [x] Admin: Course CRUD management
+- [x] Admin: Course Outline Editor (weeks, lessons, assignments)
+- [x] Admin: Student management
+- [x] Admin: Payment approval/rejection
+- [x] Admin: Admission form management
+- [x] Admin: Diploma student management
+- [x] Admin: Defaulters tracking
+- [x] Admin: Assignment review system
+- [x] Admin: Video Testimonials management (add/approve/reject/delete)
+- [x] Admin: Expenses tracker with stats, charts, categories
+- [x] Public Video Testimonials page
+- [x] Contact form, FAQ, About, Reviews pages
+- [x] Privacy Policy, Terms of Service, Refund Policy
+- [x] WhatsApp floating chat widget
+- [x] Backend refactored to modular routers (6 route files)
+- [x] 9 courses seeded (incl. Etsy & TikTok Shop Training)
 
-### Phase 1-3: MVP, Brand, Pricing, Policies
-- 8 courses + 3 diploma tracks, Google OAuth, Certificate PDF
-- 3D Hero, WhatsApp chat, Google Maps, Policy pages
+## Testing Status
+- Iteration 14: Backend refactor regression tests - PASSED
+- Iteration 15: New features (Expenses, Videos, Outline Editor) - ALL PASSED (100%)
 
-### Phase 4: Admin Panel
-- Password login (bcrypt), Student/Payment/Course CRUD
-
-### Phase 5-6: Admission Form & Installments
-- 4-step checkout, 2-installment system, dashboard notifications
-
-### Phase 7: Profile & Polish
-- Student profile edit (name + picture), OEC Tech branding, mobile responsive
-
-### Phase 8: Diploma Track Checkout
-- Same 4-step process for diploma tracks, auto-enrollment on approval
-
-### Phase 9: Advanced Admin Dashboard & Defaulters
-- 12 stat cards, growth chart, quick actions
-- Defaulters page with deactivate/re-activate
-
-### Phase 10: Assignment System & Week Locking
-- Assignment submission (text/link/file), admin review, week-by-week unlocking
-- Weekly progress tracking
-
-### Phase 11: Code Optimization & Security (April 8, 2026)
-- **Backend refactored**: 1400+ line server.py split into 8 modular files
-- **MongoDB indexes**: Created at startup for all collections (performance)
-- **Input validation**: String length limits on user inputs
-- **File upload**: Student upload limit increased to 10MB, Content-Disposition headers
-- **Admin Assignments Enhanced**: File download/view/preview, link opening, original filename display
-- **Security**: Proper cookie settings (httponly, secure, samesite=none)
-
-## Admin Panel Pages
-1. `/admin` - Dashboard (stats, chart, quick actions)
-2. `/admin/courses` - Course CRUD
-3. `/admin/students` - Student management
-4. `/admin/enrollments` - Payment verification + installment management
-5. `/admin/admissions` - Admission form review + fee screenshots
-6. `/admin/diploma-students` - Diploma enrollment management
-7. `/admin/defaulters` - Overdue 2nd installment students
-8. `/admin/assignments` - Student assignment review + approval (file download/view/link)
+## Known Issues / Limitations
+- Email notifications: MOCKED (Resend API key not provided)
 
 ## Backlog
-### P1
-- Resend email integration (needs API key from user)
-### P3
-- Mobile responsiveness audit on admin data tables
-- Student messaging, instructor profiles, SEO
+- P0: Convert full project to Vanilla HTML/CSS/JS (user request for <3s load)
+- P1: Integrate Resend API for real email notifications (needs API key from user)
+- P2: Mobile responsiveness audit
