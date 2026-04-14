@@ -313,6 +313,115 @@ COURSES = [
         ],
         "is_published": True,
         "created_at": datetime.now(timezone.utc).isoformat()
+    },
+    {
+        "course_id": "course_etsy",
+        "title": "Etsy Training Course",
+        "short_description": "Build a profitable Etsy store selling digital and handmade products worldwide.",
+        "description": "Learn everything about selling on Etsy - from setting up your shop to creating listings that sell, SEO optimization, and scaling your Etsy business. Whether you sell digital products, printables, or handmade items, this course covers all strategies to succeed on Etsy marketplace.",
+        "price": 20000,
+        "admission_fee": 2000,
+        "currency": "PKR",
+        "image_url": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600",
+        "category": "E-Commerce",
+        "duration": "7 Weeks",
+        "level": "Beginner to Intermediate",
+        "instructor": "OEC Tech Institute",
+        "intro_video_url": "",
+        "intro_video_type": "youtube",
+        "requirements": ["Laptop or computer", "Internet connection", "Etsy account (free)", "Basic design skills (helpful but not required)"],
+        "what_you_will_learn": ["Etsy shop setup & branding", "Product research & niche selection", "SEO & listing optimization", "Digital product creation", "Etsy ads & marketing", "Order management & customer service", "Scaling to 6 figures"],
+        "weeks": [
+            {"week_number": 1, "title": "Etsy Fundamentals", "description": "Understanding the Etsy marketplace", "lessons": [
+                {"lesson_id": "etsy_w1_l1", "title": "Introduction to Etsy Marketplace", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "etsy_w1_l2", "title": "Setting Up Your Etsy Shop", "video_type": "youtube", "video_url": "", "duration": "30 min"},
+                {"lesson_id": "etsy_w1_l3", "title": "Etsy Policies & Best Practices", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "etsy_a1", "title": "Shop Setup", "description": "Create and fully set up your Etsy shop with branding, banner, and about section.", "is_final_project": False}},
+            {"week_number": 2, "title": "Niche Research & Product Selection", "description": "Finding profitable products", "lessons": [
+                {"lesson_id": "etsy_w2_l1", "title": "Niche Research Strategies", "video_type": "youtube", "video_url": "", "duration": "30 min"},
+                {"lesson_id": "etsy_w2_l2", "title": "Competitor Analysis on Etsy", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "etsy_w2_l3", "title": "Pricing Strategies for Profit", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "etsy_a2", "title": "Niche Analysis Report", "description": "Research 3 niches and create a report with competition analysis and profit potential.", "is_final_project": False}},
+            {"week_number": 3, "title": "Creating Digital Products", "description": "Design products that sell", "lessons": [
+                {"lesson_id": "etsy_w3_l1", "title": "Digital Product Ideas & Creation", "video_type": "youtube", "video_url": "", "duration": "30 min"},
+                {"lesson_id": "etsy_w3_l2", "title": "Creating Printables & Templates", "video_type": "youtube", "video_url": "", "duration": "25 min"}
+            ], "assignment": {"assignment_id": "etsy_a3", "title": "Create 5 Digital Products", "description": "Design and create 5 digital products ready to sell on Etsy.", "is_final_project": False}},
+            {"week_number": 4, "title": "Etsy SEO Mastery", "description": "Get found by buyers", "lessons": [
+                {"lesson_id": "etsy_w4_l1", "title": "Etsy Search Algorithm Explained", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "etsy_w4_l2", "title": "Keyword Research Tools", "video_type": "youtube", "video_url": "", "duration": "20 min"},
+                {"lesson_id": "etsy_w4_l3", "title": "Optimizing Titles, Tags & Descriptions", "video_type": "youtube", "video_url": "", "duration": "25 min"}
+            ], "assignment": {"assignment_id": "etsy_a4", "title": "SEO-Optimized Listings", "description": "Create 5 fully SEO-optimized listings with keyword research documentation.", "is_final_project": False}},
+            {"week_number": 5, "title": "Product Photography & Listings", "description": "Creating listings that convert", "lessons": [
+                {"lesson_id": "etsy_w5_l1", "title": "Product Photography Tips", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "etsy_w5_l2", "title": "Mockup Creation for Digital Products", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "etsy_a5", "title": "Professional Listings", "description": "Create 5 listings with professional photos/mockups and optimized descriptions.", "is_final_project": False}},
+            {"week_number": 6, "title": "Marketing & Etsy Ads", "description": "Promote your shop", "lessons": [
+                {"lesson_id": "etsy_w6_l1", "title": "Etsy Ads Setup & Management", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "etsy_w6_l2", "title": "Social Media Marketing for Etsy", "video_type": "youtube", "video_url": "", "duration": "20 min"},
+                {"lesson_id": "etsy_w6_l3", "title": "Pinterest & Instagram for Etsy Sales", "video_type": "youtube", "video_url": "", "duration": "25 min"}
+            ], "assignment": {"assignment_id": "etsy_a6", "title": "Marketing Plan", "description": "Create a complete marketing strategy for your Etsy shop.", "is_final_project": False}},
+            {"week_number": 7, "title": "Final Project - Launch & Scale", "description": "Launch your Etsy business", "lessons": [
+                {"lesson_id": "etsy_w7_l1", "title": "Scaling Your Etsy Business", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "etsy_w7_l2", "title": "Customer Service & Reviews", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "etsy_final", "title": "Launch Your Etsy Store", "description": "Launch a fully operational Etsy store with 10+ products, optimized SEO, and marketing plan.", "is_final_project": True}}
+        ],
+        "is_published": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    },
+    {
+        "course_id": "course_tiktok_shop",
+        "title": "TikTok Shop Training Course",
+        "short_description": "Master TikTok Shop selling - create viral content that drives sales.",
+        "description": "Learn how to set up and grow a profitable TikTok Shop. From creating viral videos to managing your shop, running TikTok ads, and building a brand through short-form video content. This is the future of e-commerce and you'll be ahead of the competition.",
+        "price": 20000,
+        "admission_fee": 2000,
+        "currency": "PKR",
+        "image_url": "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600",
+        "category": "E-Commerce",
+        "duration": "7 Weeks",
+        "level": "Beginner to Intermediate",
+        "instructor": "OEC Tech Institute",
+        "intro_video_url": "",
+        "intro_video_type": "youtube",
+        "requirements": ["Smartphone with TikTok app", "Internet connection", "Basic video editing skills (will be taught)", "Products to sell (guidance provided)"],
+        "what_you_will_learn": ["TikTok Shop setup & configuration", "Viral video content creation", "TikTok algorithm mastery", "Product sourcing for TikTok", "TikTok ads & promotions", "Affiliate marketing on TikTok", "Scaling to 6 figures"],
+        "weeks": [
+            {"week_number": 1, "title": "TikTok Shop Basics", "description": "Getting started with TikTok selling", "lessons": [
+                {"lesson_id": "tts_w1_l1", "title": "Introduction to TikTok Shop", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "tts_w1_l2", "title": "Setting Up Your TikTok Shop", "video_type": "youtube", "video_url": "", "duration": "30 min"},
+                {"lesson_id": "tts_w1_l3", "title": "Understanding TikTok Algorithm", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "tts_a1", "title": "Shop Setup", "description": "Create and configure your TikTok Shop with product categories.", "is_final_project": False}},
+            {"week_number": 2, "title": "Product Selection & Sourcing", "description": "Finding winning products", "lessons": [
+                {"lesson_id": "tts_w2_l1", "title": "Trending Product Research", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "tts_w2_l2", "title": "Sourcing Products for TikTok", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "tts_w2_l3", "title": "Pricing & Profit Margins", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "tts_a2", "title": "Product Research", "description": "Find 10 trending products with sourcing details and profit analysis.", "is_final_project": False}},
+            {"week_number": 3, "title": "Content Creation Mastery", "description": "Creating viral TikTok videos", "lessons": [
+                {"lesson_id": "tts_w3_l1", "title": "Video Filming Techniques", "video_type": "youtube", "video_url": "", "duration": "30 min"},
+                {"lesson_id": "tts_w3_l2", "title": "CapCut Editing for TikTok", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "tts_w3_l3", "title": "Hooks & Storytelling", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "tts_a3", "title": "Create 5 Product Videos", "description": "Film and edit 5 product showcase videos using hooks and storytelling.", "is_final_project": False}},
+            {"week_number": 4, "title": "TikTok SEO & Hashtags", "description": "Get your content discovered", "lessons": [
+                {"lesson_id": "tts_w4_l1", "title": "TikTok SEO Strategy", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "tts_w4_l2", "title": "Hashtag Research & Strategy", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "tts_a4", "title": "SEO Content Plan", "description": "Create a 30-day content plan with SEO-optimized captions and hashtags.", "is_final_project": False}},
+            {"week_number": 5, "title": "TikTok Ads & Promotion", "description": "Paid advertising on TikTok", "lessons": [
+                {"lesson_id": "tts_w5_l1", "title": "TikTok Ads Manager Setup", "video_type": "youtube", "video_url": "", "duration": "30 min"},
+                {"lesson_id": "tts_w5_l2", "title": "Creating High-Converting Ad Creatives", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "tts_w5_l3", "title": "Ad Optimization & Scaling", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "tts_a5", "title": "Ad Campaign", "description": "Create a mock TikTok ad campaign with targeting, budget, and creative strategy.", "is_final_project": False}},
+            {"week_number": 6, "title": "Affiliate & Live Selling", "description": "Advanced selling strategies", "lessons": [
+                {"lesson_id": "tts_w6_l1", "title": "TikTok Affiliate Program", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "tts_w6_l2", "title": "Live Selling Strategies", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "tts_w6_l3", "title": "Building a Brand on TikTok", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "tts_a6", "title": "Live Selling Plan", "description": "Plan and prepare for your first TikTok live selling session.", "is_final_project": False}},
+            {"week_number": 7, "title": "Final Project - Launch & Scale", "description": "Launch your TikTok business", "lessons": [
+                {"lesson_id": "tts_w7_l1", "title": "Scaling Your TikTok Business", "video_type": "youtube", "video_url": "", "duration": "25 min"},
+                {"lesson_id": "tts_w7_l2", "title": "Analytics & Growth Hacking", "video_type": "youtube", "video_url": "", "duration": "20 min"}
+            ], "assignment": {"assignment_id": "tts_final", "title": "Launch TikTok Shop", "description": "Launch a fully operational TikTok Shop with 5+ products, 10+ videos, and marketing strategy.", "is_final_project": True}}
+        ],
+        "is_published": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
     }
 ]
 
@@ -340,12 +449,14 @@ DIPLOMA_TRACKS = [
         "track_id": "track_ecommerce",
         "title": "E-Commerce Diploma",
         "description": "Build and scale your own e-commerce empire. From Shopify dropshipping to Amazon and eBay selling, this track covers all major platforms.",
-        "courses": ["course_shopify", "course_amazon_va", "course_ebay"],
+        "courses": ["course_shopify", "course_amazon_va", "course_ebay", "course_etsy", "course_tiktok_shop"],
         "roadmap": [
             {"step": 1, "title": "Shopify Dropshipping", "description": "Build your own online store"},
             {"step": 2, "title": "Amazon Virtual Assistant", "description": "Master Amazon marketplace"},
             {"step": 3, "title": "eBay Business", "description": "Expand to eBay selling"},
-            {"step": 4, "title": "Diploma Completion", "description": "Submit all final projects"}
+            {"step": 4, "title": "Etsy Selling", "description": "Sell digital & handmade products"},
+            {"step": 5, "title": "TikTok Shop", "description": "Viral selling on TikTok"},
+            {"step": 6, "title": "Diploma Completion", "description": "Submit all final projects"}
         ],
         "outcomes": [
             "Run your own Shopify store",

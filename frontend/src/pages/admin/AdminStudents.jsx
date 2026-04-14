@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminStudents, removeStudent, getStudentProgress } from '../../lib/api';
 import { toast } from 'sonner';
-import { GraduationCap, Users, BookOpen, CreditCard, ArrowLeft, Trash2, BarChart3, LogOut, Home, Search, Eye, Calendar, CheckCircle2, XCircle, FileText, Award, AlertTriangle } from 'lucide-react';
+import { GraduationCap, Users, BookOpen, CreditCard, ArrowLeft, Trash2, BarChart3, LogOut, Home, Search, Eye, Calendar, CheckCircle2, XCircle, FileText, Award, AlertTriangle , Video} from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 
 const NAV = [
@@ -14,6 +14,8 @@ const NAV = [
   { to: '/admin/diploma-students', icon: Award, label: 'Diploma' },
   { to: '/admin/defaulters', icon: AlertTriangle, label: 'Defaulters' },
   { to: '/admin/assignments', icon: FileText, label: 'Assignments' },
+  { to: '/admin/video-testimonials', icon: Video, label: 'Videos' },
+  { to: '/admin/expenses', icon: CreditCard, label: 'Expenses' },
 ];
 
 export default function AdminStudents() {

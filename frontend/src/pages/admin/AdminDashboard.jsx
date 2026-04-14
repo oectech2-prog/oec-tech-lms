@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminStats } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
-import { GraduationCap, Users, BookOpen, CreditCard, LogOut, BarChart3, TrendingUp, Calendar, CheckCircle2, FileText, Award, Clock, AlertTriangle, ArrowRight, DollarSign } from 'lucide-react';
+import { GraduationCap, Users, BookOpen, CreditCard, LogOut, BarChart3, TrendingUp, Calendar, CheckCircle2, FileText, Award, Clock, AlertTriangle, ArrowRight, DollarSign , Video} from 'lucide-react';
 
 const NAV = [
   { to: '/admin', icon: BarChart3, label: 'Dashboard' },
@@ -13,6 +13,8 @@ const NAV = [
   { to: '/admin/diploma-students', icon: Award, label: 'Diploma' },
   { to: '/admin/defaulters', icon: AlertTriangle, label: 'Defaulters' },
   { to: '/admin/assignments', icon: FileText, label: 'Assignments' },
+  { to: '/admin/video-testimonials', icon: Video, label: 'Videos' },
+  { to: '/admin/expenses', icon: CreditCard, label: 'Expenses' },
 ];
 
 function GrowthChart({ data }) {

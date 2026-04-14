@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/courses', label: 'Courses' },
   { to: '/diploma-tracks', label: 'Diplomas' },
+  { to: '/video-testimonials', label: 'Testimonials' },
   { to: '/reviews', label: 'Reviews' },
   { to: '/about', label: 'About' },
   { to: '/contact', label: 'Contact' },

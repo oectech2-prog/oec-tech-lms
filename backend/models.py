@@ -31,6 +31,7 @@ class CourseCreate(BaseModel):
     description: str
     short_description: str
     price: float
+    admission_fee: float = 0
     currency: str = "PKR"
     image_url: str = ""
     category: str = ""
@@ -139,3 +140,31 @@ class DiplomaEnrollmentCreate(BaseModel):
 class AssignmentReview(BaseModel):
     status: str
     feedback: str = ""
+
+
+class VideoTestimonialCreate(BaseModel):
+    student_name: str
+    course_title: str = ""
+    video_type: str = "youtube"
+    video_url: str = ""
+    thumbnail_url: str = ""
+    description: str = ""
+
+
+class VideoTestimonialSubmit(BaseModel):
+    video_type: str = "youtube"
+    video_url: str = ""
+    description: str = ""
+    course_title: str = ""
+
+
+class ExpenseCreate(BaseModel):
+    category: str
+    description: str = ""
+    amount: float
+    month: str
+    year: int
+
+
+class CourseOutlineUpdate(BaseModel):
+    weeks: List[Week] = []

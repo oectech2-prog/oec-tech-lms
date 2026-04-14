@@ -8,6 +8,8 @@ from routes.auth_routes import router as auth_router
 from routes.course_routes import router as course_router
 from routes.admin_routes import router as admin_router
 from routes.general_routes import router as general_router
+from routes.video_routes import router as video_router
+from routes.expense_routes import router as expense_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -19,6 +21,8 @@ api_router.include_router(auth_router)
 api_router.include_router(course_router)
 api_router.include_router(admin_router)
 api_router.include_router(general_router)
+api_router.include_router(video_router)
+api_router.include_router(expense_router)
 
 app.include_router(api_router)
 

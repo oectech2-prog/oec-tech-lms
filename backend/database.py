@@ -84,4 +84,8 @@ async def create_indexes():
     await db.files.create_index("storage_path")
     await db.admission_forms.create_index("form_id", unique=True)
     await db.contact_messages.create_index("message_id", unique=True)
+    await db.video_testimonials.create_index("testimonial_id", unique=True)
+    await db.video_testimonials.create_index("status")
+    await db.expenses.create_index("expense_id", unique=True)
+    await db.expenses.create_index([("month", 1), ("year", 1)])
     logger.info("MongoDB indexes created")

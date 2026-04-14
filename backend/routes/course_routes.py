@@ -5,7 +5,7 @@ import uuid
 from database import db
 from models import (
     CourseCreate, EnrollmentCreate, ProgressUpdate,
-    AssignmentSubmission, Installment2Submit
+    AssignmentSubmission, Installment2Submit, CourseOutlineUpdate
 )
 from auth import get_current_user, require_admin
 
@@ -45,6 +45,18 @@ async def create_course(course_data: CourseCreate, authorization: str = Header(N
 async def update_course(course_id: str, course_data: CourseCreate, authorization: str = Header(None), session_token: str = Cookie(None)):
     await require_admin(authorization, session_token)
     await db.courses.update_one({"course_id": course_id}, {"$set": course_data.model_dump()})
+    result = await db.courses.find_one({"course_id": course_id}, {"_id": 0})
+    return result
+
+
+@router.put("/admin/courses/{course_id}/outline")
+async def update_course_outline(course_id: str, data: CourseOutlineUpdate, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    course = await db.courses.find_one({"course_id": course_id}, {"_id": 0})
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    weeks_data = [w.model_dump() for w in data.weeks]
+    await db.courses.update_one({"course_id": course_id}, {"$set": {"weeks": weeks_data}})
     result = await db.courses.find_one({"course_id": course_id}, {"_id": 0})
     return result
 

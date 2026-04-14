@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { getAdminCourses, deleteCourse, createCourse, updateCourse } from '../../lib/api';
+import { getAdminCourses, deleteCourse, createCourse, updateCourse, updateCourseOutline } from '../../lib/api';
 import { toast } from 'sonner';
-import { GraduationCap, BookOpen, Users, CreditCard, Trash2, Edit, BarChart3, LogOut, Plus, X, Save, FileText, Award, AlertTriangle } from 'lucide-react';
+import { GraduationCap, BookOpen, Users, CreditCard, Trash2, Edit, BarChart3, LogOut, Plus, X, Save, FileText, Award, AlertTriangle , Video} from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 
 const NAV = [
@@ -14,6 +14,8 @@ const NAV = [
   { to: '/admin/diploma-students', icon: Award, label: 'Diploma' },
   { to: '/admin/defaulters', icon: AlertTriangle, label: 'Defaulters' },
   { to: '/admin/assignments', icon: FileText, label: 'Assignments' },
+  { to: '/admin/video-testimonials', icon: Video, label: 'Videos' },
+  { to: '/admin/expenses', icon: CreditCard, label: 'Expenses' },
 ];
 
 const EMPTY_COURSE = {
@@ -33,6 +35,8 @@ export default function AdminCourses() {
   const [reqInput, setReqInput] = useState('');
   const [learnInput, setLearnInput] = useState('');
   const [saving, setSaving] = useState(false);
+  const [outlineId, setOutlineId] = useState(null);
+  const [weeks, setWeeks] = useState([]);
 
   const loadCourses = useCallback(() => {
     setLoading(true);
@@ -91,6 +95,38 @@ export default function AdminCourses() {
 
   const addReq = () => { if (reqInput.trim()) { setForm(f => ({ ...f, requirements: [...f.requirements, reqInput.trim()] })); setReqInput(''); } };
   const addLearn = () => { if (learnInput.trim()) { setForm(f => ({ ...f, what_you_will_learn: [...f.what_you_will_learn, learnInput.trim()] })); setLearnInput(''); } };
+
+  const openOutline = (course) => {
+    setOutlineId(course.course_id);
+    setWeeks(JSON.parse(JSON.stringify(course.weeks || [])));
+  };
+  const addWeek = () => {
+    const num = weeks.length + 1;
+    setWeeks([...weeks, { week_number: num, title: `Week ${num}`, description: '', lessons: [], assignment: null }]);
+  };
+  const removeWeek = (idx) => setWeeks(weeks.filter((_, i) => i !== idx));
+  const updateWeek = (idx, field, val) => { const w = [...weeks]; w[idx] = { ...w[idx], [field]: val }; setWeeks(w); };
+  const addLesson = (wIdx) => {
+    const w = [...weeks];
+    const num = (w[wIdx].lessons?.length || 0) + 1;
+    w[wIdx].lessons = [...(w[wIdx].lessons || []), { lesson_id: `l_${Date.now()}_${num}`, title: `Lesson ${num}`, video_type: 'youtube', video_url: '', duration: '20 min' }];
+    setWeeks(w);
+  };
+  const removeLesson = (wIdx, lIdx) => { const w = [...weeks]; w[wIdx].lessons = w[wIdx].lessons.filter((_, i) => i !== lIdx); setWeeks(w); };
+  const updateLesson = (wIdx, lIdx, field, val) => { const w = [...weeks]; w[wIdx].lessons[lIdx] = { ...w[wIdx].lessons[lIdx], [field]: val }; setWeeks(w); };
+  const toggleAssignment = (wIdx) => {
+    const w = [...weeks];
+    if (w[wIdx].assignment) { w[wIdx].assignment = null; }
+    else { w[wIdx].assignment = { assignment_id: `a_${Date.now()}`, title: 'Assignment', description: '', is_final_project: false }; }
+    setWeeks(w);
+  };
+  const updateAssignment = (wIdx, field, val) => { const w = [...weeks]; w[wIdx].assignment = { ...w[wIdx].assignment, [field]: val }; setWeeks(w); };
+  const saveOutline = async () => {
+    setSaving(true);
+    try { await updateCourseOutline(outlineId, { weeks }); toast.success('Outline saved!'); setOutlineId(null); loadCourses(); }
+    catch { toast.error('Failed to save outline'); }
+    setSaving(false);
+  };
 
   return (
     <div data-testid="admin-courses-page" className="min-h-screen bg-[#050505] flex">
@@ -153,6 +189,9 @@ export default function AdminCourses() {
                     <button data-testid={`edit-course-${c.course_id}`} onClick={() => handleEdit(c)} className="flex-1 px-3 py-1.5 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg text-xs hover:bg-[#D4AF37]/20 transition-colors text-center">
                       Edit
                     </button>
+                    <button data-testid={`outline-course-${c.course_id}`} onClick={() => openOutline(c)} className="flex-1 px-3 py-1.5 bg-blue-500/10 text-blue-400 rounded-lg text-xs hover:bg-blue-500/20 transition-colors text-center">
+                      Outline
+                    </button>
                     <button data-testid={`delete-course-${c.course_id}`} onClick={() => handleDelete(c.course_id, c.title)} className="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg text-xs hover:bg-red-500/20 transition-colors">
                       Delete
                     </button>
@@ -160,6 +199,84 @@ export default function AdminCourses() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Course Outline Editor Modal */}
+        {outlineId && (
+          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center px-4" onClick={() => setOutlineId(null)}>
+            <div className="bg-[#111111] border border-[#27272A] rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-auto p-6" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-lg font-bold text-white">Edit Course Outline</h3>
+                <button onClick={() => setOutlineId(null)} className="text-[#A1A1AA] hover:text-white"><X className="w-5 h-5" /></button>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                {weeks.map((w, wIdx) => (
+                  <div key={wIdx} className="bg-[#0A0A0A] border border-[#27272A] rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3 flex-1">
+                        <span className="w-8 h-8 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full flex items-center justify-center text-xs font-bold">{w.week_number}</span>
+                        <input data-testid={`week-title-${wIdx}`} value={w.title} onChange={e => updateWeek(wIdx, 'title', e.target.value)} className="flex-1 bg-[#050505] border border-[#27272A] rounded-lg px-3 py-2 text-xs text-white focus:border-[#D4AF37] focus:outline-none" placeholder="Week title" />
+                      </div>
+                      <button onClick={() => removeWeek(wIdx)} className="ml-2 p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                    <textarea value={w.description} onChange={e => updateWeek(wIdx, 'description', e.target.value)} placeholder="Week description (optional)" rows={2} className="w-full bg-[#050505] border border-[#27272A] rounded-lg px-3 py-2 text-xs text-white focus:border-[#D4AF37] focus:outline-none resize-none mb-3" />
+
+                    {/* Lessons */}
+                    <div className="space-y-2 mb-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-[#A1A1AA] uppercase tracking-wider">Lessons</span>
+                        <button data-testid={`add-lesson-${wIdx}`} onClick={() => addLesson(wIdx)} className="text-[10px] text-[#D4AF37] hover:underline flex items-center gap-1"><Plus className="w-3 h-3" /> Add Lesson</button>
+                      </div>
+                      {(w.lessons || []).map((l, lIdx) => (
+                        <div key={lIdx} className="bg-[#111111] border border-[#27272A] rounded-lg p-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
+                            <input value={l.title} onChange={e => updateLesson(wIdx, lIdx, 'title', e.target.value)} placeholder="Lesson title" className="bg-[#050505] border border-[#27272A] rounded-lg px-3 py-1.5 text-xs text-white focus:border-[#D4AF37] focus:outline-none" />
+                            <input value={l.video_url} onChange={e => updateLesson(wIdx, lIdx, 'video_url', e.target.value)} placeholder="Video URL" className="bg-[#050505] border border-[#27272A] rounded-lg px-3 py-1.5 text-xs text-white focus:border-[#D4AF37] focus:outline-none" />
+                            <div className="flex gap-2">
+                              <select value={l.video_type} onChange={e => updateLesson(wIdx, lIdx, 'video_type', e.target.value)} className="bg-[#050505] border border-[#27272A] rounded-lg px-2 py-1.5 text-xs text-white focus:border-[#D4AF37] focus:outline-none flex-1">
+                                <option value="youtube">YouTube</option>
+                                <option value="upload">Upload</option>
+                                <option value="link">Link</option>
+                              </select>
+                              <input value={l.duration} onChange={e => updateLesson(wIdx, lIdx, 'duration', e.target.value)} placeholder="Duration" className="bg-[#050505] border border-[#27272A] rounded-lg px-2 py-1.5 text-xs text-white focus:border-[#D4AF37] focus:outline-none w-20" />
+                              <button onClick={() => removeLesson(wIdx, lIdx)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded-lg"><Trash2 className="w-3 h-3" /></button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Assignment */}
+                    <div className="border-t border-[#27272A] pt-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-semibold text-[#A1A1AA] uppercase tracking-wider">Assignment</span>
+                        <button onClick={() => toggleAssignment(wIdx)} className={`text-[10px] px-3 py-1 rounded-lg ${w.assignment ? 'bg-red-500/10 text-red-400' : 'bg-green-500/10 text-green-400'}`}>
+                          {w.assignment ? 'Remove Assignment' : '+ Add Assignment'}
+                        </button>
+                      </div>
+                      {w.assignment && (
+                        <div className="mt-2 space-y-2">
+                          <input value={w.assignment.title} onChange={e => updateAssignment(wIdx, 'title', e.target.value)} placeholder="Assignment title" className="w-full bg-[#050505] border border-[#27272A] rounded-lg px-3 py-1.5 text-xs text-white focus:border-[#D4AF37] focus:outline-none" />
+                          <textarea value={w.assignment.description} onChange={e => updateAssignment(wIdx, 'description', e.target.value)} placeholder="Assignment description" rows={2} className="w-full bg-[#050505] border border-[#27272A] rounded-lg px-3 py-1.5 text-xs text-white focus:border-[#D4AF37] focus:outline-none resize-none" />
+                          <label className="flex items-center gap-2 text-xs text-[#A1A1AA]">
+                            <input type="checkbox" checked={w.assignment.is_final_project || false} onChange={e => updateAssignment(wIdx, 'is_final_project', e.target.checked)} className="accent-[#D4AF37]" />
+                            Final Project
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button data-testid="add-week-btn" onClick={addWeek} className="btn-gold-outline px-4 py-2 text-xs flex items-center gap-1"><Plus className="w-4 h-4" /> Add Week</button>
+                <button data-testid="save-outline-btn" onClick={saveOutline} disabled={saving} className="btn-gold px-6 py-2 text-xs flex items-center gap-1 disabled:opacity-50"><Save className="w-4 h-4" /> {saving ? 'Saving...' : 'Save Outline'}</button>
+                <button onClick={() => setOutlineId(null)} className="px-4 py-2 text-xs text-[#A1A1AA] hover:text-white">Cancel</button>
+              </div>
+            </div>
           </div>
         )}
 

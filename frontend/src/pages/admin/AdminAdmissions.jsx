@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdmissionForms } from '../../lib/api';
-import { GraduationCap, Users, BookOpen, CreditCard, BarChart3, LogOut, Search, Eye, X, FileText, User, Phone, MapPin, Calendar, Award, AlertTriangle } from 'lucide-react';
+import { GraduationCap, Users, BookOpen, CreditCard, BarChart3, LogOut, Search, Eye, X, FileText, User, Phone, MapPin, Calendar, Award, AlertTriangle , Video} from 'lucide-react';
 import { useAuth } from '../../lib/auth';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -15,6 +15,8 @@ const NAV = [
   { to: '/admin/diploma-students', icon: Award, label: 'Diploma' },
   { to: '/admin/defaulters', icon: AlertTriangle, label: 'Defaulters' },
   { to: '/admin/assignments', icon: FileText, label: 'Assignments' },
+  { to: '/admin/video-testimonials', icon: Video, label: 'Videos' },
+  { to: '/admin/expenses', icon: CreditCard, label: 'Expenses' },
 ];
 
 export default function AdminAdmissions() {

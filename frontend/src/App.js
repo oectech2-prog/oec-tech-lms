@@ -34,6 +34,9 @@ import AdminAdmissions from "./pages/admin/AdminAdmissions";
 import AdminDiplomaStudents from "./pages/admin/AdminDiplomaStudents";
 import AdminDefaulters from "./pages/admin/AdminDefaulters";
 import AdminAssignments from "./pages/admin/AdminAssignments";
+import AdminVideoTestimonials from "./pages/admin/AdminVideoTestimonials";
+import AdminExpenses from "./pages/admin/AdminExpenses";
+import VideoTestimonials from "./pages/VideoTestimonials";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";
@@ -74,6 +77,7 @@ function AppRouter() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/video-testimonials" element={<VideoTestimonials />} />
 
           {/* Student */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -93,6 +97,8 @@ function AppRouter() {
           <Route path="/admin/diploma-students" element={<ProtectedRoute requireAdmin><AdminDiplomaStudents /></ProtectedRoute>} />
           <Route path="/admin/defaulters" element={<ProtectedRoute requireAdmin><AdminDefaulters /></ProtectedRoute>} />
           <Route path="/admin/assignments" element={<ProtectedRoute requireAdmin><AdminAssignments /></ProtectedRoute>} />
+          <Route path="/admin/video-testimonials" element={<ProtectedRoute requireAdmin><AdminVideoTestimonials /></ProtectedRoute>} />
+          <Route path="/admin/expenses" element={<ProtectedRoute requireAdmin><AdminExpenses /></ProtectedRoute>} />
         </Routes>
       </main>
       {!isDashboard && <Footer />}

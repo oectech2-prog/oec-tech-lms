@@ -85,4 +85,22 @@ export const activateStudent = (id) => api.put(`/admin/defaulters/${id}/activate
 export const getAdminAssignments = () => api.get('/admin/assignments');
 export const reviewAssignment = (id, data) => api.put(`/admin/assignments/${id}`, data);
 
+// Video Testimonials
+export const getVideoTestimonials = () => api.get('/video-testimonials');
+export const submitVideoTestimonial = (data) => api.post('/video-testimonials', data);
+export const getAdminVideoTestimonials = () => api.get('/admin/video-testimonials');
+export const addAdminVideoTestimonial = (data) => api.post('/admin/video-testimonials', data);
+export const updateAdminVideoTestimonial = (id, data) => api.put(`/admin/video-testimonials/${id}`, data);
+export const deleteAdminVideoTestimonial = (id) => api.delete(`/admin/video-testimonials/${id}`);
+
+// Expenses
+export const getExpenses = () => api.get('/admin/expenses');
+export const addExpense = (data) => api.post('/admin/expenses', data);
+export const updateExpense = (id, data) => api.put(`/admin/expenses/${id}`, data);
+export const deleteExpense = (id) => api.delete(`/admin/expenses/${id}`);
+export const getExpenseStats = () => api.get('/admin/expenses/stats');
+
+// Course Outline
+export const updateCourseOutline = (id, data) => api.put(`/admin/courses/${id}/outline`, data);
+
 export default api;
