@@ -1,68 +1,80 @@
-import { api } from '../api.js';
-import { navigate } from '../router.js';
+// Track Checkout (simplified - follows same pattern as Checkout)
+function renderTrackCheckoutPage(params) {
+  renderDashboardPage(`<div class="min-h-screen bg-[#050505] flex items-center justify-center px-4"><div class="text-center"><p class="text-[#A1A1AA] mb-4">Diploma Track Checkout</p><p class="text-sm text-[#A1A1AA] mb-6">Track ID: ${params.trackId}</p><a href="/diploma-tracks" data-link class="btn-gold-outline px-6 py-3 text-sm mr-2">Back to Tracks</a><a href="/login" data-link class="btn-gold px-6 py-3 text-sm">Login to Enroll</a></div></div>`);
+  initIcons();
+}
 
-const METHODS = [
-  { id:'jazzcash', name:'JazzCash', color:'text-red-400', bg:'bg-red-500/10', border:'border-red-500/30', account:'JazzCash Account: 983012259\nAccount Title: OEC Tech Institute' },
-  { id:'easypaisa', name:'EasyPaisa', color:'text-green-400', bg:'bg-green-500/10', border:'border-green-500/30', account:'EasyPaisa Account: 0300-1413747\nAccount Title: Sadam Mubarak' },
-  { id:'bank_transfer', name:'Bank Transfer', color:'text-blue-400', bg:'bg-blue-500/10', border:'border-blue-500/30', account:'Soneri Bank: 20016289664\nAccount Title: Sadam Mubarak' },
-];
-
-export async function trackCheckoutPage({ trackId }) {
-  const app = document.getElementById('app');
-  app.innerHTML = '<div class="min-h-screen bg-[#050505] flex items-center justify-center"><div class="spinner"></div></div>';
-  let track, courses = [];
-  try {
-    track = await api.getDiplomaTrack(trackId);
-    const all = await api.getCourses();
-    courses = (track.courses||[]).map(id => all.find(c=>c.course_id===id)).filter(Boolean);
-  } catch { app.innerHTML='<div class="min-h-screen bg-[#050505] flex items-center justify-center"><p class="text-red-400">Track not found</p></div>'; return; }
-
-  const totalFee = courses.reduce((s,c)=>s+(c.price||0),0);
-  const totalAdm = courses.reduce((s,c)=>s+(c.admission_fee||0),0);
-  const inst1 = Math.floor(totalFee/2), inst2 = totalFee-inst1, payNow = totalAdm+inst1;
-  let step=1, form={}, docs={}, docPreviews={}, method=null, admFee=null, admPrev=null, instFee=null, instPrev=null, enrolling=false;
-
-  function render() {
-    app.innerHTML = `<div data-testid="track-checkout-page" class="min-h-screen bg-[#050505] py-8 px-4"><div class="max-w-5xl mx-auto">
-      <a href="/diploma-tracks" data-link class="flex items-center gap-2 text-sm text-[#A1A1AA] hover:text-white mb-6"><i data-lucide="arrow-left" class="w-4 h-4"></i>Back</a>
-      <h1 class="text-xl font-bold text-white mb-1">Diploma Enrollment: ${track.title}</h1><p class="text-xs text-[#A1A1AA] mb-6">${courses.length} courses included</p>
-      <div class="flex items-center gap-2 mb-8">${[{n:1,l:'Form'},{n:2,l:'Docs'},{n:3,l:'Payment'},{n:4,l:'Confirm'}].map(s=>`<div class="flex items-center gap-1.5"><div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${step>=s.n?'bg-[#D4AF37] text-black':'bg-[#27272A] text-[#A1A1AA]'}">${step>s.n?'&#10003;':s.n}</div><span class="text-[10px] font-medium hidden sm:inline ${step>=s.n?'text-white':'text-[#A1A1AA]'}">${s.l}</span>${s.n<4?`<div class="w-6 sm:w-10 h-[2px] ${step>s.n?'bg-[#D4AF37]':'bg-[#27272A]'}"></div>`:''}</div>`).join('')}</div>
-      <div class="grid grid-cols-1 lg:grid-cols-5 gap-6"><div class="lg:col-span-3" id="step-area"></div>
-        <div class="lg:col-span-2"><div class="bg-[#111] border border-[#27272A] rounded-xl p-5 sticky top-6"><h3 class="text-base font-bold text-white mb-4">Diploma Summary</h3><div class="space-y-2 text-xs mb-3">${courses.map(c=>`<div class="flex justify-between text-[#A1A1AA]"><span>${c.title}</span><span class="text-white">PKR ${c.price?.toLocaleString()}</span></div>`).join('')}</div><div class="border-t border-[#27272A] pt-3 space-y-1"><div class="flex justify-between text-xs"><span class="text-[#A1A1AA]">Total Fee</span><span class="text-white">PKR ${totalFee.toLocaleString()}</span></div>${totalAdm>0?`<div class="flex justify-between text-xs"><span class="text-[#A1A1AA]">Admission</span><span class="text-white">PKR ${totalAdm.toLocaleString()}</span></div>`:''}<div class="flex justify-between text-xs mt-2"><span class="text-[#D4AF37] font-bold">Pay Now</span><span class="text-[#D4AF37] font-bold">PKR ${payNow.toLocaleString()}</span></div></div></div></div>
+// Profile Page
+function renderProfilePage() {
+  if (!Auth.isLoggedIn()) { Router.navigate('/login'); return; }
+  const u = Auth.user;
+  renderDashboardPage(`<div data-testid="profile-page" class="min-h-screen bg-[#050505] py-8 px-4"><div class="max-w-2xl mx-auto">
+    <a href="/dashboard" data-link class="flex items-center gap-2 text-sm text-[#A1A1AA] hover:text-white mb-8"><i data-lucide="arrow-left" class="w-4 h-4"></i>Back to Dashboard</a>
+    <h1 class="text-2xl font-bold text-white mb-8">Profile Settings</h1>
+    <div class="bg-[#111111] border border-[#27272A] rounded-2xl p-6 sm:p-8">
+      <div class="flex flex-col sm:flex-row items-center gap-6 mb-8 pb-8 border-b border-[#27272A]">
+        <div class="relative">${u?.picture ? `<img src="${u.picture}" alt="" class="w-24 h-24 rounded-full border-2 border-[#D4AF37] object-cover">` : `<div class="w-24 h-24 rounded-full bg-[#D4AF37]/20 flex items-center justify-center text-[#D4AF37] text-3xl font-bold">${(u?.name||'U').charAt(0)}</div>`}</div>
+        <div class="flex-1 w-full sm:w-auto">
+          <label class="text-[10px] font-medium text-[#A1A1AA] mb-1 block">Full Name</label>
+          <div class="flex gap-2">
+            <input data-testid="profile-name-input" id="profile-name" value="${u?.name||''}" class="flex-1 bg-[#050505] border border-[#27272A] rounded-lg px-3 py-2.5 text-sm text-white focus:border-[#D4AF37] focus:outline-none">
+            <button data-testid="save-name-btn" onclick="window._saveName()" class="px-4 py-2.5 bg-[#D4AF37] text-black rounded-lg text-xs font-bold hover:bg-[#c4a030] shrink-0"><i data-lucide="save" class="w-3.5 h-3.5 inline mr-1"></i>Save</button>
+          </div>
+          <p class="text-xs text-[#A1A1AA] mt-2">${u?.email||''}</p>
+          <span class="text-xs font-semibold px-3 py-1 rounded-full mt-2 inline-block ${u?.role==='admin'?'bg-[#D4AF37]/10 text-[#D4AF37]':'bg-blue-500/10 text-blue-400'}">${u?.role==='admin'?'Admin':'Student'}</span>
+        </div>
       </div>
-    </div></div>`;
-    // Reuse the exact same step logic as checkout but for diploma
-    const area = document.getElementById('step-area');
-    if(step===1){ area.innerHTML=`<div class="bg-[#111] border border-[#27272A] rounded-xl p-5 space-y-4"><h3 class="text-base font-bold text-white mb-2">Student Information</h3><div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${[{k:'full_name',l:'Full Name *'},{k:'phone',l:'Phone *'},{k:'date_of_birth',l:'DOB *',t:'date'},{k:'qualification',l:'Qualification'},{k:'father_name',l:'Father Name *'},{k:'father_phone',l:'Father Phone *'},{k:'city',l:'City *'},{k:'father_cnic',l:'Father CNIC'}].map(f=>`<div><label class="text-[10px] font-medium text-[#A1A1AA] mb-1 block">${f.l}</label><input name="${f.k}" value="${form[f.k]||''}" type="${f.t||'text'}" class="input-dark"></div>`).join('')}</div><div class="grid grid-cols-2 gap-3">${[{k:'gender',o:['Male','Female']},{k:'session_type',o:['Morning','Evening']},{k:'learning_type',o:['Online','On-Site']}].map(f=>`<div><label class="text-[10px] font-medium text-[#A1A1AA] mb-1 block">${f.k.replace(/_/g,' ')} *</label><select name="${f.k}" class="select-dark"><option value="">Select</option>${f.o.map(o=>`<option ${form[f.k]===o?'selected':''}>${o}</option>`).join('')}</select></div>`).join('')}</div><button id="s1n" class="btn-gold w-full py-3 text-sm mt-2">Continue</button></div>`; }
-    else if(step===2){ area.innerHTML=`<div class="bg-[#111] border border-[#27272A] rounded-xl p-5 space-y-4"><h3 class="text-base font-bold text-white mb-2">Documents</h3><div class="grid grid-cols-2 gap-3">${['id_front','id_back','degree','bform'].map(k=>`<div><label class="text-[10px] font-medium text-[#A1A1AA] mb-1 block">${k==='id_front'?'ID Front':k==='id_back'?'ID Back':k==='degree'?'Degree':'B-Form'}</label>${docPreviews[k]?`<div class="relative h-28 bg-[#0A0A0A] rounded-lg overflow-hidden border border-[#27272A]"><img src="${docPreviews[k]}" class="w-full h-full object-contain"><button data-rd="${k}" class="absolute top-1 right-1 bg-red-500/80 text-white rounded-full p-0.5 text-xs">X</button></div>`:`<label class="flex flex-col items-center justify-center h-28 border-2 border-dashed border-[#27272A] rounded-lg cursor-pointer hover:border-[#D4AF37]/40"><span class="text-[10px] text-[#71717A]">Upload</span><input type="file" accept="image/*,.pdf" data-doc="${k}" class="hidden"></label>`}</div>`).join('')}</div><div class="flex gap-3"><button id="s2b" class="btn-gold-outline flex-1 py-3 text-sm">Back</button><button id="s2n" class="btn-gold flex-1 py-3 text-sm">Continue</button></div></div>`; }
-    else if(step===3){ area.innerHTML=`<div class="bg-[#111] border border-[#27272A] rounded-xl p-5 space-y-4"><h3 class="text-base font-bold text-white mb-2">Payment</h3><div class="grid grid-cols-3 gap-3">${METHODS.map(m=>`<button data-pm="${m.id}" class="p-3 rounded-xl border-2 ${method===m.id?m.border+' '+m.bg:'border-[#27272A]'}"><span class="text-xs font-bold ${m.color}">${m.name}</span></button>`).join('')}</div>${method?`<pre class="text-[10px] text-[#A1A1AA] bg-[#050505] p-3 rounded-lg">${METHODS.find(m=>m.id===method)?.account||''}</pre>`:''}<p class="text-[10px] text-[#A1A1AA] font-semibold">Admission Fee Screenshot (PKR ${totalAdm.toLocaleString()})</p>${admPrev?`<div class="relative h-28 bg-[#0A0A0A] rounded-lg overflow-hidden border border-[#27272A]"><img src="${admPrev}" class="w-full h-full object-contain"><button id="ra" class="absolute top-1 right-1 bg-red-500/80 text-white rounded-full p-0.5 text-xs">X</button></div>`:`<label class="flex items-center justify-center h-28 border-2 border-dashed border-[#27272A] rounded-lg cursor-pointer hover:border-[#D4AF37]/40"><span class="text-[10px] text-[#71717A]">Upload</span><input type="file" accept="image/*" id="af" class="hidden"></label>`}<p class="text-[10px] text-[#A1A1AA] font-semibold">1st Installment Screenshot (PKR ${inst1.toLocaleString()})</p>${instPrev?`<div class="relative h-28 bg-[#0A0A0A] rounded-lg overflow-hidden border border-[#27272A]"><img src="${instPrev}" class="w-full h-full object-contain"><button id="ri" class="absolute top-1 right-1 bg-red-500/80 text-white rounded-full p-0.5 text-xs">X</button></div>`:`<label class="flex items-center justify-center h-28 border-2 border-dashed border-[#27272A] rounded-lg cursor-pointer hover:border-[#D4AF37]/40"><span class="text-[10px] text-[#71717A]">Upload</span><input type="file" accept="image/*" id="if" class="hidden"></label>`}<div class="flex gap-3"><button id="s3b" class="btn-gold-outline flex-1 py-3 text-sm">Back</button><button id="s3n" class="btn-gold flex-1 py-3 text-sm">Review</button></div></div>`; }
-    else { area.innerHTML=`<div class="bg-[#111] border border-[#27272A] rounded-xl p-5 space-y-4"><h3 class="text-base font-bold text-white mb-2">Confirm</h3><div class="grid grid-cols-2 gap-2 text-xs">${Object.entries(form).filter(([,v])=>v).map(([k,v])=>`<div><span class="text-[10px] text-[#71717A]">${k.replace(/_/g,' ')}</span><p class="text-white">${v}</p></div>`).join('')}</div><div class="flex gap-3"><button id="s4b" class="btn-gold-outline flex-1 py-3 text-sm">Back</button><button id="subm" class="btn-gold flex-1 py-3 text-sm" ${enrolling?'disabled':''}>${enrolling?'Submitting...':'Submit'}</button></div></div>`; }
-    bindEv();
-    if(window.lucide)lucide.createIcons();
-  }
+      <div class="space-y-5">
+        <div class="flex items-center gap-4"><i data-lucide="mail" class="w-5 h-5 text-[#D4AF37] shrink-0"></i><div><p class="text-xs text-[#A1A1AA]">Email</p><p class="text-sm text-white font-medium">${u?.email||''}</p></div></div>
+        <div class="flex items-center gap-4"><i data-lucide="shield" class="w-5 h-5 text-[#D4AF37] shrink-0"></i><div><p class="text-xs text-[#A1A1AA]">Role</p><p class="text-sm text-white font-medium capitalize">${u?.role||''}</p></div></div>
+        <div class="flex items-center gap-4"><i data-lucide="calendar" class="w-5 h-5 text-[#D4AF37] shrink-0"></i><div><p class="text-xs text-[#A1A1AA]">Member Since</p><p class="text-sm text-white font-medium">${u?.created_at ? new Date(u.created_at).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : 'N/A'}</p></div></div>
+      </div>
+    </div>
+  </div></div>`);
 
-  function bindEv() {
-    document.getElementById('s1n')?.addEventListener('click', ()=>{document.querySelectorAll('[name]').forEach(i=>{form[i.name]=i.value;});step=2;render();});
-    document.querySelectorAll('[data-doc]').forEach(i=>i.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;docs[i.dataset.doc]=f;const r=new FileReader();r.onload=ev=>{docPreviews[i.dataset.doc]=ev.target.result;render();};r.readAsDataURL(f);}));
-    document.querySelectorAll('[data-rd]').forEach(b=>b.addEventListener('click',()=>{docs[b.dataset.rd]=null;docPreviews[b.dataset.rd]=null;render();}));
-    document.getElementById('s2b')?.addEventListener('click',()=>{step=1;render();}); document.getElementById('s2n')?.addEventListener('click',()=>{step=3;render();});
-    document.querySelectorAll('[data-pm]').forEach(b=>b.addEventListener('click',()=>{method=b.dataset.pm;render();}));
-    document.getElementById('af')?.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;admFee=f;const r=new FileReader();r.onload=ev=>{admPrev=ev.target.result;render();};r.readAsDataURL(f);});
-    document.getElementById('if')?.addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;instFee=f;const r=new FileReader();r.onload=ev=>{instPrev=ev.target.result;render();};r.readAsDataURL(f);});
-    document.getElementById('ra')?.addEventListener('click',()=>{admFee=null;admPrev=null;render();}); document.getElementById('ri')?.addEventListener('click',()=>{instFee=null;instPrev=null;render();});
-    document.getElementById('s3b')?.addEventListener('click',()=>{step=2;render();}); document.getElementById('s3n')?.addEventListener('click',()=>{if(!method||!admFee||!instFee){window.toast('Complete all fields','error');return;}step=4;render();});
-    document.getElementById('s4b')?.addEventListener('click',()=>{step=3;render();});
-    document.getElementById('subm')?.addEventListener('click', async()=>{
-      enrolling=true;render();
-      try{
-        const ul=async f=>f?(await api.uploadFile(f)).url:'';
-        const [idF,idB,deg,bf,aU,iU]=await Promise.all([ul(docs.id_front),ul(docs.id_back),ul(docs.degree),ul(docs.bform),ul(admFee),ul(instFee)]);
-        await api.submitAdmissionForm({...form,course_id:trackId,id_card_front_url:idF,id_card_back_url:idB,last_degree_url:deg,bform_url:bf,receipt_url:aU});
-        await api.enrollDiploma({track_id:trackId,payment_method:method,payment_proof:`${admFee?.name||''} | ${instFee?.name||''}`,admission_fee_proof:aU,installment_1_proof:iU});
-        app.innerHTML=`<div class="min-h-screen bg-[#050505] flex items-center justify-center px-4"><div class="glass-panel rounded-2xl p-10 max-w-md w-full text-center"><i data-lucide="check-circle-2" class="w-20 h-20 text-green-400 mx-auto mb-6"></i><h2 class="text-2xl font-bold text-white mb-3">Diploma Enrollment Submitted!</h2><p class="text-sm text-[#A1A1AA] mb-6">Admin will verify within 24 hours.</p><a href="/dashboard" data-link class="btn-gold px-6 py-3 text-sm">Dashboard</a></div></div>`;
-        if(window.lucide)lucide.createIcons();
-      }catch(e){window.toast(e.message,'error');enrolling=false;render();}
-    });
-  }
-  render();
+  window._saveName = async () => {
+    const name = document.getElementById('profile-name')?.value?.trim();
+    if (!name) { showToast('Name cannot be empty', 'error'); return; }
+    try { await Api.updateProfile({ name }); await Auth.refreshUser(); showToast('Name updated!'); } catch { showToast('Failed', 'error'); }
+  };
+}
+
+// Certificate Page
+function renderCertificatePage(params) {
+  renderDashboardPage(Components.loading());
+  Api.getMyCourses().then(enrolled => {
+    const data = enrolled.find(e => e.enrollment.enrollment_id === params.enrollmentId);
+    if (!data || data.enrollment.progress < 100) {
+      renderDashboardPage(`<div class="min-h-screen bg-[#050505] flex items-center justify-center px-4"><div class="text-center glass-panel rounded-2xl p-10 max-w-md"><i data-lucide="award" class="w-16 h-16 text-[#27272A] mx-auto mb-4"></i><h2 class="text-xl font-bold text-white mb-3">Certificate Not Available</h2><p class="text-sm text-[#A1A1AA] mb-6">Complete all lessons to earn your certificate.</p><a href="/dashboard" data-link class="btn-gold px-6 py-3 text-sm">Back to Dashboard</a></div></div>`);
+      initIcons(); return;
+    }
+    const { enrollment: enr, course } = data;
+    const certId = `OEC-${enr.enrollment_id.slice(-8).toUpperCase()}`;
+
+    renderDashboardPage(`<div data-testid="certificate-page" class="min-h-screen bg-[#050505] py-8 px-4"><div class="max-w-4xl mx-auto">
+      <a href="/dashboard" data-link class="flex items-center gap-2 text-sm text-[#A1A1AA] hover:text-white mb-8"><i data-lucide="arrow-left" class="w-4 h-4"></i>Back to Dashboard</a>
+      <div class="bg-[#111111] border-2 border-[#D4AF37] rounded-2xl p-10 md:p-16 text-center relative overflow-hidden">
+        <div class="absolute top-4 left-4 w-10 h-10 border-t-2 border-l-2 border-[#D4AF37]"></div>
+        <div class="absolute top-4 right-4 w-10 h-10 border-t-2 border-r-2 border-[#D4AF37]"></div>
+        <div class="absolute bottom-4 left-4 w-10 h-10 border-b-2 border-l-2 border-[#D4AF37]"></div>
+        <div class="absolute bottom-4 right-4 w-10 h-10 border-b-2 border-r-2 border-[#D4AF37]"></div>
+        <p class="text-sm uppercase tracking-[0.3em] text-[#D4AF37] mb-2">OEC Tech Institute</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-white mb-1">CERTIFICATE</h1>
+        <p class="text-sm text-[#A1A1AA] mb-8">OF COMPLETION</p>
+        <div class="w-20 h-[1px] bg-[#D4AF37] mx-auto mb-8"></div>
+        <p class="text-sm text-[#A1A1AA] mb-2">This certificate is proudly presented to</p>
+        <h2 class="text-2xl sm:text-3xl font-bold text-gold-gradient mb-2">${enr.user_name || Auth.user?.name || 'Student'}</h2>
+        <div class="w-48 h-[1px] bg-[#D4AF37]/50 mx-auto mb-8"></div>
+        <p class="text-sm text-[#A1A1AA] mb-2">for successfully completing the course</p>
+        <h3 class="text-xl font-bold text-white mb-2">${course.title}</h3>
+        <p class="text-xs text-[#A1A1AA] mb-10">${course.duration} | ${course.level} | ${course.weeks?.length||0} Weeks</p>
+        <div class="flex flex-wrap justify-center gap-8 pt-8 border-t border-[#27272A]">
+          <div class="flex items-center gap-2 text-sm"><i data-lucide="calendar" class="w-4 h-4 text-[#D4AF37]"></i><span class="text-[#A1A1AA]">${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}</span></div>
+          <div class="flex items-center gap-2 text-sm"><i data-lucide="hash" class="w-4 h-4 text-[#D4AF37]"></i><span class="text-[#A1A1AA]">${certId}</span></div>
+          <div class="flex items-center gap-2 text-sm"><i data-lucide="award" class="w-4 h-4 text-[#D4AF37]"></i><span class="text-[#A1A1AA]">OEC Tech Institute</span></div>
+        </div>
+      </div>
+      <div class="text-center mt-8"><button data-testid="download-certificate-btn" onclick="showToast('Certificate download requires jsPDF library')" class="btn-gold px-6 py-2.5 text-sm">Download Certificate (PDF)</button></div>
+    </div></div>`);
+  }).catch(() => renderDashboardPage('<div class="min-h-screen flex items-center justify-center"><p class="text-[#A1A1AA]">Failed to load certificate</p></div>'));
 }

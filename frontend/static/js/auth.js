@@ -1,6 +1,5 @@
-import { api } from './api.js';
-
-export const auth = {
+// OEC Tech Institute - Auth State Manager
+const Auth = {
   user: null,
   loading: true,
   listeners: [],
@@ -9,57 +8,47 @@ export const auth = {
   notify() { this.listeners.forEach(fn => fn(this.user)); },
 
   async init() {
+    // Check if returning from OAuth callback
     if (window.location.hash?.includes('session_id=')) {
       this.loading = false;
+      await this.handleCallback();
       return;
     }
     try {
-      this.user = await api.getMe();
-    } catch {
-      this.user = null;
-    }
+      this.user = await Api.getMe();
+    } catch { this.user = null; }
     this.loading = false;
     this.notify();
   },
 
   async handleCallback() {
     const hash = window.location.hash;
-    const match = hash.match(/session_id=([^&]+)/);
-    if (!match) return false;
+    const sessionId = new URLSearchParams(hash.substring(1)).get('session_id');
+    if (!sessionId) { Router.navigate('/login'); return; }
     try {
-      const res = await api.createSession({ session_id: match[1] });
+      const res = await Api.exchangeSession(sessionId);
       this.user = res.user;
+      window.history.replaceState(null, '', window.location.pathname);
       this.notify();
-      window.history.replaceState(null, '', '/dashboard');
-      return true;
-    } catch (e) {
-      console.error('Auth callback failed:', e);
-      window.history.replaceState(null, '', '/login');
-      return false;
+      Router.navigate('/dashboard');
+    } catch {
+      Router.navigate('/login');
     }
   },
 
-  login(userData) {
-    this.user = userData;
-    this.notify();
-  },
+  login(userData) { this.user = userData; this.notify(); },
 
   async logout() {
-    try { await api.logout(); } catch {}
+    try { await Api.logout(); } catch {}
     this.user = null;
     this.notify();
+    Router.navigate('/');
   },
 
-  async refresh() {
-    try {
-      this.user = await api.getMe();
-      this.notify();
-    } catch {
-      this.user = null;
-      this.notify();
-    }
+  async refreshUser() {
+    try { this.user = await Api.getMe(); this.notify(); } catch { this.user = null; this.notify(); }
   },
 
   isAdmin() { return this.user?.role === 'admin'; },
-  isLoggedIn() { return !!this.user; },
+  isLoggedIn() { return !!this.user; }
 };

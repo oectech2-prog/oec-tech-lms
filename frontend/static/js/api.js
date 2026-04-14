@@ -1,87 +1,97 @@
+// OEC Tech Institute - API Client (Vanilla JS, Fetch-based)
 const API = '/api';
 
-async function request(method, path, body, isFormData = false) {
-  const opts = { method, credentials: 'same-origin', headers: {} };
-  if (body && !isFormData) {
-    opts.headers['Content-Type'] = 'application/json';
-    opts.body = JSON.stringify(body);
-  } else if (body && isFormData) {
-    opts.body = body;
-  }
-  const res = await fetch(`${API}${path}`, opts);
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: 'Request failed' }));
-    throw new Error(err.detail || 'Request failed');
-  }
-  return res.json();
-}
+const Api = {
+  async _fetch(method, path, body = null, isFormData = false) {
+    const opts = { method, credentials: 'include', headers: {} };
+    if (body && !isFormData) { opts.headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(body); }
+    if (body && isFormData) { opts.body = body; }
+    const res = await fetch(`${API}${path}`, opts);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: res.statusText }));
+      throw { status: res.status, detail: err.detail || 'Request failed' };
+    }
+    return res.json();
+  },
+  get: (p) => Api._fetch('GET', p),
+  post: (p, b) => Api._fetch('POST', p, b),
+  put: (p, b) => Api._fetch('PUT', p, b),
+  del: (p) => Api._fetch('DELETE', p),
+  upload: async (file) => {
+    const fd = new FormData(); fd.append('file', file);
+    return Api._fetch('POST', '/student/upload', fd, true);
+  },
 
-export const api = {
   // Auth
-  createSession: (d) => request('POST', '/auth/session', d),
-  getMe: () => request('GET', '/auth/me'),
-  logout: () => request('POST', '/auth/logout'),
-  updateProfile: (d) => request('PUT', '/profile', d),
+  exchangeSession: (sid) => Api.post('/auth/session', { session_id: sid }),
+  getMe: () => Api.get('/auth/me'),
+  logout: () => Api.post('/auth/logout'),
+  updateProfile: (d) => Api.put('/profile', d),
+  adminLogin: (pw) => Api.post('/admin/login', { password: pw }),
 
   // Courses
-  getCourses: () => request('GET', '/courses'),
-  getCourse: (id) => request('GET', `/courses/${id}`),
-  getDiplomaTracks: () => request('GET', '/diploma-tracks'),
-  getDiplomaTrack: (id) => request('GET', `/diploma-tracks/${id}`),
+  getCourses: () => Api.get('/courses'),
+  getCourse: (id) => Api.get(`/courses/${id}`),
 
   // Enrollments
-  enroll: (d) => request('POST', '/enrollments', d),
-  getMyCourses: () => request('GET', '/enrollments/my-courses'),
-  updateProgress: (eid, d) => request('PUT', `/enrollments/${eid}/progress`, d),
-  submitAssignment: (eid, d) => request('POST', `/enrollments/${eid}/submit-assignment`, d),
-  getSubmissions: (eid) => request('GET', `/enrollments/${eid}/submissions`),
-  submitInstallment2: (eid, d) => request('POST', `/enrollments/${eid}/submit-installment-2`, d),
+  enroll: (d) => Api.post('/enrollments', d),
+  getMyCourses: () => Api.get('/enrollments/my-courses'),
+  updateProgress: (eid, d) => Api.put(`/enrollments/${eid}/progress`, d),
+  submitAssignment: (eid, d) => Api.post(`/enrollments/${eid}/submit-assignment`, d),
+  getSubmissions: (eid) => Api.get(`/enrollments/${eid}/submissions`),
+  submitInstallment2: (eid, d) => Api.post(`/enrollments/${eid}/submit-installment-2`, d),
 
-  // Diplomas
-  enrollDiploma: (d) => request('POST', '/diploma-enrollments', d),
-  submitDiplomaInstallment2: (eid, d) => request('POST', `/diploma-enrollments/${eid}/submit-installment-2`, d),
+  // Diploma
+  getDiplomaTracks: () => Api.get('/diploma-tracks'),
+  getDiplomaTrack: (id) => Api.get(`/diploma-tracks/${id}`),
+  createDiplomaEnrollment: (d) => Api.post('/diploma-enrollments', d),
+  submitDiplomaInstallment2: (eid, d) => Api.post(`/diploma-enrollments/${eid}/submit-installment-2`, d),
 
-  // General
-  getReviews: () => request('GET', '/reviews'),
-  postReview: (d) => request('POST', '/reviews', d),
-  postContact: (d) => request('POST', '/contact', d),
-  getCertificate: (eid) => request('GET', `/certificates/${eid}`),
-  getNotifications: () => request('GET', '/notifications'),
-  submitAdmissionForm: (d) => request('POST', '/admission-form', d),
+  // Reviews, Contact
+  getReviews: () => Api.get('/reviews'),
+  createReview: (d) => Api.post('/reviews', d),
+  sendContact: (d) => Api.post('/contact', d),
 
-  // Files
-  uploadFile: async (file) => {
-    const fd = new FormData();
-    fd.append('file', file);
-    return request('POST', '/student/upload', fd, true);
-  },
-  adminUpload: async (file) => {
-    const fd = new FormData();
-    fd.append('file', file);
-    return request('POST', '/upload', fd, true);
-  },
+  // Notifications
+  getNotifications: () => Api.get('/notifications'),
+
+  // Admission
+  submitAdmission: (d) => Api.post('/admission-form', d),
+
+  // Video Testimonials
+  getVideoTestimonials: () => Api.get('/video-testimonials'),
+  submitVideoTestimonial: (d) => Api.post('/video-testimonials', d),
 
   // Admin
-  adminLogin: (d) => request('POST', '/admin/login', d),
-  getAdminStats: () => request('GET', '/admin/stats'),
-  getAdminStudents: () => request('GET', '/admin/students'),
-  getStudentProgress: (uid) => request('GET', `/admin/students/${uid}/progress`),
-  removeStudent: (uid) => request('DELETE', `/admin/students/${uid}`),
-  getAdminEnrollments: () => request('GET', '/admin/enrollments'),
-  updateEnrollment: (eid, d) => request('PUT', `/admin/enrollments/${eid}`, d),
-  approveInstallment2: (eid, d) => request('PUT', `/admin/enrollments/${eid}/installment-2`, d),
-  getAdminCourses: () => request('GET', '/admin/courses'),
-  createCourse: (d) => request('POST', '/admin/courses', d),
-  updateCourse: (id, d) => request('PUT', `/admin/courses/${id}`, d),
-  deleteCourse: (id) => request('DELETE', `/admin/courses/${id}`),
-  getAdminAssignments: () => request('GET', '/admin/assignments'),
-  reviewAssignment: (sid, d) => request('PUT', `/admin/assignments/${sid}`, d),
-  getAdminMessages: () => request('GET', '/admin/messages'),
-  getDefaulters: () => request('GET', '/admin/defaulters'),
-  deactivateStudent: (eid) => request('PUT', `/admin/defaulters/${eid}/deactivate`),
-  activateStudent: (eid) => request('PUT', `/admin/defaulters/${eid}/activate`),
-  getAdminDiplomaEnrollments: () => request('GET', '/admin/diploma-enrollments'),
-  updateDiplomaEnrollment: (eid, d) => request('PUT', `/admin/diploma-enrollments/${eid}`, d),
-  approveDiplomaInstallment2: (eid, d) => request('PUT', `/admin/diploma-enrollments/${eid}/installment-2`, d),
-  getAdmissionForms: () => request('GET', '/admin/admission-forms'),
+  getAdminStats: () => Api.get('/admin/stats'),
+  getAdminStudents: () => Api.get('/admin/students'),
+  getStudentProgress: (uid) => Api.get(`/admin/students/${uid}/progress`),
+  removeStudent: (uid) => Api.del(`/admin/students/${uid}`),
+  getAdminEnrollments: () => Api.get('/admin/enrollments'),
+  updateEnrollmentStatus: (id, d) => Api.put(`/admin/enrollments/${id}`, d),
+  adminApproveInst2: (id, d) => Api.put(`/admin/enrollments/${id}/installment-2`, d),
+  getAdminCourses: () => Api.get('/admin/courses'),
+  createCourse: (d) => Api.post('/admin/courses', d),
+  updateCourse: (id, d) => Api.put(`/admin/courses/${id}`, d),
+  deleteCourse: (id) => Api.del(`/admin/courses/${id}`),
+  updateCourseOutline: (id, d) => Api.put(`/admin/courses/${id}/outline`, d),
+  getAdminMessages: () => Api.get('/admin/messages'),
+  getAdminAssignments: () => Api.get('/admin/assignments'),
+  reviewAssignment: (id, d) => Api.put(`/admin/assignments/${id}`, d),
+  getAdminAdmissions: () => Api.get('/admin/admission-forms'),
+  getAdminDiplomaEnrollments: () => Api.get('/admin/diploma-enrollments'),
+  updateDiplomaStatus: (id, d) => Api.put(`/admin/diploma-enrollments/${id}`, d),
+  adminApproveDiplomaInst2: (id, d) => Api.put(`/admin/diploma-enrollments/${id}/installment-2`, d),
+  getDefaulters: () => Api.get('/admin/defaulters'),
+  deactivateStudent: (id) => Api.put(`/admin/defaulters/${id}/deactivate`),
+  activateStudent: (id) => Api.put(`/admin/defaulters/${id}/activate`),
+  getAdminVideoTestimonials: () => Api.get('/admin/video-testimonials'),
+  addAdminVideoTestimonial: (d) => Api.post('/admin/video-testimonials', d),
+  updateAdminVideoTestimonial: (id, d) => Api.put(`/admin/video-testimonials/${id}`, d),
+  deleteAdminVideoTestimonial: (id) => Api.del(`/admin/video-testimonials/${id}`),
+  getExpenses: () => Api.get('/admin/expenses'),
+  addExpense: (d) => Api.post('/admin/expenses', d),
+  updateExpense: (id, d) => Api.put(`/admin/expenses/${id}`, d),
+  deleteExpense: (id) => Api.del(`/admin/expenses/${id}`),
+  getExpenseStats: () => Api.get('/admin/expenses/stats'),
 };
