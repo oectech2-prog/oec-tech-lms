@@ -50,26 +50,50 @@ const Components = {
   footer() {
     return `<footer data-testid="main-footer" class="bg-[#0A0A0A] border-t border-[#27272A]">
       <div class="max-w-7xl mx-auto px-6 md:px-12 py-10 md:py-14">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-          <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-6">
+          <div class="space-y-4 sm:col-span-2 lg:col-span-1">
             <div class="flex items-center gap-2"><i data-lucide="graduation-cap" class="w-7 h-7 text-[#D4AF37]"></i><span class="text-lg font-bold text-white">OEC <span class="text-[#D4AF37]">Tech</span> Institute</span></div>
             <p class="text-[#A1A1AA] text-sm leading-relaxed">Empowering students across Pakistan, UAE, UK & USA with real digital skills to earn online.</p>
             <a href="https://wa.me/923000517616" target="_blank" data-testid="footer-whatsapp" class="inline-flex items-center gap-2 text-sm text-green-400 hover:text-green-300"><i data-lucide="message-circle" class="w-4 h-4"></i>Chat on WhatsApp</a>
           </div>
           <div>
             <h4 class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-4">Quick Links</h4>
-            <ul class="space-y-3">${[{to:'/courses',l:'All Courses'},{to:'/diploma-tracks',l:'Diploma Tracks'},{to:'/reviews',l:'Student Reviews'},{to:'/about',l:'About Us'},{to:'/faq',l:'FAQ'}].map(x=>`<li><a href="${x.to}" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">${x.l}</a></li>`).join('')}</ul>
+            <ul class="space-y-2.5">
+              <li><a href="/courses" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">All Courses</a></li>
+              <li><a href="/diploma-tracks" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Diploma Tracks</a></li>
+              <li><a href="/reviews" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Student Reviews</a></li>
+              <li><a href="/video-testimonials" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Testimonials</a></li>
+              <li><a href="/about" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">About Us</a></li>
+              <li><a href="/faq" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">FAQ</a></li>
+              <li><a href="/contact" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Contact Us</a></li>
+            </ul>
           </div>
           <div>
-            <h4 class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-4">Popular Courses</h4>
-            <ul class="space-y-3">${['Social Media Marketing','Graphic Designing','Shopify Dropshipping','WordPress Development','Amazon VA'].map(c=>`<li><a href="/courses" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37]">${c}</a></li>`).join('')}</ul>
+            <h4 class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-4">Our Courses</h4>
+            <ul class="space-y-2.5">
+              <li><a href="/courses/course_comp_apps" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Computer Applications</a></li>
+              <li><a href="/courses/course_graphic" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Graphic Designing</a></li>
+              <li><a href="/courses/course_smm" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Social Media Marketing</a></li>
+              <li><a href="/courses/course_wordpress" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">WordPress Development</a></li>
+              <li><a href="/courses/course_shopify" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Shopify Dropshipping</a></li>
+              <li><a href="/courses/course_amazon_va" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Amazon Virtual Assistant</a></li>
+              <li><a href="/courses/course_ebay" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">eBay Business</a></li>
+              <li><a href="/courses/course_etsy" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">Etsy Training</a></li>
+              <li><a href="/courses/course_tiktok_shop" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors">TikTok Shop Training</a></li>
+            </ul>
           </div>
           <div>
-            <h4 class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-4">Contact Us</h4>
-            <ul class="space-y-3">
-              <li class="flex items-center gap-2 text-sm text-[#A1A1AA]"><i data-lucide="mail" class="w-4 h-4 text-[#D4AF37]"></i>info@oectechs.com</li>
-              <li class="flex items-center gap-2 text-sm text-[#A1A1AA]"><i data-lucide="phone" class="w-4 h-4 text-[#D4AF37]"></i>0300-0517616</li>
-              <li class="flex items-center gap-2 text-sm text-[#A1A1AA]"><i data-lucide="map-pin" class="w-4 h-4 text-[#D4AF37]"></i>Pakistan | UAE | UK | USA</li>
+            <h4 class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-4">Diploma Tracks</h4>
+            <ul class="space-y-2.5">
+              <li><a href="/diploma-tracks" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors flex items-center gap-1.5"><i data-lucide="award" class="w-3.5 h-3.5 text-[#D4AF37]"></i>Digital Marketing Diploma</a></li>
+              <li><a href="/diploma-tracks" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors flex items-center gap-1.5"><i data-lucide="award" class="w-3.5 h-3.5 text-[#D4AF37]"></i>E-Commerce Diploma</a></li>
+              <li><a href="/diploma-tracks" data-link class="text-sm text-[#A1A1AA] hover:text-[#D4AF37] transition-colors flex items-center gap-1.5"><i data-lucide="award" class="w-3.5 h-3.5 text-[#D4AF37]"></i>Web Design &amp; Dev Diploma</a></li>
+            </ul>
+            <h4 class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mt-6 mb-4">Contact Us</h4>
+            <ul class="space-y-2.5">
+              <li class="flex items-center gap-2 text-sm text-[#A1A1AA]"><i data-lucide="mail" class="w-3.5 h-3.5 text-[#D4AF37]"></i>info@oectechs.com</li>
+              <li class="flex items-center gap-2 text-sm text-[#A1A1AA]"><i data-lucide="phone" class="w-3.5 h-3.5 text-[#D4AF37]"></i>0300-0517616</li>
+              <li class="flex items-center gap-2 text-sm text-[#A1A1AA]"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-[#D4AF37]"></i>Pakistan | UAE | UK | USA</li>
             </ul>
           </div>
         </div>
