@@ -1,67 +1,52 @@
 # OEC Tech Institute - Product Requirements Document
 
 ## Original Problem Statement
-Build a complete modern and professional e-learning website for "OEC Tech Institute". Platform sells online courses, provides student dashboard with structured learning, and an advanced admin panel. Features include secure login, multi-step admission forms with document uploads, certificate generation, payment approval emails, WhatsApp integrations, video testimonials, expense tracking, and course outline management.
+Build a complete modern and professional e-learning website for "OEC Tech Institute". The platform sells online courses, provides student dashboard with structured learning, and an advanced admin panel.
 
 ## Architecture
-- **Frontend**: React (CRA) + Tailwind CSS + Shadcn/UI
+- **Frontend**: Vanilla HTML/CSS/JS SPA (converted from React for performance)
 - **Backend**: FastAPI (Python) with modular routers
 - **Database**: MongoDB
 - **Auth**: Google OAuth (Emergent-managed) for students, password-based for admin
+- **Serving**: Node.js static server with gzip compression on port 3000
 
-## Code Structure
-```
-/app/backend/
-  server.py          # Main app, imports routers
-  routes/            # Modular endpoints (auth, course, admin, general, video, expense)
-  models.py          # Pydantic models
-  database.py        # MongoDB connection
-  auth.py            # Auth logic (Google OAuth + Admin password)
-  seed_data.py       # Course seed data
-/app/frontend/src/
-  pages/             # 20+ pages (Home, Courses, Dashboard, etc.)
-  pages/admin/       # 11 admin pages
-  components/        # Shared components (Header, Footer, etc.)
-  lib/api.js         # API client
-  lib/auth.js        # Auth context
-```
-
-## Completed Features (as of April 14, 2026)
-- [x] Homepage with hero, features, courses, testimonials
-- [x] Course catalog with detail pages
-- [x] Google OAuth student authentication
-- [x] Multi-step enrollment with payment proof upload
-- [x] 2-installment payment system with tracking
-- [x] Student dashboard with week-by-week course progress
-- [x] Assignment submission system (text + file upload)
-- [x] Certificate generation
-- [x] Diploma tracks enrollment
-- [x] Admin Dashboard with stats, growth chart, quick actions
-- [x] Admin: Course CRUD management
-- [x] Admin: Course Outline Editor (weeks, lessons, assignments)
-- [x] Admin: Student management
-- [x] Admin: Payment approval/rejection
-- [x] Admin: Admission form management
-- [x] Admin: Diploma student management
-- [x] Admin: Defaulters tracking
-- [x] Admin: Assignment review system
-- [x] Admin: Video Testimonials management (add/approve/reject/delete)
-- [x] Admin: Expenses tracker with stats, charts, categories
-- [x] Public Video Testimonials page
-- [x] Contact form, FAQ, About, Reviews pages
-- [x] Privacy Policy, Terms of Service, Refund Policy
+## Completed Features (as of April 21, 2026)
+- [x] Full Vanilla JS SPA conversion (from React) - 0.13s TTFB, 0.54s full load
+- [x] SEO optimized: title, meta description, OG tags, Twitter cards, JSON-LD structured data
+- [x] No third-party branding (Emergent branding removed)
+- [x] Public access: Courses, Diplomas, Reviews, Testimonials (no auth required)
+- [x] Gzip compression + caching headers + security headers
+- [x] Dynamic page titles per route
+- [x] MutationObserver to remove injected badges
+- [x] Homepage with hero, animated counters, courses grid, reviews, FAQ, map
+- [x] Course catalog with search & category filter
+- [x] Course detail with weekly outline, requirements, learning outcomes
+- [x] Diploma tracks with roadmap and course listings
+- [x] Video Testimonials (public + admin management)
+- [x] Student Dashboard with course progress, installment tracking
+- [x] My Course View with video player, lesson tracking, assignment submission
+- [x] Multi-step Checkout with admission form, documents, payment
+- [x] Profile, Certificate pages
+- [x] Admin Dashboard with stats, revenue, quick actions
+- [x] Admin: Courses + Outline Editor, Students, Payments, Admissions
+- [x] Admin: Diploma Students, Defaulters, Assignments review
+- [x] Admin: Video Testimonials management, Expenses tracker
 - [x] WhatsApp floating chat widget
-- [x] Backend refactored to modular routers (6 route files)
-- [x] 9 courses seeded (incl. Etsy & TikTok Shop Training)
+- [x] Contact form, FAQ, About, Reviews, Policy pages
+- [x] Responsive design (mobile + desktop)
+- [x] Accessibility: focus-visible states on all interactive elements
 
-## Testing Status
-- Iteration 14: Backend refactor regression tests - PASSED
-- Iteration 15: New features (Expenses, Videos, Outline Editor) - ALL PASSED (100%)
+## Performance Metrics
+- TTFB: 0.13s
+- Full page load: 0.54s
+- Target: < 3s (achieved)
 
-## Known Issues / Limitations
-- Email notifications: MOCKED (Resend API key not provided)
+## Auth Requirements (kept minimal)
+- Admin dashboard: Password-based auth
+- Student dashboard: Google OAuth
+- Public pages: No auth required (courses, diplomas, reviews, testimonials)
 
 ## Backlog
-- P0: Convert full project to Vanilla HTML/CSS/JS (user request for <3s load)
-- P1: Integrate Resend API for real email notifications (needs API key from user)
-- P2: Mobile responsiveness audit
+- P1: Integrate Resend API for real email notifications (needs API key)
+- P2: Add og:image for social sharing
+- P3: Service Worker for offline support

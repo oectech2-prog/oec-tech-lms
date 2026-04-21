@@ -3,8 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OEC Tech Institute - Learn Digital Skills & Start Earning Online</title>
-  <meta name="description" content="Master in-demand digital skills with OEC Tech Institute. Practical training, weekly courses, certified diplomas. Join 2500+ students earning online.">
+  <title>OEC Tech Institute LMS | Courses, Diplomas, Reviews &amp; Testimonials</title>
+  <meta name="description" content="OEC Tech Institute offers professional online courses, diploma programs, student reviews, and testimonials to help you build a successful career in digital skills.">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="OEC Tech Institute LMS | Courses, Diplomas, Reviews &amp; Testimonials">
+  <meta property="og:description" content="OEC Tech Institute offers professional online courses, diploma programs, student reviews, and testimonials to help you build a successful career in digital skills.">
+  <meta property="og:site_name" content="OEC Tech Institute">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="OEC Tech Institute LMS | Courses, Diplomas, Reviews &amp; Testimonials">
+  <meta name="twitter:description" content="Professional online courses, diploma programs & digital skills training.">
+
+  <!-- Additional SEO -->
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="OEC Tech Institute">
+  <meta name="keywords" content="online courses, digital skills, diploma programs, OEC Tech Institute, freelancing, social media marketing, graphic design, web development, shopify, amazon VA">
+  <link rel="canonical" href="/">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23D4AF37'/><text x='50%25' y='58%25' dominant-baseline='middle' text-anchor='middle' fill='%23050505' font-family='Arial,sans-serif' font-weight='bold' font-size='16'>O</text></svg>">
+
+  <!-- Preload critical resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+
+  <!-- Tailwind CDN (Play CDN for zero-build) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -15,13 +44,33 @@
       }
     }
   </script>
-  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/css/styles.css">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.js" defer></script>
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "EducationalOrganization",
+    "name": "OEC Tech Institute",
+    "description": "Professional online courses and diploma programs for digital skills.",
+    "url": "/",
+    "contactPoint": { "@type": "ContactPoint", "telephone": "+92-300-0517616", "contactType": "customer service" },
+    "address": { "@type": "PostalAddress", "addressLocality": "Chunian", "addressCountry": "PK" }
+  }
+  </script>
 </head>
 <body class="bg-[#050505] text-white font-['Inter',sans-serif] min-h-screen">
-  <div id="app"></div>
+  <div id="app">
+    <!-- Initial loading state (shows before JS loads) -->
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#050505">
+      <div style="text-align:center">
+        <div style="width:2.5rem;height:2.5rem;border:3px solid #D4AF37;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 1rem"></div>
+        <p style="color:#A1A1AA;font-size:0.875rem">Loading OEC Tech Institute...</p>
+      </div>
+    </div>
+  </div>
   <div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2"></div>
 
   <script src="/js/api.js"></script>
