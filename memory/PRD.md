@@ -7,46 +7,44 @@ Build a complete modern and professional e-learning website for "OEC Tech Instit
 - **Frontend**: Vanilla HTML/CSS/JS SPA (converted from React for performance)
 - **Backend**: FastAPI (Python) with modular routers
 - **Database**: MongoDB
-- **Auth**: Google OAuth (Emergent-managed) for students, password-based for admin
+- **Auth**: Google OAuth for students, password-based for admin
 - **Serving**: Node.js static server with gzip compression on port 3000
 
 ## Completed Features (as of April 21, 2026)
-- [x] Full Vanilla JS SPA conversion (from React) - 0.13s TTFB, 0.54s full load
-- [x] SEO optimized: title, meta description, OG tags, Twitter cards, JSON-LD structured data
-- [x] No third-party branding (Emergent branding removed)
+
+### Core Platform
+- [x] Full Vanilla JS SPA conversion from React — 0.15s TTFB
+- [x] Homepage, Courses, Course Detail, Diploma Tracks, Reviews, Video Testimonials
+- [x] FAQ, About, Contact, Privacy Policy, Terms of Service, Refund Policy
+- [x] Student Dashboard, My Course View, Checkout, Profile, Certificate
+- [x] Admin Dashboard, Courses+Outline Editor, Students, Payments, Admissions
+- [x] Admin Diploma Students, Defaulters, Assignments, Video Testimonials, Expenses
+
+### SEO & Branding (April 21, 2026)
+- [x] Title: "OEC Tech Institute LMS | Courses, Diplomas, Reviews & Testimonials"
+- [x] Meta description, OG tags, Twitter Card, JSON-LD structured data, favicon
+- [x] Dynamic per-page titles via setPageTitle()
+- [x] Zero Emergent branding — old public/index.html cleaned, MutationObserver removes injected badges
+- [x] Robots meta, canonical, author, keywords tags
+
+### UI/UX (April 21, 2026)
+- [x] Tightened section spacing: py-24 → py-12/py-16 (responsive)
+- [x] Hero section: reduced from min-h-screen to responsive py-12/py-20
+- [x] Smaller WhatsApp button on mobile (w-12 h-12)
+- [x] Responsive text sizing throughout
+- [x] Footer spacing reduced
+- [x] Focus-visible states for accessibility
+
+### Performance & Security
+- [x] Gzip compression on all text assets
+- [x] 1-year cache for static assets, no-cache for HTML
+- [x] In-memory file cache in serve.js
+- [x] Security headers: X-Content-Type-Options, X-Frame-Options, Referrer-Policy
 - [x] Public access: Courses, Diplomas, Reviews, Testimonials (no auth required)
-- [x] Gzip compression + caching headers + security headers
-- [x] Dynamic page titles per route
-- [x] MutationObserver to remove injected badges
-- [x] Homepage with hero, animated counters, courses grid, reviews, FAQ, map
-- [x] Course catalog with search & category filter
-- [x] Course detail with weekly outline, requirements, learning outcomes
-- [x] Diploma tracks with roadmap and course listings
-- [x] Video Testimonials (public + admin management)
-- [x] Student Dashboard with course progress, installment tracking
-- [x] My Course View with video player, lesson tracking, assignment submission
-- [x] Multi-step Checkout with admission form, documents, payment
-- [x] Profile, Certificate pages
-- [x] Admin Dashboard with stats, revenue, quick actions
-- [x] Admin: Courses + Outline Editor, Students, Payments, Admissions
-- [x] Admin: Diploma Students, Defaulters, Assignments review
-- [x] Admin: Video Testimonials management, Expenses tracker
-- [x] WhatsApp floating chat widget
-- [x] Contact form, FAQ, About, Reviews, Policy pages
-- [x] Responsive design (mobile + desktop)
-- [x] Accessibility: focus-visible states on all interactive elements
-
-## Performance Metrics
-- TTFB: 0.13s
-- Full page load: 0.54s
-- Target: < 3s (achieved)
-
-## Auth Requirements (kept minimal)
-- Admin dashboard: Password-based auth
-- Student dashboard: Google OAuth
-- Public pages: No auth required (courses, diplomas, reviews, testimonials)
+- [x] Auth only on: Admin dashboard, Student dashboard
 
 ## Backlog
-- P1: Integrate Resend API for real email notifications (needs API key)
-- P2: Add og:image for social sharing
-- P3: Service Worker for offline support
+- P1: Add og:image for social sharing preview
+- P2: Service Worker for offline PWA support
+- P3: Mobile responsiveness fine-tuning
+- SKIPPED: Email integration (user declined)

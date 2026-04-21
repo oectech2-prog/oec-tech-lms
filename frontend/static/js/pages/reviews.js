@@ -15,13 +15,13 @@ function renderReviewsPage() {
     </div>`;
 
     renderPublicPage(`<div data-testid="reviews-page" class="page-transition min-h-screen bg-[#050505]">
-      <section class="pt-12 pb-8 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
+      <section class="pt-8 pb-6 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
         <p class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">Testimonials</p>
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">Student Reviews</h1>
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">Student Reviews</h1>
         <p class="text-base text-[#A1A1AA] max-w-xl mb-6">${reviews.length}+ students sharing their success stories.</p>
         <div class="flex flex-wrap gap-2">${[{k:'all',l:'All Reviews'},{k:'PK',l:'Pakistan'},{k:'AE',l:'UAE'},{k:'GB',l:'UK'},{k:'US',l:'USA'}].map(f=>`<button data-filter="${f.k}" class="px-4 py-2 rounded-full text-xs font-semibold transition-colors ${filter===f.k?'bg-[#D4AF37] text-black':'bg-[#111111] text-[#A1A1AA] border border-[#27272A]'}">${f.l} (${count[f.k]||0})</button>`).join('')}</div>
       </div></section>
-      <section class="py-12"><div class="max-w-7xl mx-auto px-6 md:px-12">
+      <section class="py-8"><div class="max-w-7xl mx-auto px-6 md:px-12">
         <h2 class="text-lg font-bold text-white mb-6">All Reviews (${filtered.length})</h2>
         ${filtered.length === 0 ? '<div class="text-center py-20"><p class="text-[#A1A1AA]">No reviews found.</p></div>' :
         `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">${filtered.map(r => card(r)).join('')}</div>`}

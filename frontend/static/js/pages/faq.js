@@ -8,12 +8,12 @@ const FAQ_DATA = [
 
 function renderFaqPage() {
   renderPublicPage(`<div data-testid="faq-page" class="page-transition min-h-screen bg-[#050505]">
-    <section class="pt-12 pb-8 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
+    <section class="pt-8 pb-6 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
       <p class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">Help Center</p>
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">Frequently Asked Questions</h1>
+      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">Frequently Asked Questions</h1>
       <p class="text-base text-[#A1A1AA] max-w-xl">Everything you need to know about our courses, payments, and platform.</p>
     </div></section>
-    <section class="py-16"><div class="max-w-4xl mx-auto px-6 md:px-12 space-y-12">
+    <section class="py-10"><div class="max-w-4xl mx-auto px-6 md:px-12 space-y-12">
       ${FAQ_DATA.map(s => `<div><h2 class="text-xl font-bold text-[#D4AF37] mb-6">${s.cat}</h2><div class="space-y-3">
         ${s.qs.map((f,i) => `<div class="bg-[#111111] border border-[#27272A] rounded-xl overflow-hidden">
           <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-white/5 transition-colors">

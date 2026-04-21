@@ -49,7 +49,7 @@ const Components = {
 
   footer() {
     return `<footer data-testid="main-footer" class="bg-[#0A0A0A] border-t border-[#27272A]">
-      <div class="max-w-7xl mx-auto px-6 md:px-12 py-16">
+      <div class="max-w-7xl mx-auto px-6 md:px-12 py-10 md:py-14">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div class="space-y-4">
             <div class="flex items-center gap-2"><i data-lucide="graduation-cap" class="w-7 h-7 text-[#D4AF37]"></i><span class="text-lg font-bold text-white">OEC <span class="text-[#D4AF37]">Tech</span> Institute</span></div>
@@ -73,7 +73,7 @@ const Components = {
             </ul>
           </div>
         </div>
-        <div class="mt-12 pt-8 border-t border-[#27272A] flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="mt-8 pt-6 border-t border-[#27272A] flex flex-col sm:flex-row justify-between items-center gap-3">
           <p class="text-xs text-[#A1A1AA]">&copy; ${new Date().getFullYear()} OEC Tech Institute. All rights reserved.</p>
           <div class="flex gap-4 text-xs text-[#A1A1AA]">
             <a href="/privacy-policy" data-link class="hover:text-[#D4AF37]">Privacy Policy</a>
@@ -86,19 +86,19 @@ const Components = {
   },
 
   whatsapp() {
-    return `<div class="fixed bottom-6 left-6 z-50" data-testid="whatsapp-chat-widget">
+    return `<div class="fixed bottom-4 left-4 z-50" data-testid="whatsapp-chat-widget">
       <div id="wa-popup" class="hidden mb-3 w-72 bg-[#111111] border border-[#27272A] rounded-2xl shadow-2xl overflow-hidden">
-        <div class="bg-green-600 px-5 py-4 flex items-center justify-between">
-          <div class="flex items-center gap-3"><div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center"><i data-lucide="message-circle" class="w-5 h-5 text-white"></i></div><div><p class="text-sm font-bold text-white">OEC Tech Institute</p><p class="text-[10px] text-green-100">Typically replies instantly</p></div></div>
+        <div class="bg-green-600 px-5 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-3"><div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center"><i data-lucide="message-circle" class="w-4 h-4 text-white"></i></div><div><p class="text-sm font-bold text-white">OEC Tech Institute</p><p class="text-[10px] text-green-100">Typically replies instantly</p></div></div>
           <button onclick="document.getElementById('wa-popup').classList.add('hidden')" class="text-white/70 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
         <div class="p-4">
-          <div class="bg-[#0A0A0A] rounded-xl p-3 mb-4"><p class="text-sm text-[#A1A1AA]">Hi! Welcome to OEC Tech Institute. How can we help you today?</p></div>
-          <a href="https://wa.me/923000517616?text=Hi%20OEC%20Tech%20Institute!" target="_blank" class="block w-full bg-green-600 text-white text-center text-sm font-semibold py-3 rounded-xl hover:bg-green-500">Start Chat</a>
+          <div class="bg-[#0A0A0A] rounded-xl p-3 mb-3"><p class="text-xs text-[#A1A1AA]">Hi! Welcome to OEC Tech Institute. How can we help you today?</p></div>
+          <a href="https://wa.me/923000517616?text=Hi%20OEC%20Tech%20Institute!" target="_blank" class="block w-full bg-green-600 text-white text-center text-sm font-semibold py-2.5 rounded-xl hover:bg-green-500">Start Chat</a>
         </div>
       </div>
-      <button onclick="document.getElementById('wa-popup').classList.toggle('hidden');initIcons()" data-testid="whatsapp-toggle-btn" class="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 hover:bg-green-400 transition-colors hover:scale-110">
-        <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
+      <button onclick="document.getElementById('wa-popup').classList.toggle('hidden');initIcons()" data-testid="whatsapp-toggle-btn" class="w-12 h-12 md:w-14 md:h-14 bg-green-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 hover:bg-green-400 transition-all hover:scale-110">
+        <i data-lucide="message-circle" class="w-5 h-5 md:w-6 md:h-6 text-white"></i>
       </button>
     </div>`;
   },
