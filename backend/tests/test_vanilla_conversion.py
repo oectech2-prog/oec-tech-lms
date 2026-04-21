@@ -1,3 +1,4 @@
+from conftest import ADMIN_PASSWORD
 """
 Backend API Tests for OEC Tech Institute - Vanilla JS Conversion
 Tests all critical API endpoints to ensure backend still works after frontend conversion
@@ -70,7 +71,7 @@ class TestAdminAuth:
         """POST /api/admin/login - successful login"""
         response = requests.post(
             f"{BASE_URL}/api/admin/login",
-            json={"password": "OEC@Admin#2026!Secure"}
+            json={"password": ADMIN_PASSWORD}
         )
         assert response.status_code == 200
         data = response.json()
@@ -102,7 +103,7 @@ class TestAdminAPIs:
         self.session = requests.Session()
         response = self.session.post(
             f"{BASE_URL}/api/admin/login",
-            json={"password": "OEC@Admin#2026!Secure"}
+            json={"password": ADMIN_PASSWORD}
         )
         assert response.status_code == 200
         yield
@@ -178,7 +179,7 @@ class TestCourseOutlineAPI:
         self.session = requests.Session()
         response = self.session.post(
             f"{BASE_URL}/api/admin/login",
-            json={"password": "OEC@Admin#2026!Secure"}
+            json={"password": ADMIN_PASSWORD}
         )
         assert response.status_code == 200
         yield
@@ -227,7 +228,7 @@ class TestExpensesCRUD:
         self.session = requests.Session()
         response = self.session.post(
             f"{BASE_URL}/api/admin/login",
-            json={"password": "OEC@Admin#2026!Secure"}
+            json={"password": ADMIN_PASSWORD}
         )
         assert response.status_code == 200
         yield

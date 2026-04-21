@@ -64,75 +64,66 @@ async def delete_expense(expense_id: str, authorization: str = Header(None), ses
     return {"message": "Expense deleted"}
 
 
+MONTHS = ["January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"]
+
+
+async def _get_month_revenue(m_idx, y):
+    """Calculate revenue for a specific month."""
+    m_start = datetime(y, m_idx + 1, 1, tzinfo=timezone.utc).isoformat()
+    m_end = datetime(y + 1, 1, 1, tzinfo=timezone.utc).isoformat() if m_idx + 1 == 12 else datetime(y, m_idx + 2, 1, tzinfo=timezone.utc).isoformat()
+
+    revenue = 0
+    for coll in [db.enrollments, db.diploma_enrollments]:
+        docs = await coll.find(
+            {"payment_status": "completed", "approved_at": {"$gte": m_start, "$lt": m_end}},
+            {"_id": 0, "admission_fee": 1, "installment_1_amount": 1}
+        ).to_list(5000)
+        for e in docs:
+            revenue += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
+    return revenue
+
+
+def _categorize_expenses(expenses):
+    """Group expenses by category with totals."""
+    by_cat = {}
+    total = 0
+    for e in expenses:
+        amt = e.get("amount", 0)
+        total += amt
+        cat = e.get("category", "Other")
+        by_cat[cat] = by_cat.get(cat, 0) + amt
+    return total, by_cat
+
+
 @router.get("/admin/expenses/stats")
 async def expense_stats(authorization: str = Header(None), session_token: str = Cookie(None)):
     await require_admin(authorization, session_token)
     now = datetime.now(timezone.utc)
-    months = ["January", "February", "March", "April", "May", "June",
-              "July", "August", "September", "October", "November", "December"]
 
     monthly_data = []
     for i in range(11, -1, -1):
         m_idx = (now.month - 1 - i) % 12
         y = now.year - (1 if (now.month - 1 - i) < 0 else 0)
-        m_name = months[m_idx]
 
-        expenses = await db.expenses.find(
-            {"month": m_name, "year": y}, {"_id": 0}
-        ).to_list(5000)
-        total_exp = sum(e.get("amount", 0) for e in expenses)
-
-        # Category breakdown
-        by_cat = {}
-        for e in expenses:
-            cat = e.get("category", "Other")
-            by_cat[cat] = by_cat.get(cat, 0) + e.get("amount", 0)
-
-        # Revenue: count approved enrollments in this month
-        m_start = datetime(y, m_idx + 1, 1, tzinfo=timezone.utc).isoformat()
-        if m_idx + 1 == 12:
-            m_end = datetime(y + 1, 1, 1, tzinfo=timezone.utc).isoformat()
-        else:
-            m_end = datetime(y, m_idx + 2, 1, tzinfo=timezone.utc).isoformat()
-
-        revenue = 0
-        approved_enr = await db.enrollments.find({
-            "payment_status": "completed",
-            "approved_at": {"$gte": m_start, "$lt": m_end}
-        }, {"_id": 0, "admission_fee": 1, "installment_1_amount": 1}).to_list(5000)
-        for e in approved_enr:
-            revenue += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
-
-        approved_dip = await db.diploma_enrollments.find({
-            "payment_status": "completed",
-            "approved_at": {"$gte": m_start, "$lt": m_end}
-        }, {"_id": 0, "admission_fee": 1, "installment_1_amount": 1}).to_list(5000)
-        for e in approved_dip:
-            revenue += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
+        expenses = await db.expenses.find({"month": MONTHS[m_idx], "year": y}, {"_id": 0}).to_list(5000)
+        total_exp, by_cat = _categorize_expenses(expenses)
+        revenue = await _get_month_revenue(m_idx, y)
 
         monthly_data.append({
-            "month": m_name,
-            "year": y,
-            "label": f"{m_name[:3]} {y}",
-            "total_expenses": total_exp,
-            "total_revenue": revenue,
-            "profit": revenue - total_exp,
-            "categories": by_cat,
+            "month": MONTHS[m_idx], "year": y,
+            "label": f"{MONTHS[m_idx][:3]} {y}",
+            "total_expenses": total_exp, "total_revenue": revenue,
+            "profit": revenue - total_exp, "categories": by_cat,
         })
 
-    # Current month summary
-    current_expenses = await db.expenses.find(
-        {"month": months[now.month - 1], "year": now.year}, {"_id": 0}
-    ).to_list(5000)
-    current_total = sum(e.get("amount", 0) for e in current_expenses)
-    current_by_cat = {}
-    for e in current_expenses:
-        cat = e.get("category", "Other")
-        current_by_cat[cat] = current_by_cat.get(cat, 0) + e.get("amount", 0)
+    # Current month
+    current_expenses = await db.expenses.find({"month": MONTHS[now.month - 1], "year": now.year}, {"_id": 0}).to_list(5000)
+    current_total, current_by_cat = _categorize_expenses(current_expenses)
 
     return {
         "monthly": monthly_data,
-        "current_month": months[now.month - 1],
+        "current_month": MONTHS[now.month - 1],
         "current_year": now.year,
         "current_total_expenses": current_total,
         "current_breakdown": current_by_cat,

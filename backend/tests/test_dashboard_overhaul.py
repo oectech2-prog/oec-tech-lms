@@ -13,7 +13,7 @@ import requests
 import os
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
-ADMIN_PASSWORD = "OEC@Admin#2026!Secure"
+from conftest import ADMIN_PASSWORD, BASE_URL as CONF_URL
 
 
 class TestAdminLogin:
