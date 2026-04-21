@@ -57,13 +57,24 @@
     if (dd && !e.target.closest('#user-dropdown-wrap')) dd.classList.add('hidden');
   });
 
-  // Remove any injected branding on mutation
-  const observer = new MutationObserver(() => {
-    document.querySelectorAll('body > div:not(#app):not(#toast-container)').forEach(el => {
-      if (el.textContent?.includes('Made with') || el.textContent?.includes('Emergent')) el.remove();
+  // Aggressively remove any injected third-party branding/badges
+  function removeBranding() {
+    // Remove the "Made with Emergent" badge
+    const badge = document.getElementById('emergent-badge');
+    if (badge) badge.remove();
+    // Remove any fixed-position badges at bottom
+    document.querySelectorAll('body > a[style*="fixed"], body > div[style*="fixed"]').forEach(el => {
+      const txt = el.textContent || '';
+      if (txt.includes('Made with') || txt.includes('Emergent') || txt.includes('Powered by')) el.remove();
     });
-  });
-  observer.observe(document.body, { childList: true });
+    // Remove emergent scripts
+    document.querySelectorAll('script[src*="emergent"]').forEach(s => s.remove());
+  }
+  removeBranding();
+
+  // Watch for dynamically injected elements
+  const observer = new MutationObserver(() => removeBranding());
+  observer.observe(document.body, { childList: true, subtree: false });
 
   console.log('OEC Tech Institute LMS loaded');
 })();

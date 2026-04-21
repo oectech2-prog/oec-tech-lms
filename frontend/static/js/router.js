@@ -68,12 +68,13 @@ const Router = {
 // Helper to reinitialize Lucide icons after DOM updates
 function initIcons() {
   if (window.lucide) lucide.createIcons();
-  // Remove any injected third-party branding badges
-  document.querySelectorAll('[data-emergent], [class*="emergent"], a[href*="emergent"]').forEach(el => {
-    if (!el.closest('#app') || el.tagName === 'A' && el.href?.includes('emergent') && !el.closest('form')) el.remove();
+  // Remove any dynamically injected branding elements
+  const badge = document.getElementById('emergent-badge');
+  if (badge) badge.remove();
+  document.querySelectorAll('body > a[style*="fixed"], body > div[style*="fixed"]').forEach(el => {
+    const txt = el.textContent || '';
+    if (txt.includes('Made with') || txt.includes('Emergent') || txt.includes('Powered by')) el.remove();
   });
-  const badge = document.querySelector('div[style*="position: fixed"][style*="bottom"]');
-  if (badge && badge.textContent?.includes('Made with')) badge.remove();
 }
 
 // SEO: Update page title based on route
