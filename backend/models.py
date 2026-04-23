@@ -15,6 +15,7 @@ class Assignment(BaseModel):
     assignment_id: str = Field(default_factory=lambda: f"assign_{uuid.uuid4().hex[:8]}")
     title: str
     description: str
+    file_url: str = ""
     is_final_project: bool = False
 
 

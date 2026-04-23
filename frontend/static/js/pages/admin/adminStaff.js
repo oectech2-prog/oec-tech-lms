@@ -37,6 +37,7 @@ function renderAdminStaffPage() {
           ${s.id_card_front_url?`<a href="${s.id_card_front_url}" target="_blank" class="text-[9px] px-2 py-1 bg-blue-500/10 text-blue-400 rounded-lg">ID Front</a>`:''}
           ${s.id_card_back_url?`<a href="${s.id_card_back_url}" target="_blank" class="text-[9px] px-2 py-1 bg-blue-500/10 text-blue-400 rounded-lg">ID Back</a>`:''}
           ${s.letter_url?`<a href="${s.letter_url}" target="_blank" class="text-[9px] px-2 py-1 bg-green-500/10 text-green-400 rounded-lg">Letter</a>`:''}
+          <button onclick="window._dlStaffPdf('${s.staff_id}')" class="text-[9px] px-2 py-1 bg-[#D4AF37]/10 text-[#D4AF37] rounded-lg ml-auto"><i data-lucide="download" class="w-3 h-3 inline"></i> PDF</button>
         </div>
       </div>`).join('')}</div>`}
 
@@ -119,6 +120,20 @@ function renderAdminStaffPage() {
   }
 
   window._resetStaffForm = () => { document.getElementById('staff-form')?.reset(); };
+
+  window._dlStaffPdf = (staffId) => {
+    const s = staff.find(x=>x.staff_id===staffId);if(!s)return;
+    const sections = `
+      <div class="section"><h3>Staff Information</h3><div class="grid">
+        ${pdfField('Full Name',s.name)}${pdfField('Category',s.category)}${pdfField('Staff ID',s.staff_id)}${pdfField('Phone',s.phone)}
+        ${pdfField('Email',s.email)}${pdfField('CNIC',s.cnic)}${pdfField('Gender',s.gender)}${pdfField('Date of Birth',s.date_of_birth)}
+        ${pdfField('City',s.city)}${pdfField('Address',s.address)}${pdfField('Qualification',s.qualification)}
+      </div></div>
+      <div class="section"><h3>Employment Details</h3><div class="grid">
+        ${pdfField('Salary',s.salary?'PKR '+s.salary:'-')}${pdfField('Joining Date',s.joining_date)}${pdfField('Status',s.status)}${pdfField('Father Name',s.father_name)}
+      </div></div>`;
+    generateOecPdf('Staff Admission Form', s.staff_id, s.profile_pic_url, sections);
+  };
 
   function loadStaff() { Api.getStaff().then(d => { staff = d; render(); }).catch(() => render()); }
   loadStaff();

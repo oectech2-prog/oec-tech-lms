@@ -521,3 +521,44 @@ async def get_admission_forms(authorization: str = Header(None), session_token: 
             f["installment_1_url"] = ""
             f["installment_2_url"] = ""
     return forms
+
+
+
+@router.post("/admin/admission-forms/manual")
+async def manual_add_student(data: dict, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    full_name = data.get("full_name", "").strip()
+    if not full_name:
+        raise HTTPException(status_code=400, detail="Full name required")
+
+    student_id = f"OEC-{datetime.now(timezone.utc).strftime('%Y')}-{str(await db.admission_forms.count_documents({}) + 1).zfill(4)}"
+
+    course_id = data.get("course_id", "")
+    course = await db.courses.find_one({"course_id": course_id}, {"_id": 0}) if course_id else None
+
+    form_doc = {
+        "form_id": f"form_{uuid.uuid4().hex[:10]}",
+        "student_id": student_id,
+        "user_id": f"manual_{uuid.uuid4().hex[:8]}",
+        "full_name": full_name,
+        "phone": data.get("phone", ""),
+        "date_of_birth": data.get("date_of_birth", ""),
+        "gender": data.get("gender", ""),
+        "city": data.get("city", ""),
+        "address": data.get("address", ""),
+        "session_type": data.get("session_type", ""),
+        "learning_type": data.get("learning_type", ""),
+        "qualification": data.get("qualification", ""),
+        "religion": data.get("religion", ""),
+        "father_name": data.get("father_name", ""),
+        "father_phone": data.get("father_phone", ""),
+        "father_cnic": data.get("father_cnic", ""),
+        "course_id": course_id,
+        "course_title": course["title"] if course else "",
+        "profile_pic_url": data.get("profile_pic_url", ""),
+        "receipt_url": data.get("receipt_url", ""),
+        "joining_date": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.admission_forms.insert_one(form_doc)
+    return {"message": "Student added", "student_id": student_id, "form_id": form_doc["form_id"]}
