@@ -1,39 +1,35 @@
 # OEC Tech Institute - Product Requirements Document
 
 ## Architecture
-- **Frontend**: Vanilla HTML/CSS/JS SPA (Tailwind CDN + Lucide icons)
-- **Backend**: FastAPI (Python) with modular routers
-- **Database**: MongoDB
-- **Auth**: Google OAuth for students, password-based for admin
-- **Performance**: TTFB 0.10s, gzip compression, caching headers
+- Frontend: Vanilla HTML/CSS/JS SPA | Backend: FastAPI | DB: MongoDB
+- Performance: TTFB 0.08s | Auth: Google OAuth (students) + Password (admin)
 
-## Completed Features
+## All Completed Features
 
 ### Core Platform
 - Homepage, 9 Courses, Course Detail, 3 Diploma Tracks, Reviews, Video Testimonials
 - FAQ, About, Contact, Privacy Policy, Terms, Refund Policy
-- Student Dashboard, My Course View, Checkout, Profile, Certificate
-- Admin: Dashboard, Courses, Students, Payments, Admissions, Diploma, Defaulters, Assignments, Videos, Expenses
+- Student Dashboard, My Course View, Checkout (4-step), Profile, Certificate
 
-### Latest Changes (April 23, 2026) — All 9 Requested Items
-1. ✅ Student Dashboard: OEC Tech Institute logo in sidebar + empty state enrollment prompt
-2. ✅ Checkout 4-step flow: Back buttons on steps 2, 3, 4
-3. ✅ Checkout validation: All admission form fields mandatory before proceeding
-4. ✅ Documents step with file upload fields (photo, CNIC, education, father CNIC)
-5. ✅ Admin Course Edit: YouTube Intro Video URL field (auto-converts watch→embed)
-6. ✅ Admin Course Edit: Thumbnail URL field (Google Drive link auto-converts to direct image)
-7. ✅ Admin Diploma Students: Add Student (by email) + Delete functionality
-8. ✅ Google Login: Fixed auth callback race condition (session_id parsed before route guard)
-9. ✅ Public access: Courses, Diplomas, Reviews, Testimonials accessible without login
+### Admin Panel (12 pages)
+- Dashboard, Courses (Edit/Outline/Delete), Students, Payments, Admissions, Diploma Students
+- Defaulters, Assignments, Video Testimonials, Expenses, **Staff Details (NEW)**
 
-### SEO & Performance
-- Title, meta description, OG tags, Twitter Card, JSON-LD, favicon
-- Per-page dynamic titles, 0 Emergent branding
-- Gzip, 1-year cache on static assets, in-memory file cache
-- Security headers: X-Content-Type-Options, X-Frame-Options, Referrer-Policy
+### Latest (April 23, 2026) — All 4 Tasks Done
+1. **Unique Student IDs**: Auto-generated OEC-YYYY-XXXX format, displayed as gold badges in admin
+2. **Admission Form PDF Download**: One-click PDF with all student data, OEC branding, print-ready
+3. **Staff Details Page**: 8 categories (Principal, Admin, Instructor, Job Holder, Internship w/wo stipend, Sweeper, Guard). Full form: profile pic, ID card front/back, letter upload (PDF/Word/Excel)
+4. **Student Profile Photo Upload**: Added to enrollment Step 2, uploads to server, saved in admission form
 
-## Testing
-- Iteration 17: 100% pass (17/17 backend, all frontend verified)
+### Previous Implementations
+- SEO: Title, meta, OG tags, JSON-LD, favicon, dynamic page titles
+- Performance: Gzip, caching, security headers
+- Admin Course Edit: YouTube video URL + Google Drive thumbnail
+- Admin Diploma: Add/Delete students
+- Google Login: Fixed auth callback race condition
+- Public Access: Courses, Diplomas, Reviews accessible without login
+
+## Testing: Iteration 18 — 100% pass (13/13 backend, all frontend verified)
 
 ## Backlog
 - og:image for social sharing
