@@ -450,6 +450,60 @@ async def admin_approve_diploma_installment_2(enrollment_id: str, data: PaymentS
     return {"message": "Diploma installment 2 status updated"}
 
 
+
+@router.delete("/admin/diploma-enrollments/{enrollment_id}")
+async def delete_diploma_enrollment(enrollment_id: str, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    result = await db.diploma_enrollments.delete_one({"enrollment_id": enrollment_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Diploma enrollment not found")
+    return {"message": "Diploma enrollment deleted"}
+
+
+
+@router.post("/admin/diploma-enrollments/manual")
+async def manual_add_diploma_enrollment(data: dict, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    email = data.get("email", "").strip()
+    track_id = data.get("track_id", "")
+    if not email or not track_id:
+        raise HTTPException(status_code=400, detail="Email and track_id required")
+
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Student not found. They must login with Google first.")
+
+    track = await db.diploma_tracks.find_one({"track_id": track_id}, {"_id": 0})
+    if not track:
+        raise HTTPException(status_code=404, detail="Diploma track not found")
+
+    existing = await db.diploma_enrollments.find_one({"user_id": user["user_id"], "track_id": track_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Student already enrolled in this track")
+
+    enrollment_id = f"dip_{uuid.uuid4().hex[:10]}"
+    payment_status = data.get("payment_status", "pending")
+    doc = {
+        "enrollment_id": enrollment_id,
+        "user_id": user["user_id"],
+        "track_id": track_id,
+        "track_title": track.get("title", ""),
+        "course_ids": track.get("courses", []),
+        "payment_method": data.get("payment_method", ""),
+        "payment_status": payment_status,
+        "installment_1_status": "completed" if payment_status == "completed" else "pending",
+        "installment_2_status": "pending",
+        "installment_2_due_weeks": 3,
+        "enrolled_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if payment_status == "completed":
+        doc["approved_at"] = datetime.now(timezone.utc).isoformat()
+        doc["installment_2_due_date"] = (datetime.now(timezone.utc) + timedelta(weeks=3)).isoformat()
+
+    await db.diploma_enrollments.insert_one(doc)
+    return {"message": "Diploma enrollment created", "enrollment_id": enrollment_id}
+
+
 @router.get("/admin/admission-forms")
 async def get_admission_forms(authorization: str = Header(None), session_token: str = Cookie(None)):
     await require_admin(authorization, session_token)

@@ -42,9 +42,13 @@ async def create_course(course_data: CourseCreate, authorization: str = Header(N
 
 
 @router.put("/admin/courses/{course_id}")
-async def update_course(course_id: str, course_data: CourseCreate, authorization: str = Header(None), session_token: str = Cookie(None)):
+async def update_course(course_id: str, course_data: dict, authorization: str = Header(None), session_token: str = Cookie(None)):
     await require_admin(authorization, session_token)
-    await db.courses.update_one({"course_id": course_id}, {"$set": course_data.model_dump()})
+    allowed = {"title","description","short_description","price","admission_fee","currency","image_url","category","duration","level","instructor","intro_video_url","intro_video_type","requirements","what_you_will_learn"}
+    update_fields = {k: v for k, v in course_data.items() if k in allowed}
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+    await db.courses.update_one({"course_id": course_id}, {"$set": update_fields})
     result = await db.courses.find_one({"course_id": course_id}, {"_id": 0})
     return result
 
