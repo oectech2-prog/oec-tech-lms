@@ -43,6 +43,7 @@
   route('/admin/assignments', () => renderAdminAssignmentsPage(), { requireAdmin: true, title: 'Admin - Assignments' });
   route('/admin/video-testimonials', () => renderAdminVideoTestimonialsPage(), { requireAdmin: true, title: 'Admin - Videos' });
   route('/admin/expenses', () => renderAdminExpensesPage(), { requireAdmin: true, title: 'Admin - Expenses' });
+  route('/admin/staff', () => renderAdminStaffPage(), { requireAdmin: true, title: 'Admin - Staff' });
 
   // Init auth
   await Auth.init();

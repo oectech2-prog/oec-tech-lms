@@ -56,14 +56,14 @@ function renderCheckoutPage(params) {
       } else if (step === 2) {
         stepContent = `<h3 class="text-base font-bold text-white mb-4"><i data-lucide="file-text" class="w-5 h-5 text-[#D4AF37] inline mr-2"></i>Upload Documents</h3>
         <div class="bg-[#111111] border border-[#27272A] rounded-xl p-5 space-y-4">
-          <p class="text-xs text-[#A1A1AA]">Upload your documents (CNIC, Education Certificate, Photo). JPG, PNG or PDF. Max 5MB each.</p>
+          <p class="text-xs text-[#A1A1AA]">Upload your documents. JPG, PNG or PDF. Max 5MB each.</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><label class="${LABEL}">Student Photo</label><input type="file" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20" onchange="docUploaded=true"></div>
-            <div><label class="${LABEL}">CNIC / B-Form</label><input type="file" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20" onchange="docUploaded=true"></div>
-            <div><label class="${LABEL}">Education Certificate</label><input type="file" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20" onchange="docUploaded=true"></div>
-            <div><label class="${LABEL}">Father CNIC</label><input type="file" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20" onchange="docUploaded=true"></div>
+            <div><label class="${LABEL}">Profile Photo *</label><input type="file" id="doc-profile" accept="image/*" data-testid="doc-profile" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20"></div>
+            <div><label class="${LABEL}">CNIC / B-Form</label><input type="file" id="doc-cnic" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20"></div>
+            <div><label class="${LABEL}">Education Certificate</label><input type="file" id="doc-edu" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20"></div>
+            <div><label class="${LABEL}">Father CNIC</label><input type="file" id="doc-father" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20"></div>
           </div>
-          <div class="flex gap-3 pt-2">${BACK}<button data-testid="docs-next-btn" onclick="step=3;render()" class="btn-gold px-6 py-2 text-xs">Next: Payment</button></div>
+          <div class="flex gap-3 pt-2">${BACK}<button data-testid="docs-next-btn" onclick="window._docsNext()" class="btn-gold px-6 py-2 text-xs">Next: Payment</button></div>
         </div>`;
       } else if (step === 3) {
         stepContent = `<h3 class="text-base font-bold text-white mb-4"><i data-lucide="credit-card" class="w-5 h-5 text-[#D4AF37] inline mr-2"></i>Payment Method</h3>
@@ -134,12 +134,25 @@ function renderCheckoutPage(params) {
       for (const k of req) { if (!form[k]) { showToast(`Please fill: ${k.replace(/_/g,' ')}`, 'error'); return; } }
       step = 2; render();
     };
+    window._docsNext = async () => {
+      // Upload profile photo if selected
+      const profileInput = document.getElementById('doc-profile');
+      if (profileInput?.files?.[0]) {
+        try {
+          const uf = new FormData(); uf.append('file', profileInput.files[0]);
+          const res = await Api._fetch('POST', '/student/upload', uf, true);
+          form.profile_pic_url = res.url || '';
+        } catch { showToast('Failed to upload profile photo', 'error'); }
+      }
+      step = 3; render();
+    };
     window._selectMethod = (id) => { selectedMethod = id; render(); };
     window._paymentNext = () => { if (!selectedMethod) { showToast('Select a payment method', 'error'); return; } step = 4; render(); };
     window._confirmEnroll = async () => {
       if (enrolling) return; enrolling = true; render();
       try {
-        const admRes = await Api.submitAdmission({ ...form, course_id: params.courseId });
+        const admData = { ...form, course_id: params.courseId };
+        const admRes = await Api.submitAdmission(admData);
         studentId = admRes.student_id || '';
         await Api.enroll({ course_id: params.courseId, payment_method: selectedMethod, payment_proof: paymentRef || selectedMethod });
         success = true; showToast('Enrollment submitted!');

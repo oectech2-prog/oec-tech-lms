@@ -134,6 +134,7 @@ const Components = {
       { to:'/admin/admissions', icon:'file-text', label:'Admissions' }, { to:'/admin/diploma-students', icon:'award', label:'Diploma' },
       { to:'/admin/defaulters', icon:'alert-triangle', label:'Defaulters' }, { to:'/admin/assignments', icon:'file-text', label:'Assignments' },
       { to:'/admin/video-testimonials', icon:'video', label:'Videos' }, { to:'/admin/expenses', icon:'credit-card', label:'Expenses' },
+      { to:'/admin/staff', icon:'briefcase', label:'Staff' },
     ];
     return `<aside class="w-56 bg-[#0A0A0A] border-r border-[#27272A] hidden md:flex flex-col shrink-0">
       <div class="p-5 border-b border-[#27272A]"><a href="/" data-link class="flex items-center gap-2"><i data-lucide="graduation-cap" class="w-6 h-6 text-[#D4AF37]"></i><span class="text-sm font-bold text-white">OEC <span class="text-[#D4AF37]">Tech</span></span></a></div>
@@ -148,6 +149,7 @@ const Components = {
       { to:'/admin/enrollments', label:'Payments' }, { to:'/admin/admissions', label:'Admissions' }, { to:'/admin/diploma-students', label:'Diploma' },
       { to:'/admin/defaulters', label:'Defaulters' }, { to:'/admin/assignments', label:'Assignments' },
       { to:'/admin/video-testimonials', label:'Videos' }, { to:'/admin/expenses', label:'Expenses' },
+      { to:'/admin/staff', label:'Staff' },
     ];
     return `<div class="md:hidden flex items-center justify-between mb-4 overflow-x-auto">
       <div class="flex items-center gap-2 shrink-0"><i data-lucide="graduation-cap" class="w-5 h-5 text-[#D4AF37]"></i><span class="text-sm font-bold text-white">OEC <span class="text-[#D4AF37]">Tech</span></span></div>

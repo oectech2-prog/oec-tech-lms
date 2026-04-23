@@ -262,6 +262,7 @@ async def submit_admission_form(data: dict, authorization: str = Header(None), s
         "last_degree_url": data.get("last_degree_url", ""),
         "bform_url": data.get("bform_url", ""),
         "receipt_url": data.get("receipt_url", ""),
+        "profile_pic_url": data.get("profile_pic_url", ""),
         "joining_date": datetime.now(timezone.utc).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat()
     }

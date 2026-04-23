@@ -96,4 +96,11 @@ const Api = {
   updateExpense: (id, d) => Api.put(`/admin/expenses/${id}`, d),
   deleteExpense: (id) => Api.del(`/admin/expenses/${id}`),
   getExpenseStats: () => Api.get('/admin/expenses/stats'),
+
+  // Staff
+  getStaff: () => Api.get('/admin/staff'),
+  addStaff: (d) => Api.post('/admin/staff', d),
+  updateStaff: (id, d) => Api.put(`/admin/staff/${id}`, d),
+  deleteStaff: (id) => Api.del(`/admin/staff/${id}`),
+  getStaffCategories: () => Api.get('/admin/staff/categories'),
 };
