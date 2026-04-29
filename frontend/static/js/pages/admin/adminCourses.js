@@ -34,8 +34,9 @@ function renderAdminCoursesPage() {
       <div class="flex items-center justify-between mb-5"><h3 class="text-base font-bold text-white">Edit Course</h3><button onclick="document.getElementById('edit-modal').remove()"><i data-lucide="x" class="w-5 h-5 text-[#A1A1AA]"></i></button></div>
       <div class="space-y-3">
         <div><label class="${L}">Course Title</label><input id="ed-title" value="${esc(c.title)}" class="${I}"></div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3">
           <div><label class="${L}">Category</label><select id="ed-cat" class="${I}">${CATS.map(ct=>`<option value="${ct}" ${c.category===ct?'selected':''}>${ct}</option>`).join('')}</select></div>
+          <div><label class="${L}">Level</label><select id="ed-level" class="${I}">${['Beginner','Intermediate','Advanced'].map(lv=>`<option value="${lv}" ${c.level===lv?'selected':''}>${lv}</option>`).join('')}</select></div>
           <div class="grid grid-cols-2 gap-2">
             <div><label class="${L}">Price (PKR)</label><input id="ed-price" type="number" value="${c.price||0}" class="${I}"></div>
             <div><label class="${L}">Admission Fee</label><input id="ed-adm" type="number" value="${c.admission_fee||0}" class="${I}"></div>
@@ -68,7 +69,7 @@ function renderAdminCoursesPage() {
     if(vid.includes('youtube.com/watch?v=')){const v=vid.match(/[?&]v=([^&]+)/)?.[1];if(v)vid=`https://www.youtube.com/embed/${v}`;}
     else if(vid.includes('youtu.be/')){const v=vid.match(/youtu\.be\/([^?]+)/)?.[1];if(v)vid=`https://www.youtube.com/embed/${v}`;}
     try{
-      await Api.patchCourse(courseId,{title:g('ed-title'),category:g('ed-cat'),short_description:g('ed-short'),description:g('ed-desc'),requirements:textToArr('ed-req'),what_you_will_learn:textToArr('ed-learn'),price:parseFloat(g('ed-price'))||0,admission_fee:parseFloat(g('ed-adm'))||0,image_url:img,intro_video_url:vid});
+      await Api.patchCourse(courseId,{title:g('ed-title'),category:g('ed-cat'),level:g('ed-level'),short_description:g('ed-short'),description:g('ed-desc'),requirements:textToArr('ed-req'),what_you_will_learn:textToArr('ed-learn'),price:parseFloat(g('ed-price'))||0,admission_fee:parseFloat(g('ed-adm'))||0,image_url:img,intro_video_url:vid});
       showToast('Course updated!');document.getElementById('edit-modal')?.remove();Api.getAdminCourses().then(d=>{courses=d;render()});
     }catch(e){showToast(e.detail||'Failed','error');}
   };

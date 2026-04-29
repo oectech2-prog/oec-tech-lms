@@ -76,6 +76,7 @@ function renderAdminAdmissionsPage() {
 
   window._dlStudentPdf = (formId) => {
     const f = forms.find(x=>x.form_id===formId);if(!f)return;
+    const docs = [{label:'Profile Photo',url:f.profile_pic_url},{label:'Receipt',url:f.receipt_url}];
     const sections = `
       <div class="section"><h3>Student Information</h3><div class="grid">
         ${pdfField('Full Name',f.full_name)}${pdfField('Student ID',f.student_id)}${pdfField('Phone',f.phone)}${pdfField('Date of Birth',f.date_of_birth)}
@@ -87,7 +88,8 @@ function renderAdminAdmissionsPage() {
       </div></div>
       <div class="section"><h3>Course Details</h3><div class="grid">
         ${pdfField('Course',f.course_title)}${pdfField('Course ID',f.course_id)}${pdfField('Enrollment Date',f.joining_date?new Date(f.joining_date).toLocaleDateString():'-')}
-      </div></div>`;
+      </div></div>
+      ${pdfDocSection(docs)}`;
     generateOecPdf('Student Admission Form', f.student_id, f.profile_pic_url, sections);
   };
 

@@ -123,15 +123,17 @@ function renderAdminStaffPage() {
 
   window._dlStaffPdf = (staffId) => {
     const s = staff.find(x=>x.staff_id===staffId);if(!s)return;
+    const docs = [{label:'Profile Photo',url:s.profile_pic_url},{label:'ID Card Front',url:s.id_card_front_url},{label:'ID Card Back',url:s.id_card_back_url},{label:'Letter/Document',url:s.letter_url}];
     const sections = `
       <div class="section"><h3>Staff Information</h3><div class="grid">
         ${pdfField('Full Name',s.name)}${pdfField('Category',s.category)}${pdfField('Staff ID',s.staff_id)}${pdfField('Phone',s.phone)}
         ${pdfField('Email',s.email)}${pdfField('CNIC',s.cnic)}${pdfField('Gender',s.gender)}${pdfField('Date of Birth',s.date_of_birth)}
-        ${pdfField('City',s.city)}${pdfField('Address',s.address)}${pdfField('Qualification',s.qualification)}
+        ${pdfField('City',s.city)}${pdfField('Address',s.address)}${pdfField('Qualification',s.qualification)}${pdfField('Father Name',s.father_name)}
       </div></div>
       <div class="section"><h3>Employment Details</h3><div class="grid">
-        ${pdfField('Salary',s.salary?'PKR '+s.salary:'-')}${pdfField('Joining Date',s.joining_date)}${pdfField('Status',s.status)}${pdfField('Father Name',s.father_name)}
-      </div></div>`;
+        ${pdfField('Salary',s.salary?'PKR '+s.salary:'-')}${pdfField('Joining Date',s.joining_date)}${pdfField('Status',s.status)}
+      </div></div>
+      ${pdfDocSection(docs)}`;
     generateOecPdf('Staff Admission Form', s.staff_id, s.profile_pic_url, sections);
   };
 

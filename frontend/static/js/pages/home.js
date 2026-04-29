@@ -128,7 +128,7 @@ function renderHomePage() {
     const grid = document.getElementById('home-courses-grid');
     if (!grid) return;
     grid.innerHTML = courses.slice(0, 6).map(c => `
-      <a href="/courses/${c.course_id}" data-link class="course-card block bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden group">
+      <div class="course-card bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden group">
         <div class="relative aspect-[4/3] overflow-hidden bg-[#1A1A1A]">
           <img src="${c.image_url}" alt="${c.title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
           <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -138,12 +138,16 @@ function renderHomePage() {
         <div class="p-5">
           <h3 class="text-base font-bold text-white mb-1.5 group-hover:text-[#D4AF37] transition-colors">${c.title}</h3>
           <p class="text-xs text-[#A1A1AA] mb-3 line-clamp-2">${c.short_description || ''}</p>
-          <div class="flex items-center justify-between pt-3 border-t border-[#27272A]">
+          <div class="flex items-center justify-between pt-3 border-t border-[#27272A] mb-3">
             <span class="text-xs text-[#A1A1AA]"><i data-lucide="clock" class="w-3.5 h-3.5 inline"></i> ${c.duration}</span>
             <span class="text-base font-bold text-[#D4AF37]">PKR ${(c.price||0).toLocaleString()}</span>
           </div>
+          <div class="flex gap-2">
+            <a href="/courses/${c.course_id}" data-link data-testid="view-details-${c.course_id}" class="flex-1 text-center px-3 py-2 bg-[#111] border border-[#27272A] text-[#A1A1AA] rounded-lg text-xs font-semibold hover:text-white hover:border-[#D4AF37]/50 transition-colors">View Details</a>
+            <a href="${Auth.isLoggedIn()?`/checkout/${c.course_id}`:'/login'}" data-link data-testid="enroll-${c.course_id}" class="flex-1 text-center btn-gold px-3 py-2 text-xs">Enroll Now</a>
+          </div>
         </div>
-      </a>`).join('');
+      </div>`).join('');
     initIcons();
   }).catch(() => {});
 
