@@ -16,7 +16,7 @@ function renderVideoTestimonialsPage() {
           ${Auth.isLoggedIn() ? `<button data-testid="submit-video-btn" onclick="document.getElementById('vt-modal').classList.remove('hidden');initIcons()" class="btn-gold px-6 py-3 text-sm"><i data-lucide="send" class="w-4 h-4 inline mr-1"></i>Share Your Story</button>` : ''}
         </div>
       </section>
-      <section class="py-16" data-testid="video-testimonials-grid"><div class="max-w-7xl mx-auto px-6 md:px-12">
+      <section class="py-10" data-testid="video-testimonials-grid"><div class="max-w-7xl mx-auto px-6 md:px-12">
         ${videos.length === 0 ? '<div class="text-center py-20"><i data-lucide="video" class="w-16 h-16 text-[#27272A] mx-auto mb-4"></i><h3 class="text-lg font-bold text-white mb-2">No Video Testimonials Yet</h3><p class="text-sm text-[#A1A1AA]">Be the first to share your success story!</p></div>' :
         `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">${videos.map(v => {
           const ytId = getYtId(v.video_url);
@@ -40,7 +40,7 @@ function renderVideoTestimonialsPage() {
             </div>
           </div>`; }).join('')}</div>`}
       </div></section>
-      <section class="py-24 bg-[#0A0A0A]"><div class="max-w-3xl mx-auto px-6 md:px-12 text-center">
+      <section class="py-12 bg-[#0A0A0A]"><div class="max-w-3xl mx-auto px-6 md:px-12 text-center">
         <h2 class="text-3xl font-bold text-white mb-4">Ready to Write Your Success Story?</h2>
         <p class="text-base text-[#A1A1AA] mb-8">Join thousands of students and start earning online.</p>
         <a href="/courses" data-link class="btn-gold px-6 py-3 text-sm">Explore Courses</a>

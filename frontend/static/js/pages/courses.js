@@ -10,34 +10,38 @@ function renderCoursesPage() {
       return ms && mc;
     });
     renderPublicPage(`<div class="page-transition min-h-screen bg-[#050505]">
-      <section class="pt-12 pb-8 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
-        <p class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">Our Courses</p>
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">All Courses</h1>
-        <p class="text-base text-[#A1A1AA] max-w-xl mb-8">Choose from our expert-led courses.</p>
+      <section class="pt-8 pb-6 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
+        <p class="text-xs uppercase tracking-[0.2em] text-[#D4AF37] mb-2">Our Courses</p>
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-3">All Courses</h1>
+        <p class="text-sm text-[#A1A1AA] max-w-xl mb-6">Choose from our expert-led courses.</p>
         <div class="flex flex-col sm:flex-row gap-4">
           <div class="relative flex-1 max-w-md"><i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#A1A1AA]"></i><input data-testid="course-search" placeholder="Search courses..." value="${search}" class="w-full pl-10 bg-[#111111] border border-[#27272A] text-white rounded-lg px-3 py-2.5 text-sm placeholder:text-[#A1A1AA] focus:border-[#D4AF37] focus:outline-none" id="courses-search-input"></div>
           <div class="flex gap-2 flex-wrap">${CATS.map(c => `<button data-cat="${c}" class="px-4 py-2 rounded-full text-xs font-semibold transition-colors ${category === c ? 'bg-[#D4AF37] text-black' : 'bg-[#111111] text-[#A1A1AA] border border-[#27272A] hover:border-[#D4AF37]/50'}">${c}</button>`).join('')}</div>
         </div>
       </div></section>
-      <section class="py-12"><div class="max-w-7xl mx-auto px-6 md:px-12">
+      <section class="py-8"><div class="max-w-7xl mx-auto px-6 md:px-12">
         ${filtered.length === 0 ? '<div class="text-center py-20"><i data-lucide="book-open" class="w-16 h-16 text-[#27272A] mx-auto mb-4"></i><p class="text-[#A1A1AA]">No courses found.</p></div>' :
-        `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">${filtered.map(c => `
-          <a href="/courses/${c.course_id}" data-link data-testid="course-card-${c.course_id}" class="course-card block bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden group">
+        `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">${filtered.map(c => `
+          <div data-testid="course-card-${c.course_id}" class="course-card bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden group">
             <div class="relative aspect-[4/3] overflow-hidden bg-[#1A1A1A]">
               <img src="${c.image_url}" alt="${c.title}" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-              <div class="absolute top-3 left-3"><span class="bg-black/60 backdrop-blur-sm text-white text-xs font-medium px-3 py-1 rounded-full">${c.category}</span></div>
-              <div class="absolute top-3 right-3 bg-[#D4AF37] text-black text-xs font-bold px-3 py-1 rounded-full">${c.level}</div>
+              <div class="absolute top-3 left-3"><span class="bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium px-2.5 py-0.5 rounded-full">${c.category}</span></div>
+              <div class="absolute top-3 right-3 bg-[#D4AF37] text-black text-[10px] font-bold px-2.5 py-0.5 rounded-full">${c.level}</div>
             </div>
-            <div class="p-6">
-              <h3 class="text-lg font-bold text-white mb-2 group-hover:text-[#D4AF37] transition-colors">${c.title}</h3>
-              <p class="text-sm text-[#A1A1AA] mb-4 line-clamp-2">${c.short_description||''}</p>
-              <div class="flex items-center gap-4 text-xs text-[#A1A1AA] mb-4"><span><i data-lucide="clock" class="w-3.5 h-3.5 inline"></i> ${c.duration}</span><span><i data-lucide="book-open" class="w-3.5 h-3.5 inline"></i> ${c.weeks?.length||0} weeks</span></div>
-              <div class="flex items-center justify-between pt-4 border-t border-[#27272A]">
-                <div><span class="text-xl font-bold text-[#D4AF37]">PKR ${(c.price||0).toLocaleString()}</span>${c.admission_fee > 0 ? `<span class="text-[10px] text-[#A1A1AA] block">+ PKR ${c.admission_fee.toLocaleString()} admission</span>` : ''}</div>
+            <div class="p-5">
+              <h3 class="text-base font-bold text-white mb-1.5 group-hover:text-[#D4AF37] transition-colors">${c.title}</h3>
+              <p class="text-xs text-[#A1A1AA] mb-3 line-clamp-2">${c.short_description||''}</p>
+              <div class="flex items-center gap-3 text-[10px] text-[#A1A1AA] mb-3"><span><i data-lucide="clock" class="w-3 h-3 inline"></i> ${c.duration}</span><span><i data-lucide="book-open" class="w-3 h-3 inline"></i> ${c.weeks?.length||0} weeks</span></div>
+              <div class="flex items-center justify-between pt-3 border-t border-[#27272A] mb-3">
+                <div><span class="text-lg font-bold text-[#D4AF37]">PKR ${(c.price||0).toLocaleString()}</span>${c.admission_fee > 0 ? `<span class="text-[9px] text-[#A1A1AA] block">+ PKR ${c.admission_fee.toLocaleString()} admission</span>` : ''}</div>
+              </div>
+              <div class="flex gap-2">
+                <a href="/courses/${c.course_id}" data-link class="flex-1 text-center px-3 py-2 bg-[#111] border border-[#27272A] text-[#A1A1AA] rounded-lg text-xs font-semibold hover:text-white hover:border-[#D4AF37]/50 transition-colors">View Details</a>
+                <a href="${Auth.isLoggedIn()?`/checkout/${c.course_id}`:'/login'}" data-link class="flex-1 text-center btn-gold px-3 py-2 text-xs">Enroll Now</a>
               </div>
             </div>
-          </a>`).join('')}</div>`}
+          </div>`).join('')}</div>`}
       </div></section>
     </div>`);
 

@@ -15,63 +15,51 @@ from auth import (
 router = APIRouter()
 
 
-@router.get("/admin/stats")
-async def get_admin_stats(authorization: str = Header(None), session_token: str = Cookie(None)):
-    await require_admin(authorization, session_token)
-    total_students = await db.users.count_documents({"role": "student"})
-    total_courses = await db.courses.count_documents({})
-    total_enrollments = await db.enrollments.count_documents({})
-    pending_payments = await db.enrollments.count_documents({"payment_status": "pending"})
-    approved_payments = await db.enrollments.count_documents({"payment_status": "completed"})
-    total_diploma_students = await db.diploma_enrollments.count_documents({})
+# --- Stats helper functions (Fix #3: reduced complexity) ---
 
-    now = datetime.now(timezone.utc)
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    month_name = now.strftime("%B %Y")
-
-    approved_enrollments = await db.enrollments.find({"payment_status": "completed"}, {"_id": 0}).to_list(5000)
-    admission_plus_inst1_total = 0
+async def _calculate_revenue(approved_enrollments, dip_approved, month_start):
+    """Calculate admission+inst1 total, inst2 total, and monthly revenue."""
+    adm_inst1_total = 0
     inst2_total = 0
     monthly_revenue = 0
+
     for e in approved_enrollments:
-        admission_plus_inst1_total += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
+        adm_inst1_total += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
         if e.get("installment_2_status") == "completed":
             inst2_total += (e.get("installment_2_amount", 0) or 0)
         if e.get("approved_at", "") >= month_start.isoformat():
             course = await db.courses.find_one({"course_id": e.get("course_id")}, {"_id": 0})
             if course:
-                monthly_revenue += (course.get("price", 0) + course.get("admission_fee", 0))
+                monthly_revenue += course.get("price", 0) + course.get("admission_fee", 0)
 
-    dip_approved = await db.diploma_enrollments.find({"payment_status": "completed"}, {"_id": 0}).to_list(5000)
     for e in dip_approved:
-        admission_plus_inst1_total += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
+        adm_inst1_total += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
         if e.get("installment_2_status") == "completed":
             inst2_total += (e.get("installment_2_amount", 0) or 0)
         if e.get("approved_at", "") >= month_start.isoformat():
             monthly_revenue += (e.get("admission_fee", 0) or 0) + (e.get("installment_1_amount", 0) or 0)
 
-    students_this_month = await db.users.count_documents({
-        "role": "student",
-        "created_at": {"$gte": month_start.isoformat()}
-    })
+    return adm_inst1_total, inst2_total, monthly_revenue
 
-    pending_diploma = await db.diploma_enrollments.count_documents({"payment_status": "pending"})
-    total_pending_approval = pending_payments + pending_diploma
 
-    defaulters_count = 0
-    all_approved = approved_enrollments + dip_approved
+def _count_defaulters(all_approved, now):
+    """Count overdue installment-2 payments."""
+    count = 0
     for e in all_approved:
-        due_date_str = e.get("installment_2_due_date", "")
-        inst2_status = e.get("installment_2_status", "pending")
-        if due_date_str and inst2_status == "pending":
+        due_str = e.get("installment_2_due_date", "")
+        if due_str and e.get("installment_2_status", "pending") == "pending":
             try:
-                due_date = datetime.fromisoformat(due_date_str.replace("Z", "+00:00"))
+                due_date = datetime.fromisoformat(due_str.replace("Z", "+00:00"))
                 if now > due_date:
-                    defaulters_count += 1
+                    count += 1
             except (ValueError, TypeError):
                 pass
+    return count
 
-    monthly_growth = []
+
+async def _build_monthly_growth(now):
+    """Build 6-month growth data."""
+    growth = []
     for i in range(5, -1, -1):
         m = now.month - i
         y = now.year
@@ -79,26 +67,44 @@ async def get_admin_stats(authorization: str = Header(None), session_token: str 
             m += 12
             y -= 1
         m_start = datetime(y, m, 1, tzinfo=timezone.utc).isoformat()
-        if m == 12:
-            m_end = datetime(y + 1, 1, 1, tzinfo=timezone.utc).isoformat()
-        else:
-            m_end = datetime(y, m + 1, 1, tzinfo=timezone.utc).isoformat()
-        m_students = await db.users.count_documents({
-            "role": "student",
-            "created_at": {"$gte": m_start, "$lt": m_end}
-        })
-        m_enrollments = await db.enrollments.count_documents({
-            "enrolled_at": {"$gte": m_start, "$lt": m_end}
-        })
-        m_dip = await db.diploma_enrollments.count_documents({
-            "enrolled_at": {"$gte": m_start, "$lt": m_end}
-        })
-        m_label = datetime(y, m, 1).strftime("%b %Y")
-        monthly_growth.append({
-            "month": m_label,
+        m_end = datetime(y + 1, 1, 1, tzinfo=timezone.utc).isoformat() if m == 12 else datetime(y, m + 1, 1, tzinfo=timezone.utc).isoformat()
+
+        m_students = await db.users.count_documents({"role": "student", "created_at": {"$gte": m_start, "$lt": m_end}})
+        m_enr = await db.enrollments.count_documents({"enrolled_at": {"$gte": m_start, "$lt": m_end}})
+        m_dip = await db.diploma_enrollments.count_documents({"enrolled_at": {"$gte": m_start, "$lt": m_end}})
+
+        growth.append({
+            "month": datetime(y, m, 1).strftime("%b %Y"),
             "students": m_students,
-            "enrollments": m_enrollments + m_dip,
+            "enrollments": m_enr + m_dip,
         })
+    return growth
+
+
+@router.get("/admin/stats")
+async def get_admin_stats(authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+
+    now = datetime.now(timezone.utc)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    # Parallel count queries
+    total_students = await db.users.count_documents({"role": "student"})
+    total_courses = await db.courses.count_documents({})
+    total_enrollments = await db.enrollments.count_documents({})
+    pending_payments = await db.enrollments.count_documents({"payment_status": "pending"})
+    approved_payments = await db.enrollments.count_documents({"payment_status": "completed"})
+    total_diploma_students = await db.diploma_enrollments.count_documents({})
+    pending_diploma = await db.diploma_enrollments.count_documents({"payment_status": "pending"})
+    students_this_month = await db.users.count_documents({"role": "student", "created_at": {"$gte": month_start.isoformat()}})
+
+    # Revenue calculation
+    approved_enrollments = await db.enrollments.find({"payment_status": "completed"}, {"_id": 0}).to_list(5000)
+    dip_approved = await db.diploma_enrollments.find({"payment_status": "completed"}, {"_id": 0}).to_list(5000)
+
+    adm_inst1, inst2, monthly_rev = await _calculate_revenue(approved_enrollments, dip_approved, month_start)
+    defaulters_count = _count_defaulters(approved_enrollments + dip_approved, now)
+    monthly_growth = await _build_monthly_growth(now)
 
     return {
         "total_students": total_students,
@@ -107,12 +113,12 @@ async def get_admin_stats(authorization: str = Header(None), session_token: str 
         "total_diploma_students": total_diploma_students,
         "pending_payments": pending_payments,
         "approved_payments": approved_payments,
-        "admission_plus_inst1": admission_plus_inst1_total,
-        "inst2_total": inst2_total,
-        "monthly_revenue": monthly_revenue,
-        "month_name": month_name,
+        "admission_plus_inst1": adm_inst1,
+        "inst2_total": inst2,
+        "monthly_revenue": monthly_rev,
+        "month_name": now.strftime("%B %Y"),
         "students_this_month": students_this_month,
-        "total_pending_approval": total_pending_approval,
+        "total_pending_approval": pending_payments + pending_diploma,
         "defaulters_count": defaulters_count,
         "monthly_growth": monthly_growth,
     }
@@ -444,6 +450,60 @@ async def admin_approve_diploma_installment_2(enrollment_id: str, data: PaymentS
     return {"message": "Diploma installment 2 status updated"}
 
 
+
+@router.delete("/admin/diploma-enrollments/{enrollment_id}")
+async def delete_diploma_enrollment(enrollment_id: str, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    result = await db.diploma_enrollments.delete_one({"enrollment_id": enrollment_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Diploma enrollment not found")
+    return {"message": "Diploma enrollment deleted"}
+
+
+
+@router.post("/admin/diploma-enrollments/manual")
+async def manual_add_diploma_enrollment(data: dict, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    email = data.get("email", "").strip()
+    track_id = data.get("track_id", "")
+    if not email or not track_id:
+        raise HTTPException(status_code=400, detail="Email and track_id required")
+
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="Student not found. They must login with Google first.")
+
+    track = await db.diploma_tracks.find_one({"track_id": track_id}, {"_id": 0})
+    if not track:
+        raise HTTPException(status_code=404, detail="Diploma track not found")
+
+    existing = await db.diploma_enrollments.find_one({"user_id": user["user_id"], "track_id": track_id})
+    if existing:
+        raise HTTPException(status_code=400, detail="Student already enrolled in this track")
+
+    enrollment_id = f"dip_{uuid.uuid4().hex[:10]}"
+    payment_status = data.get("payment_status", "pending")
+    doc = {
+        "enrollment_id": enrollment_id,
+        "user_id": user["user_id"],
+        "track_id": track_id,
+        "track_title": track.get("title", ""),
+        "course_ids": track.get("courses", []),
+        "payment_method": data.get("payment_method", ""),
+        "payment_status": payment_status,
+        "installment_1_status": "completed" if payment_status == "completed" else "pending",
+        "installment_2_status": "pending",
+        "installment_2_due_weeks": 3,
+        "enrolled_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if payment_status == "completed":
+        doc["approved_at"] = datetime.now(timezone.utc).isoformat()
+        doc["installment_2_due_date"] = (datetime.now(timezone.utc) + timedelta(weeks=3)).isoformat()
+
+    await db.diploma_enrollments.insert_one(doc)
+    return {"message": "Diploma enrollment created", "enrollment_id": enrollment_id}
+
+
 @router.get("/admin/admission-forms")
 async def get_admission_forms(authorization: str = Header(None), session_token: str = Cookie(None)):
     await require_admin(authorization, session_token)
@@ -461,3 +521,44 @@ async def get_admission_forms(authorization: str = Header(None), session_token: 
             f["installment_1_url"] = ""
             f["installment_2_url"] = ""
     return forms
+
+
+
+@router.post("/admin/admission-forms/manual")
+async def manual_add_student(data: dict, authorization: str = Header(None), session_token: str = Cookie(None)):
+    await require_admin(authorization, session_token)
+    full_name = data.get("full_name", "").strip()
+    if not full_name:
+        raise HTTPException(status_code=400, detail="Full name required")
+
+    student_id = f"OEC-{datetime.now(timezone.utc).strftime('%Y')}-{str(await db.admission_forms.count_documents({}) + 1).zfill(4)}"
+
+    course_id = data.get("course_id", "")
+    course = await db.courses.find_one({"course_id": course_id}, {"_id": 0}) if course_id else None
+
+    form_doc = {
+        "form_id": f"form_{uuid.uuid4().hex[:10]}",
+        "student_id": student_id,
+        "user_id": f"manual_{uuid.uuid4().hex[:8]}",
+        "full_name": full_name,
+        "phone": data.get("phone", ""),
+        "date_of_birth": data.get("date_of_birth", ""),
+        "gender": data.get("gender", ""),
+        "city": data.get("city", ""),
+        "address": data.get("address", ""),
+        "session_type": data.get("session_type", ""),
+        "learning_type": data.get("learning_type", ""),
+        "qualification": data.get("qualification", ""),
+        "religion": data.get("religion", ""),
+        "father_name": data.get("father_name", ""),
+        "father_phone": data.get("father_phone", ""),
+        "father_cnic": data.get("father_cnic", ""),
+        "course_id": course_id,
+        "course_title": course["title"] if course else "",
+        "profile_pic_url": data.get("profile_pic_url", ""),
+        "receipt_url": data.get("receipt_url", ""),
+        "joining_date": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.admission_forms.insert_one(form_doc)
+    return {"message": "Student added", "student_id": student_id, "form_id": form_doc["form_id"]}

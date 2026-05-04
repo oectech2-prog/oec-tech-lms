@@ -8,12 +8,18 @@ const Auth = {
   notify() { this.listeners.forEach(fn => fn(this.user)); },
 
   async init() {
-    // Check if returning from OAuth callback
-    if (window.location.hash?.includes('session_id=')) {
+    // Check if returning from OAuth callback - handle BEFORE anything else
+    const hash = window.location.hash || '';
+    const search = window.location.search || '';
+    const sessionId = new URLSearchParams(hash.substring(1)).get('session_id') || new URLSearchParams(search).get('session_id');
+
+    if (sessionId) {
+      await this.handleCallback(sessionId);
       this.loading = false;
-      await this.handleCallback();
       return;
     }
+
+    // Normal session check
     try {
       this.user = await Api.getMe();
     } catch { this.user = null; }
@@ -21,18 +27,18 @@ const Auth = {
     this.notify();
   },
 
-  async handleCallback() {
-    const hash = window.location.hash;
-    const sessionId = new URLSearchParams(hash.substring(1)).get('session_id');
-    if (!sessionId) { Router.navigate('/login'); return; }
+  async handleCallback(sessionId) {
     try {
       const res = await Api.exchangeSession(sessionId);
       this.user = res.user;
-      window.history.replaceState(null, '', window.location.pathname);
+      // Clean URL
+      window.history.replaceState(null, '', '/dashboard');
       this.notify();
-      Router.navigate('/dashboard');
-    } catch {
-      Router.navigate('/login');
+    } catch (err) {
+      console.error('Auth callback failed:', err);
+      this.user = null;
+      this.notify();
+      window.history.replaceState(null, '', '/login');
     }
   },
 

@@ -82,6 +82,8 @@ const Api = {
   getAdminDiplomaEnrollments: () => Api.get('/admin/diploma-enrollments'),
   updateDiplomaStatus: (id, d) => Api.put(`/admin/diploma-enrollments/${id}`, d),
   adminApproveDiplomaInst2: (id, d) => Api.put(`/admin/diploma-enrollments/${id}/installment-2`, d),
+  deleteDiplomaEnrollment: (id) => Api.del(`/admin/diploma-enrollments/${id}`),
+  patchCourse: (id, d) => Api.put(`/admin/courses/${id}`, d),
   getDefaulters: () => Api.get('/admin/defaulters'),
   deactivateStudent: (id) => Api.put(`/admin/defaulters/${id}/deactivate`),
   activateStudent: (id) => Api.put(`/admin/defaulters/${id}/activate`),
@@ -94,4 +96,11 @@ const Api = {
   updateExpense: (id, d) => Api.put(`/admin/expenses/${id}`, d),
   deleteExpense: (id) => Api.del(`/admin/expenses/${id}`),
   getExpenseStats: () => Api.get('/admin/expenses/stats'),
+
+  // Staff
+  getStaff: () => Api.get('/admin/staff'),
+  addStaff: (d) => Api.post('/admin/staff', d),
+  updateStaff: (id, d) => Api.put(`/admin/staff/${id}`, d),
+  deleteStaff: (id) => Api.del(`/admin/staff/${id}`),
+  getStaffCategories: () => Api.get('/admin/staff/categories'),
 };

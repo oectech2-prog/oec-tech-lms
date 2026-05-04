@@ -9,7 +9,7 @@ function renderCourseDetailPage(params) {
 
     function render() {
       renderPublicPage(`<div data-testid="course-detail-page" class="page-transition min-h-screen bg-[#050505]">
-        <section class="pt-8 pb-12 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
+        <section class="pt-6 pb-8 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
           <div class="grid grid-cols-1 lg:grid-cols-5 gap-10">
             <div class="lg:col-span-3">
               <p class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">${course.category}</p>
@@ -30,14 +30,14 @@ function renderCourseDetailPage(params) {
         </div></section>
 
         <!-- Requirements & What You'll Learn -->
-        <section class="py-16"><div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-10">
+        <section class="py-10"><div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-10">
           <div class="bg-[#111111] border border-[#27272A] rounded-2xl p-8"><h3 class="text-xl font-bold text-white mb-6">Requirements</h3><ul class="space-y-3">${(course.requirements||[]).map(r=>`<li class="flex items-start gap-3 text-sm text-[#A1A1AA]"><i data-lucide="check-circle-2" class="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5"></i>${r}</li>`).join('')}</ul></div>
           <div class="bg-[#111111] border border-[#27272A] rounded-2xl p-8"><h3 class="text-xl font-bold text-white mb-6">What You Will Learn</h3><ul class="space-y-3">${(course.what_you_will_learn||[]).map(r=>`<li class="flex items-start gap-3 text-sm text-[#A1A1AA]"><i data-lucide="check-circle-2" class="w-5 h-5 text-[#D4AF37] shrink-0 mt-0.5"></i>${r}</li>`).join('')}</ul></div>
         </div></section>
 
         <!-- Weekly Outline -->
         <section data-testid="weekly-outline" class="py-16 bg-[#0A0A0A]"><div class="max-w-4xl mx-auto px-6 md:px-12">
-          <div class="text-center mb-12"><p class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">Course Content</p><h2 class="text-2xl sm:text-3xl font-bold text-white">Weekly Course Outline</h2></div>
+          <div class="text-center mb-8"><p class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">Course Content</p><h2 class="text-2xl sm:text-3xl font-bold text-white">Weekly Course Outline</h2></div>
           <div class="space-y-4 week-timeline pl-4">
             ${(course.weeks||[]).map((w, i) => `<div class="relative">
               <div class="absolute -left-4 top-5 w-[10px] h-[10px] rounded-full z-10 ${w.assignment?.is_final_project ? 'bg-[#FBBF24] animate-gold-pulse' : 'bg-[#D4AF37]'}"></div>
@@ -60,7 +60,7 @@ function renderCourseDetailPage(params) {
         </div></section>
 
         <!-- Enroll CTA -->
-        <section class="py-24 bg-[#050505]"><div class="max-w-3xl mx-auto px-6 md:px-12 text-center">
+        <section class="py-12 bg-[#050505]"><div class="max-w-3xl mx-auto px-6 md:px-12 text-center">
           <h2 class="text-2xl sm:text-3xl font-bold text-white mb-4">Ready to Start Learning?</h2>
           <p class="text-base text-[#A1A1AA] mb-8">Enroll now and get lifetime access to all course materials.</p>
           <a href="${Auth.isLoggedIn() ? `/checkout/${course.course_id}` : '/login'}" data-link class="btn-gold px-6 py-2.5 text-sm">Enroll for PKR ${(course.price||0).toLocaleString()}</a>

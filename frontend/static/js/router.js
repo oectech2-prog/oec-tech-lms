@@ -68,6 +68,20 @@ const Router = {
 // Helper to reinitialize Lucide icons after DOM updates
 function initIcons() {
   if (window.lucide) lucide.createIcons();
+  // Remove any dynamically injected branding elements
+  const badge = document.getElementById('emergent-badge');
+  if (badge) badge.remove();
+  document.querySelectorAll('body > a[style*="fixed"], body > div[style*="fixed"]').forEach(el => {
+    const txt = el.textContent || '';
+    if (txt.includes('Made with') || txt.includes('Emergent') || txt.includes('Powered by')) el.remove();
+  });
+}
+
+// SEO: Update page title based on route
+function setPageTitle(subtitle) {
+  document.title = subtitle
+    ? `${subtitle} | OEC Tech Institute`
+    : 'OEC Tech Institute LMS | Courses, Diplomas, Reviews & Testimonials';
 }
 
 // Toast system

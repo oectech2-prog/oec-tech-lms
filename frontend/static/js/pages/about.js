@@ -3,12 +3,12 @@
 // Contact Page
 function renderContactPage() {
   renderPublicPage(`<div data-testid="contact-page" class="page-transition min-h-screen bg-[#050505]">
-    <section class="pt-12 pb-8 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
+    <section class="pt-8 pb-6 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
       <p class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">Get in Touch</p>
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">Contact Us</h1>
+      <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">Contact Us</h1>
       <p class="text-base text-[#A1A1AA] max-w-xl">Have questions about our courses? We are here to help.</p>
     </div></section>
-    <section class="py-16"><div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-5 gap-12">
+    <section class="py-10"><div class="max-w-7xl mx-auto px-6 md:px-12 grid grid-cols-1 lg:grid-cols-5 gap-12">
       <div class="lg:col-span-2 space-y-6">
         <div class="bg-[#111111] border border-[#27272A] rounded-2xl p-8 space-y-6">
           <div class="flex items-start gap-4"><i data-lucide="mail" class="w-6 h-6 text-[#D4AF37] shrink-0"></i><div><h4 class="text-sm font-bold text-white mb-1">Email</h4><p class="text-sm text-[#A1A1AA]">info@oectechs.com</p></div></div>

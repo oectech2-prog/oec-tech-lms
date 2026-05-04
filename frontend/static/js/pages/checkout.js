@@ -1,28 +1,31 @@
-// Checkout Page (Course Enrollment)
+// Checkout Page (Course Enrollment) - 4 Steps with Back buttons
 function renderCheckoutPage(params) {
   renderDashboardPage(Components.loading());
   Api.getCourse(params.courseId).then(course => {
     if (!course) { renderDashboardPage('<div class="min-h-screen flex items-center justify-center"><p class="text-white">Course not found</p></div>'); return; }
     let step = 1, enrolling = false, success = false, studentId = '';
     const form = { full_name:'', qualification:'', phone:'', date_of_birth:'', address:'', gender:'', session_type:'', learning_type:'', religion:'', city:'', father_name:'', father_phone:'', father_cnic:'' };
-    let selectedMethod = null, paymentRef = '';
+    let selectedMethod = null, paymentRef = '', docUploaded = false;
     const inst1 = Math.floor((course.price||0)/2), inst2 = (course.price||0)-inst1, payNow = (course.admission_fee||0)+inst1;
 
     const METHODS = [{id:'jazzcash',name:'JazzCash',color:'red',acct:'JazzCash: 983012259\nOEC Tech Institute'},{id:'easypaisa',name:'EasyPaisa',color:'green',acct:'EasyPaisa: 0300-1413747\nSadam Mubarak'},{id:'bank_transfer',name:'Bank Transfer',color:'blue',acct:'Soneri Bank: 20016289664\nSadam Mubarak'}];
     const INPUT = "w-full bg-[#050505] border border-[#27272A] rounded-lg px-3 py-2.5 text-xs text-white placeholder:text-[#71717A] focus:border-[#D4AF37] focus:outline-none";
     const LABEL = "text-[10px] font-medium text-[#A1A1AA] mb-1 block";
+    const BACK = `<button onclick="window._goBack()" class="btn-gold-outline px-5 py-2 text-xs flex items-center gap-1"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>Back</button>`;
 
     function render() {
       if (success) {
         renderDashboardPage(`<div data-testid="checkout-success" class="min-h-screen bg-[#050505] flex items-center justify-center px-4"><div class="glass-panel rounded-2xl p-10 max-w-md w-full text-center">
-          <i data-lucide="check-circle-2" class="w-20 h-20 text-green-400 mx-auto mb-6"></i><h2 class="text-2xl font-bold text-white mb-3">Enrollment Submitted!</h2>
+          <div class="inline-flex items-center gap-2 mb-4"><i data-lucide="graduation-cap" class="w-8 h-8 text-[#D4AF37]"></i><span class="text-base font-bold text-white">OEC <span class="text-[#D4AF37]">Tech</span> Institute</span></div>
+          <i data-lucide="check-circle-2" class="w-16 h-16 text-green-400 mx-auto mb-4"></i><h2 class="text-2xl font-bold text-white mb-3">Enrollment Submitted!</h2>
           ${studentId?`<p class="text-xs text-[#D4AF37] mb-2">Student ID: ${studentId}</p>`:''}
           <p class="text-sm text-[#A1A1AA] mb-6">Admin will verify payment within 24 hours.</p>
           <div class="flex flex-col gap-3"><a href="/dashboard" data-link class="btn-gold text-center py-3 text-sm">Go to Dashboard</a><a href="/courses" data-link class="btn-gold-outline text-center py-3 text-sm">Browse More Courses</a></div>
-        </div></div>`); return;
+        </div></div>`); initIcons(); return;
       }
 
-      const stepBar = [1,2,3,4].map(n => `<div class="flex items-center gap-1.5"><div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${step>=n?'bg-[#D4AF37] text-black':'bg-[#27272A] text-[#A1A1AA]'}">${step>n?'&#10003;':n}</div><span class="text-[10px] font-medium hidden sm:inline ${step>=n?'text-white':'text-[#A1A1AA]'}">${['Admission','Documents','Payment','Confirm'][n-1]}</span>${n<4?`<div class="w-6 sm:w-10 h-[2px] ${step>n?'bg-[#D4AF37]':'bg-[#27272A]'}"></div>`:''}</div>`).join('');
+      const stepLabels = ['Admission','Documents','Payment','Confirm'];
+      const stepBar = [1,2,3,4].map(n => `<div class="flex items-center gap-1.5"><div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${step>=n?'bg-[#D4AF37] text-black':'bg-[#27272A] text-[#A1A1AA]'}">${step>n?'&#10003;':n}</div><span class="text-[10px] font-medium hidden sm:inline ${step>=n?'text-white':'text-[#A1A1AA]'}">${stepLabels[n-1]}</span>${n<4?`<div class="w-6 sm:w-10 h-[2px] ${step>n?'bg-[#D4AF37]':'bg-[#27272A]'}"></div>`:''}</div>`).join('');
 
       let stepContent = '';
       if (step === 1) {
@@ -48,13 +51,19 @@ function renderCheckoutPage(params) {
               <div><label class="${LABEL}">Father CNIC</label><input name="father_cnic" value="${form.father_cnic}" class="${INPUT}" placeholder="XXXXX-XXXXXXX-X"></div>
             </div>
           </div>
-          <button data-testid="form-next-btn" onclick="window._checkoutNext()" class="btn-gold px-6 py-2.5 text-xs mt-2">Next: Upload Documents</button>
+          <div class="flex gap-3 pt-2"><button data-testid="form-next-btn" onclick="window._checkoutNext()" class="btn-gold px-6 py-2.5 text-xs">Next: Upload Documents</button></div>
         </div>`;
       } else if (step === 2) {
-        stepContent = `<h3 class="text-base font-bold text-white mb-4"><i data-lucide="file-text" class="w-5 h-5 text-[#D4AF37] inline mr-2"></i>Documents (Optional)</h3>
-        <div class="bg-[#111111] border border-[#27272A] rounded-xl p-5">
-          <p class="text-[10px] text-[#A1A1AA] mb-4">Upload JPG, PNG or PDF. Max 5MB each. Documents are optional but recommended.</p>
-          <div class="flex gap-3"><button onclick="step=1;render()" class="btn-gold-outline px-5 py-2 text-xs">Back</button><button data-testid="docs-next-btn" onclick="step=3;render()" class="btn-gold px-6 py-2 text-xs">Next: Payment</button></div>
+        stepContent = `<h3 class="text-base font-bold text-white mb-4"><i data-lucide="file-text" class="w-5 h-5 text-[#D4AF37] inline mr-2"></i>Upload Documents</h3>
+        <div class="bg-[#111111] border border-[#27272A] rounded-xl p-5 space-y-4">
+          <p class="text-xs text-[#A1A1AA]">Upload your documents. JPG, PNG or PDF. Max 5MB each.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="${LABEL}">Profile Photo *</label><input type="file" id="doc-profile" accept="image/*" data-testid="doc-profile" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20"></div>
+            <div><label class="${LABEL}">CNIC / B-Form</label><input type="file" id="doc-cnic" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20"></div>
+            <div><label class="${LABEL}">Education Certificate</label><input type="file" id="doc-edu" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20"></div>
+            <div><label class="${LABEL}">Father CNIC</label><input type="file" id="doc-father" accept="image/*,.pdf" class="w-full text-xs text-[#A1A1AA] file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-[#D4AF37]/10 file:text-[#D4AF37] hover:file:bg-[#D4AF37]/20"></div>
+          </div>
+          <div class="flex gap-3 pt-2">${BACK}<button data-testid="docs-next-btn" onclick="window._docsNext()" class="btn-gold px-6 py-2 text-xs">Next: Payment</button></div>
         </div>`;
       } else if (step === 3) {
         stepContent = `<h3 class="text-base font-bold text-white mb-4"><i data-lucide="credit-card" class="w-5 h-5 text-[#D4AF37] inline mr-2"></i>Payment Method</h3>
@@ -67,23 +76,30 @@ function renderCheckoutPage(params) {
             <div class="border-t border-[#27272A] pt-2 flex justify-between font-bold"><span class="text-white">Total to Pay Now</span><span class="text-[#D4AF37]">PKR ${payNow.toLocaleString()}</span></div>
           </div>
         </div>
-        <div class="space-y-3 mb-6">${METHODS.map(m => `<button onclick="window._selectMethod('${m.id}')" class="w-full text-left p-4 rounded-xl border transition-all ${selectedMethod===m.id?`bg-${m.color}-500/10 border-${m.color}-500/30 shadow-lg`:'bg-[#111111] border-[#27272A] hover:border-[#D4AF37]/30'}"><div class="flex items-center gap-3"><i data-lucide="smartphone" class="w-5 h-5 text-${m.color}-400"></i><span class="text-sm font-bold text-white">${m.name}</span>${selectedMethod===m.id?`<i data-lucide="check-circle-2" class="w-4 h-4 text-${m.color}-400 ml-auto"></i>`:''}</div>${selectedMethod===m.id?`<div class="mt-3 p-3 bg-black/30 rounded-lg"><p class="text-xs text-[#A1A1AA] whitespace-pre-line">${m.acct}</p><p class="text-xs text-[#D4AF37] mt-2 font-semibold">Send PKR ${payNow.toLocaleString()}</p></div>`:''}</button>`).join('')}</div>
-        <div class="flex gap-3 mt-4"><button onclick="step=2;render()" class="btn-gold-outline px-5 py-2 text-xs">Back</button><button data-testid="payment-next-btn" onclick="window._paymentNext()" class="btn-gold px-6 py-2 text-xs">Next: Confirm</button></div>`;
+        <div class="space-y-3 mb-6">${METHODS.map(m => `<button onclick="window._selectMethod('${m.id}')" class="w-full text-left p-4 rounded-xl border transition-all ${selectedMethod===m.id?'bg-[#D4AF37]/5 border-[#D4AF37]/40 shadow-lg':'bg-[#111111] border-[#27272A] hover:border-[#D4AF37]/30'}"><div class="flex items-center gap-3"><i data-lucide="smartphone" class="w-5 h-5 text-[#D4AF37]"></i><span class="text-sm font-bold text-white">${m.name}</span>${selectedMethod===m.id?'<i data-lucide="check-circle-2" class="w-4 h-4 text-[#D4AF37] ml-auto"></i>':''}</div>${selectedMethod===m.id?`<div class="mt-3 p-3 bg-black/30 rounded-lg"><p class="text-xs text-[#A1A1AA] whitespace-pre-line">${m.acct}</p><p class="text-xs text-[#D4AF37] mt-2 font-semibold">Send PKR ${payNow.toLocaleString()}</p></div>`:''}</button>`).join('')}</div>
+        <div class="flex gap-3">${BACK}<button data-testid="payment-next-btn" onclick="window._paymentNext()" class="btn-gold px-6 py-2 text-xs">Next: Confirm</button></div>`;
       } else if (step === 4) {
         stepContent = `<h3 class="text-base font-bold text-white mb-4"><i data-lucide="shield" class="w-5 h-5 text-[#D4AF37] inline mr-2"></i>Review & Confirm</h3>
-        <div class="bg-[#111111] border border-[#27272A] rounded-xl p-4 mb-4">
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div><span class="text-[#71717A]">Name:</span> <span class="text-white">${form.full_name}</span></div>
-            <div><span class="text-[#71717A]">Phone:</span> <span class="text-white">${form.phone}</span></div>
-            <div><span class="text-[#71717A]">City:</span> <span class="text-white">${form.city}</span></div>
-            <div><span class="text-[#71717A]">Payment:</span> <span class="text-white">${selectedMethod}</span></div>
+        <div class="bg-[#111111] border border-[#27272A] rounded-xl p-5 mb-4 space-y-3">
+          <div class="grid grid-cols-2 gap-3 text-xs">
+            <div><span class="text-[#71717A]">Name:</span> <span class="text-white font-medium">${form.full_name}</span></div>
+            <div><span class="text-[#71717A]">Phone:</span> <span class="text-white font-medium">${form.phone}</span></div>
+            <div><span class="text-[#71717A]">City:</span> <span class="text-white font-medium">${form.city}</span></div>
+            <div><span class="text-[#71717A]">DOB:</span> <span class="text-white font-medium">${form.date_of_birth}</span></div>
+            <div><span class="text-[#71717A]">Gender:</span> <span class="text-white font-medium">${form.gender}</span></div>
+            <div><span class="text-[#71717A]">Session:</span> <span class="text-white font-medium">${form.session_type}</span></div>
+            <div><span class="text-[#71717A]">Learning:</span> <span class="text-white font-medium">${form.learning_type}</span></div>
+            <div><span class="text-[#71717A]">Payment:</span> <span class="text-white font-medium">${selectedMethod?.replace('_',' ') || ''}</span></div>
+            <div><span class="text-[#71717A]">Father:</span> <span class="text-white font-medium">${form.father_name}</span></div>
+            <div><span class="text-[#71717A]">Father Phone:</span> <span class="text-white font-medium">${form.father_phone}</span></div>
           </div>
         </div>
-        <div class="flex gap-3"><button onclick="step=3;render()" class="btn-gold-outline px-5 py-2 text-xs">Back</button><button data-testid="confirm-enrollment-btn" onclick="window._confirmEnroll()" ${enrolling?'disabled':''} class="btn-gold px-8 py-2 text-xs">${enrolling?'Submitting...':'Confirm Enrollment'}</button></div>`;
+        <div class="flex gap-3">${BACK}<button data-testid="confirm-enrollment-btn" onclick="window._confirmEnroll()" ${enrolling?'disabled':''} class="btn-gold px-8 py-2.5 text-xs">${enrolling?'Submitting...':'Confirm Enrollment'}</button></div>`;
       }
 
       renderDashboardPage(`<div data-testid="checkout-page" class="min-h-screen bg-[#050505] py-8 px-4"><div class="max-w-5xl mx-auto">
         <a href="/courses/${params.courseId}" data-link class="flex items-center gap-2 text-sm text-[#A1A1AA] hover:text-white mb-6"><i data-lucide="arrow-left" class="w-4 h-4"></i>Back to Course</a>
+        <div class="flex items-center gap-2 mb-2"><i data-lucide="graduation-cap" class="w-6 h-6 text-[#D4AF37]"></i><span class="text-sm font-bold text-white">OEC <span class="text-[#D4AF37]">Tech</span> Institute</span></div>
         <h1 class="text-xl font-bold text-white mb-1">Complete Your Enrollment</h1><p class="text-xs text-[#A1A1AA] mb-6">${course.title}</p>
         <div class="flex items-center gap-2 mb-8">${stepBar}</div>
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -96,30 +112,47 @@ function renderCheckoutPage(params) {
               ${course.admission_fee>0?`<div class="flex justify-between text-xs"><span class="text-[#A1A1AA]">Admission Fee</span><span class="text-white">PKR ${course.admission_fee.toLocaleString()}</span></div>`:''}
               <div class="flex justify-between text-xs"><span class="text-[#A1A1AA]">1st Installment</span><span class="text-white">PKR ${inst1.toLocaleString()}</span></div>
               <div class="flex justify-between text-xs"><span class="text-[#71717A]">2nd Installment (later)</span><span class="text-[#71717A]">PKR ${inst2.toLocaleString()}</span></div>
-              <div class="border-t border-[#27272A] pt-1.5"><div class="flex justify-between mb-1"><span class="text-xs font-bold text-white">Pay Now</span><span class="text-lg font-bold text-[#D4AF37]">PKR ${payNow.toLocaleString()}</span></div></div>
+              <div class="border-t border-[#27272A] pt-1.5"><div class="flex justify-between"><span class="text-xs font-bold text-white">Pay Now</span><span class="text-lg font-bold text-[#D4AF37]">PKR ${payNow.toLocaleString()}</span></div></div>
             </div>
           </div></div>
         </div>
       </div></div>`);
+      initIcons();
 
-      // Bind form inputs
+      // Bind form inputs for step 1
       document.querySelectorAll('[name]').forEach(el => {
-        if (form.hasOwnProperty(el.name)) el.addEventListener('change', () => { form[el.name] = el.value; });
-        if (form.hasOwnProperty(el.name)) el.addEventListener('input', () => { form[el.name] = el.value; });
+        if (form.hasOwnProperty(el.name)) {
+          el.addEventListener('change', () => { form[el.name] = el.value; });
+          el.addEventListener('input', () => { form[el.name] = el.value; });
+        }
       });
     }
 
+    window._goBack = () => { if (step > 1) { step--; render(); } };
     window._checkoutNext = () => {
       const req = ['full_name','phone','date_of_birth','gender','session_type','learning_type','city','father_name','father_phone'];
       for (const k of req) { if (!form[k]) { showToast(`Please fill: ${k.replace(/_/g,' ')}`, 'error'); return; } }
       step = 2; render();
     };
+    window._docsNext = async () => {
+      // Upload profile photo if selected
+      const profileInput = document.getElementById('doc-profile');
+      if (profileInput?.files?.[0]) {
+        try {
+          const uf = new FormData(); uf.append('file', profileInput.files[0]);
+          const res = await Api._fetch('POST', '/student/upload', uf, true);
+          form.profile_pic_url = res.url || '';
+        } catch { showToast('Failed to upload profile photo', 'error'); }
+      }
+      step = 3; render();
+    };
     window._selectMethod = (id) => { selectedMethod = id; render(); };
-    window._paymentNext = () => { if (!selectedMethod) { showToast('Select payment method', 'error'); return; } step = 4; render(); };
+    window._paymentNext = () => { if (!selectedMethod) { showToast('Select a payment method', 'error'); return; } step = 4; render(); };
     window._confirmEnroll = async () => {
       if (enrolling) return; enrolling = true; render();
       try {
-        const admRes = await Api.submitAdmission({ ...form, course_id: params.courseId });
+        const admData = { ...form, course_id: params.courseId };
+        const admRes = await Api.submitAdmission(admData);
         studentId = admRes.student_id || '';
         await Api.enroll({ course_id: params.courseId, payment_method: selectedMethod, payment_proof: paymentRef || selectedMethod });
         success = true; showToast('Enrollment submitted!');

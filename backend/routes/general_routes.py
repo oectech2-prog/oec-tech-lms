@@ -169,65 +169,68 @@ async def get_certificate(enrollment_id: str, authorization: str = Header(None),
     return result
 
 
-@router.get("/notifications")
-async def get_notifications(authorization: str = Header(None), session_token: str = Cookie(None)):
-    user = await get_current_user(authorization, session_token)
-    enrollments = await db.enrollments.find(
-        {"user_id": user.user_id, "payment_status": "completed"}, {"_id": 0}
-    ).to_list(100)
+def _parse_installment_notifications(enrollments, now, is_diploma=False):
+    """Extract installment notifications from enrollment list."""
     notifications = []
-    now = datetime.now(timezone.utc)
     for e in enrollments:
         inst2_status = e.get("installment_2_status", "pending")
         due_date_str = e.get("installment_2_due_date", "")
-        if inst2_status in ("pending", "submitted") and due_date_str:
-            due_date = datetime.fromisoformat(due_date_str.replace("Z", "+00:00")) if due_date_str else None
-            if due_date and now >= due_date and inst2_status == "pending":
-                course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
+        if inst2_status not in ("pending", "submitted") or not due_date_str:
+            continue
+
+        title_key = f"Diploma: {e.get('track_title', '')}" if is_diploma else None
+        base = {
+            "enrollment_id": e["enrollment_id"],
+            "amount": e.get("installment_2_amount", 0),
+            "status": inst2_status,
+        }
+        if is_diploma:
+            base["is_diploma"] = True
+
+        if inst2_status == "pending":
+            try:
+                due_date = datetime.fromisoformat(due_date_str.replace("Z", "+00:00"))
+            except (ValueError, TypeError):
+                continue
+            if now >= due_date:
                 notifications.append({
-                    "type": "installment_2_due",
-                    "enrollment_id": e["enrollment_id"],
-                    "course_title": course["title"] if course else "",
-                    "amount": e.get("installment_2_amount", 0),
-                    "due_date": due_date_str,
-                    "status": inst2_status,
+                    **base, "type": "installment_2_due", "due_date": due_date_str,
+                    "course_title": title_key or "",
                 })
-            elif inst2_status == "submitted":
-                course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
-                notifications.append({
-                    "type": "installment_2_pending_approval",
-                    "enrollment_id": e["enrollment_id"],
-                    "course_title": course["title"] if course else "",
-                    "amount": e.get("installment_2_amount", 0),
-                    "status": inst2_status,
-                })
+        elif inst2_status == "submitted":
+            notifications.append({
+                **base, "type": "installment_2_pending_approval",
+                "course_title": title_key or "",
+            })
+
+    return notifications
+
+
+@router.get("/notifications")
+async def get_notifications(authorization: str = Header(None), session_token: str = Cookie(None)):
+    user = await get_current_user(authorization, session_token)
+    now = datetime.now(timezone.utc)
+    notifications = []
+
+    # Course enrollments
+    enrollments = await db.enrollments.find(
+        {"user_id": user.user_id, "payment_status": "completed"}, {"_id": 0}
+    ).to_list(100)
+    course_notifs = _parse_installment_notifications(enrollments, now)
+    # Fill in course titles
+    for n in course_notifs:
+        e = next((x for x in enrollments if x["enrollment_id"] == n["enrollment_id"]), None)
+        if e:
+            course = await db.courses.find_one({"course_id": e["course_id"]}, {"_id": 0})
+            n["course_title"] = course["title"] if course else ""
+    notifications.extend(course_notifs)
+
+    # Diploma enrollments
     dip_enrollments = await db.diploma_enrollments.find(
         {"user_id": user.user_id, "payment_status": "completed"}, {"_id": 0}
     ).to_list(100)
-    for e in dip_enrollments:
-        inst2_status = e.get("installment_2_status", "pending")
-        due_date_str = e.get("installment_2_due_date", "")
-        if inst2_status in ("pending", "submitted") and due_date_str:
-            due_date = datetime.fromisoformat(due_date_str.replace("Z", "+00:00")) if due_date_str else None
-            if due_date and now >= due_date and inst2_status == "pending":
-                notifications.append({
-                    "type": "installment_2_due",
-                    "enrollment_id": e["enrollment_id"],
-                    "course_title": f"Diploma: {e.get('track_title', '')}",
-                    "amount": e.get("installment_2_amount", 0),
-                    "due_date": due_date_str,
-                    "status": inst2_status,
-                    "is_diploma": True,
-                })
-            elif inst2_status == "submitted":
-                notifications.append({
-                    "type": "installment_2_pending_approval",
-                    "enrollment_id": e["enrollment_id"],
-                    "course_title": f"Diploma: {e.get('track_title', '')}",
-                    "amount": e.get("installment_2_amount", 0),
-                    "status": inst2_status,
-                    "is_diploma": True,
-                })
+    notifications.extend(_parse_installment_notifications(dip_enrollments, now, is_diploma=True))
+
     return notifications
 
 
@@ -259,6 +262,7 @@ async def submit_admission_form(data: dict, authorization: str = Header(None), s
         "last_degree_url": data.get("last_degree_url", ""),
         "bform_url": data.get("bform_url", ""),
         "receipt_url": data.get("receipt_url", ""),
+        "profile_pic_url": data.get("profile_pic_url", ""),
         "joining_date": datetime.now(timezone.utc).isoformat(),
         "created_at": datetime.now(timezone.utc).isoformat()
     }

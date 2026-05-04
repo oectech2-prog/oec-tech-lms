@@ -13,7 +13,7 @@ import os
 from datetime import datetime, timedelta
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
-ADMIN_PASSWORD = "OEC@Admin#2026!Secure"
+from conftest import ADMIN_PASSWORD, BASE_URL as CONF_URL
 
 # Test session created via mongosh
 TEST_SESSION_TOKEN = "test_session_inst_1775659699888"

@@ -6,12 +6,12 @@ function renderDiplomaTracksPage() {
     const getTotal = (t) => (t.courses||[]).reduce((s, cId) => { const c = getCourse(cId); return s + (c?.price||0) + (c?.admission_fee||0); }, 0);
 
     renderPublicPage(`<div data-testid="diploma-tracks-page" class="page-transition min-h-screen bg-[#050505]">
-      <section class="pt-12 pb-8 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
+      <section class="pt-8 pb-6 border-b border-[#27272A]"><div class="max-w-7xl mx-auto px-6 md:px-12">
         <p class="text-sm uppercase tracking-[0.2em] text-[#D4AF37] mb-3">Career Paths</p>
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">Diploma Tracks</h1>
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">Diploma Tracks</h1>
         <p class="text-base text-[#A1A1AA] max-w-xl">Follow structured career paths to master complete skill sets.</p>
       </div></section>
-      <section class="py-16"><div class="max-w-7xl mx-auto px-6 md:px-12 space-y-16">
+      <section class="py-10"><div class="max-w-7xl mx-auto px-6 md:px-12 space-y-16">
         ${tracks.map(t => { const total = getTotal(t); return `<div class="bg-[#111111] border border-[#27272A] rounded-2xl overflow-hidden">
           <div class="p-8 md:p-10 border-b border-[#27272A]">
             <div class="flex items-start gap-4">
